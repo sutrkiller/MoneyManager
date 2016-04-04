@@ -1,18 +1,10 @@
 package pv239.fi.muni.cz.moneymanager;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.KeyEvent;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
-import java.util.Random;
 
 import javax.crypto.SecretKey;
 
@@ -22,6 +14,8 @@ public class CreatePasscodeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getSupportActionBar() != null)
+            getSupportActionBar().hide();
         setContentView(R.layout.activity_create_passcode);
 
         final EditText first = (EditText) findViewById(R.id.editTextEntry);
@@ -32,7 +26,7 @@ public class CreatePasscodeActivity extends AppCompatActivity {
             @Override
             public void validate(TextView textView, String text) {
                 if (text.trim().length()<4) {
-                    textView.setError("Minimum length is 4");
+                    textView.setError(getString(R.string.msg_minLengthPin));
                 } else  {
                     textView.setError(null);
                 }
@@ -45,16 +39,14 @@ public class CreatePasscodeActivity extends AppCompatActivity {
            @Override
            public void validate(TextView textView, String text) {
                if (text.trim().length() < 4) {
-                   textView.setError("Minimum length is 4");
+                   textView.setError(getString(R.string.msg_minLengthPin));
                } else if (!first.getText().toString().equals(text)) {
-                   textView.setError("PINs do not match!");
+                   textView.setError(getString(R.string.msg_pinMismatch));
                } else {
                    textView.setError(null);
                }
            }
        });
-
-
     }
 
     public void createPinOnClick(View view) {
@@ -66,7 +58,7 @@ public class CreatePasscodeActivity extends AppCompatActivity {
 
         byte[] salt = Crypto.generateSalt();
         SecretKey secretKey = Crypto.deriveKeyPbkdf2(salt, first.getText().toString());
-        String key = Crypto.encrypt("true",secretKey,salt);
+        String key = Crypto.encrypt(getString(R.string.encryptString),secretKey,salt);
         ALockingClass.storePin(key);
         finish();
 

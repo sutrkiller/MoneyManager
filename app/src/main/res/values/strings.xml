@@ -6,4 +6,8 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+    <string name="msg_incorrectPin">Pin is incorrect!</string>
+    <string name="msg_minLengthPin">Minimum length is 4</string>
+    <string name="msg_pinMismatch">PINs do not match!</string>
+    <string name="encryptString">true</string>
 </resources>

@@ -16,6 +16,27 @@ public abstract class ALockingClass extends AppCompatActivity {
     public static final int CreatePin = 2;
     protected static SharedPreferences sharedPreferences;
 
+    public static boolean storePin(String password) {
+        sharedPreferences.edit().putString(KEY,password).putBoolean(LOGGED,true).commit();
+        return true;
+    }
+
+    public static String retrievePin() {
+        return sharedPreferences.getString(KEY,"");
+    }
+
+    public static boolean checkPin(String pin) {
+        try {
+            String res = Crypto.decryptPbkdf2(ALockingClass.retrievePin(), pin);
+            if (res.equals(R.string.encryptString)) {
+                sharedPreferences.edit().putBoolean(LOGGED, true).commit();
+                return true;
+            }
+        } catch (Exception ex) {
+            return false;
+        }
+        return false;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,28 +61,6 @@ public abstract class ALockingClass extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-    }
-
-    public static boolean storePin(String password) {
-        sharedPreferences.edit().putString(KEY,password).putBoolean(LOGGED,true).commit();
-        return true;
-    }
-
-    public static String retrievePin() {
-        return sharedPreferences.getString(KEY,"");
-    }
-
-    public static boolean checkPin(String pin) {
-        try {
-            String res = Crypto.decryptPbkdf2(ALockingClass.retrievePin(), pin);
-            if (res.equals("true")) {
-                sharedPreferences.edit().putBoolean(LOGGED, true).commit();
-                return true;
-            }
-        } catch (Exception ex) {
-            return false;
-        }
-        return false;
     }
 
     private boolean isLogged() {
