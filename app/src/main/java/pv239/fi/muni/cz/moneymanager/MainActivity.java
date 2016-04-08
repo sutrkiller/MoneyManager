@@ -67,19 +67,21 @@ public class MainActivity extends ALockingClass
                 if (fragment instanceof StatsFragment){
                     currentPosition = R.id.nav_stats;
                 }
-                //setActionBarTitle(currentPosition);
+                setActionBarTitle(currentPosition);
                 navigationView.setCheckedItem(currentPosition);
                 //drawerList.setItemChecked(currentPosition, true);
             }
         });
 
+        setActionBarTitle(-1);
         int position=-1;
         if (savedInstanceState != null) {
             position = savedInstanceState.getInt("currentPosition");
             //setActionBarTitle(currentPosition)
         }
+        //setActionBarTitle(currentPosition);
         onNavigationItemSelected((MenuItem)findViewById(position));
-
+        //getSupportActionBar().setTitle("Records");
 
     }
 
@@ -160,7 +162,10 @@ public class MainActivity extends ALockingClass
                 currentPosition = id;
                 break;
             default:
+
         }
+            //setActionBarTitle(id);
+
     }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -177,8 +182,6 @@ public class MainActivity extends ALockingClass
 
     public void onMenuFragmentSelect(Fragment fragment) {
         //RecordsFragment frag = RecordsFragment.newInstance("ahoj", "balbla");
-        Log.e("BACKSTAK: ", String.valueOf(getSupportFragmentManager().getBackStackEntryCount()));
-        Log.e("CurrentPos: ", String.valueOf(currentPosition));
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.fragment_container, fragment,"visible_fragment");
         if (getSupportFragmentManager().getBackStackEntryCount()>0) getSupportFragmentManager().popBackStackImmediate();
@@ -189,11 +192,27 @@ public class MainActivity extends ALockingClass
             ft.addToBackStack(null);
         } else {
             ((NavigationView)findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_records);
+            //setActionBarTitle(-1);
         }
         ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+
+
         ft.commit();
 
 
+    }
+
+    private void setActionBarTitle(int id) {
+        String title;
+        switch (id) {
+            case -1:
+            case R.id.nav_records: title = "Records"; break;
+            case R.id.nav_categories: title = "Categories"; break;
+            case R.id.nav_stats: title = "Statistics"; break;
+                default: title = "MoneyManager";
+        }
+        getSupportActionBar().setTitle(title);
+        //Log.e("WITHOFJ", String.valueOf(id));
     }
 
     @Override
