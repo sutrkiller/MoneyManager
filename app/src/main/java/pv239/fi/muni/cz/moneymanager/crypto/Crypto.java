@@ -1,4 +1,4 @@
-package pv239.fi.muni.cz.moneymanager;
+package pv239.fi.muni.cz.moneymanager.crypto;
 
 import android.util.Base64;
 import java.io.UnsupportedEncodingException;

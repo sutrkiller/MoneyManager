@@ -9,7 +9,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
 
-    tools:context="pv239.fi.muni.cz.moneymanager.CreatePasscodeActivity">
+    tools:context=".crypto.CreatePasscodeActivity">
 
     <EditText
         android:id="@+id/editTextEntry"

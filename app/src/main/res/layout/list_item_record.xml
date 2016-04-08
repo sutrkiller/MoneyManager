@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="72dp"
+
+    >
+
+    <ImageView
+        android:id="@+id/record_item_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="16dp"/>
+
+
+
+    <TextView
+        android:id="@+id/record_item_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="72dp"
+        android:paddingTop="16dp"
+        android:fontFamily="Roboto Regular"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        />
+
+
+    <TextView
+        android:id="@+id/record_item_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/record_item_value"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="16dp"
+        android:paddingTop="16dp"
+        />
+    <!--<TextView-->
+        <!--android:id="@+id/record_item_currency"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_toRightOf="@id/record_item_value"-->
+        <!--android:paddingLeft="8dp"-->
+        <!--android:paddingTop="16dp"-->
+        <!--android:fontFamily="Roboto Regular"-->
+        <!--android:textSize="16sp"-->
+        <!--android:textStyle="bold"/>-->
+
+    <TextView
+        android:id="@+id/record_item_item"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/record_item_value"
+        android:layout_alignStart="@id/record_item_value"
+        android:layout_marginTop="2dp"/>
+
+    <TextView
+        android:id="@+id/record_item_category_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="16dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@id/record_item_item"
+        />
+
+    <!--<TextView-->
+        <!--android:id="@+id/record_item_category_details"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_below="@id/record_item_category_name"-->
+        <!--android:layout_marginTop="2dp"-->
+        <!--android:layout_marginRight="16dp"-->
+        <!--android:layout_alignParentRight="true"-->
+        <!--/>-->
+
+
+</RelativeLayout>

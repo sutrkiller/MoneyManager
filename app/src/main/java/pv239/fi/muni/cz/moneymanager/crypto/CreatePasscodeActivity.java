@@ -1,4 +1,4 @@
-package pv239.fi.muni.cz.moneymanager;
+package pv239.fi.muni.cz.moneymanager.crypto;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -7,6 +7,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import javax.crypto.SecretKey;
+
+import pv239.fi.muni.cz.moneymanager.R;
+import pv239.fi.muni.cz.moneymanager.TextValidator;
 
 public class CreatePasscodeActivity extends AppCompatActivity {
 
@@ -59,7 +62,7 @@ public class CreatePasscodeActivity extends AppCompatActivity {
         byte[] salt = Crypto.generateSalt();
         SecretKey secretKey = Crypto.deriveKeyPbkdf2(salt, first.getText().toString());
         String key = Crypto.encrypt(getString(R.string.encryptString),secretKey,salt);
-        ALockingClass.storePin(key);
+        ALockingClass.storePin(this,key);
         finish();
 
 

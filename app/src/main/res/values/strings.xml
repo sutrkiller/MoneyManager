@@ -10,4 +10,6 @@
     <string name="msg_minLengthPin">Minimum length is 4</string>
     <string name="msg_pinMismatch">PINs do not match!</string>
     <string name="encryptString">true</string>
+
+
 </resources>

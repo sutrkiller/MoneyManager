@@ -1,10 +1,12 @@
-package pv239.fi.muni.cz.moneymanager;
+package pv239.fi.muni.cz.moneymanager.crypto;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+
+import pv239.fi.muni.cz.moneymanager.R;
 
 public abstract class ALockingClass extends AppCompatActivity {
 
@@ -16,19 +18,20 @@ public abstract class ALockingClass extends AppCompatActivity {
     public static final int CreatePin = 2;
     protected static SharedPreferences sharedPreferences;
 
-    public static boolean storePin(String password) {
+    public static boolean storePin(Context context, String password) {
         sharedPreferences.edit().putString(KEY,password).putBoolean(LOGGED,true).commit();
         return true;
     }
 
-    public static String retrievePin() {
+    public static String retrievePin(Context context) {
         return sharedPreferences.getString(KEY,"");
     }
 
-    public static boolean checkPin(String pin) {
+    public static boolean checkPin(Context context, String pin) {
         try {
-            String res = Crypto.decryptPbkdf2(ALockingClass.retrievePin(), pin);
-            if (res.equals(R.string.encryptString)) {
+            String res = Crypto.decryptPbkdf2(ALockingClass.retrievePin(context), pin);
+            if (res.equals(context.getString(R.string.encryptString))) {
+
                 sharedPreferences.edit().putBoolean(LOGGED, true).commit();
                 return true;
             }

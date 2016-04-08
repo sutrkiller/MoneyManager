@@ -1,10 +1,12 @@
-package pv239.fi.muni.cz.moneymanager;
+package pv239.fi.muni.cz.moneymanager.crypto;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import pv239.fi.muni.cz.moneymanager.R;
 
 public class PasscodeActivity extends AppCompatActivity {
     @Override
@@ -22,13 +24,15 @@ public class PasscodeActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), R.string.msg_incorrectPin,Toast.LENGTH_SHORT).show();
         }
         if (pinBox.getError()==null) {
-            if (ALockingClass.checkPin(pinBox.getText().toString())) {
+            if (ALockingClass.checkPin(this,pinBox.getText().toString())) {
                 finish();
+                return;
             } else {
                 Toast.makeText(getApplicationContext(),R.string.msg_incorrectPin,Toast.LENGTH_SHORT).show();
             }
         } else {
             Toast.makeText(getApplicationContext(),pinBox.getError(),Toast.LENGTH_SHORT).show();
         }
+        pinBox.setText("");
     }
 }

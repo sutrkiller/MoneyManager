@@ -1,4 +1,4 @@
-package pv239.fi.muni.cz.moneymanager;
+package pv239.fi.muni.cz.moneymanager.crypto;
 
 /*
  * Copyright (C) 2009 The Android Open Source Project
@@ -47,7 +47,7 @@ public class KeyStore {
     // States
     public enum State {
         UNLOCKED, LOCKED, UNINITIALIZED
-    };
+    }
 
     private static final LocalSocketAddress sAddress = new LocalSocketAddress(
             "keystore", LocalSocketAddress.Namespace.RESERVED);
