@@ -33,9 +33,9 @@ public class Record {
     public static List<Record> getTestingData() {
         ArrayList<Record> records = new ArrayList<>();
 
-        Category cardKb  = new Category("KB",0,"Card");
-        Category cardCSOB  = new Category("CSOB",1,"Card");
-        Category cash  = new Category("",2,"Cash");
+        Category cardKb  = new Category(0,"Card","KB");
+        Category cardCSOB  = new Category(1,"Card","CSOB");
+        Category cash  = new Category(2,"Cash","");
 
         records.add(new Record(cardKb,Currency.getInstance(Locale.US),"2016-05-17 12:12:12",0,BigDecimal.valueOf(-500.5F),"Shoes"));
         records.add(new Record(cardCSOB,Currency.getInstance(Locale.GERMANY),"2016-05-18 12:12:12",0,BigDecimal.valueOf(-50.5F),"Baker"));

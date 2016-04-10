@@ -13,11 +13,19 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.Toast;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import pv239.fi.muni.cz.moneymanager.crypto.ALockingClass;
 
 public class MainActivity extends ALockingClass
-        implements NavigationView.OnNavigationItemSelectedListener, RecordsFragment.OnRecordsInteractionListener, CategoriesFragment.OnCategoriesInteractionListener,StatsFragment.OnStatsInteractionListener {
+        implements NavigationView.OnNavigationItemSelectedListener, RecordsFragment.OnRecordsInteractionListener, CategoriesFragment.OnCategoriesInteractionListener,StatsFragment.OnStatsInteractionListener, DatePickerFragment.OnDateInteractionListener {
 
     private int currentPosition=-1;
 
@@ -69,7 +77,6 @@ public class MainActivity extends ALockingClass
                 }
                 setActionBarTitle(currentPosition);
                 navigationView.setCheckedItem(currentPosition);
-                //drawerList.setItemChecked(currentPosition, true);
             }
         });
 
@@ -77,32 +84,9 @@ public class MainActivity extends ALockingClass
         int position=-1;
         if (savedInstanceState != null) {
             position = savedInstanceState.getInt("currentPosition");
-            //setActionBarTitle(currentPosition)
         }
-        //setActionBarTitle(currentPosition);
         onNavigationItemSelected((MenuItem)findViewById(position));
-        //getSupportActionBar().setTitle("Records");
-
     }
-
-   /* private void selectItem(int position) {
-        currentPosition = position;
-        Fragment fragment;
-        switch (position) {
-            case 1: fragment = CategoriesFragment.newInstance("sdas","sdjas"); break;
-            case 2: fragment = StatsFragment.newInstance("sdal","sda"); break;
-            default: fragment = RecordsFragment.newInstance("bal","nlas");
-        }
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.fragment_container, fragment, "visible_fragment");
-        ft.addToBackStack(null);
-        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        ft.commit();
-        //setActionBarTitle(position);
-
-        //drawerLayout.closeDrawer(drawerList);
-    }*/
-
 
     @Override
     public void onBackPressed() {
@@ -117,7 +101,6 @@ public class MainActivity extends ALockingClass
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-
         getMenuInflater().inflate(R.menu.main, menu);
         return super.onCreateOptionsMenu(menu);
     }
@@ -147,7 +130,6 @@ public class MainActivity extends ALockingClass
             id = item.getItemId();
         }
         if (id != currentPosition) {
-            //boolean addToStack= false;
             switch (id) {
                 case R.id.nav_records:
                     onMenuFragmentSelect(RecordsFragment.newInstance(null, null));
@@ -164,8 +146,6 @@ public class MainActivity extends ALockingClass
             default:
 
         }
-            //setActionBarTitle(id);
-
     }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -181,7 +161,6 @@ public class MainActivity extends ALockingClass
     }
 
     public void onMenuFragmentSelect(Fragment fragment) {
-        //RecordsFragment frag = RecordsFragment.newInstance("ahoj", "balbla");
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.fragment_container, fragment,"visible_fragment");
         if (getSupportFragmentManager().getBackStackEntryCount()>0) getSupportFragmentManager().popBackStackImmediate();
@@ -192,14 +171,9 @@ public class MainActivity extends ALockingClass
             ft.addToBackStack(null);
         } else {
             ((NavigationView)findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_records);
-            //setActionBarTitle(-1);
         }
         ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-
-
         ft.commit();
-
-
     }
 
     private void setActionBarTitle(int id) {
@@ -212,12 +186,13 @@ public class MainActivity extends ALockingClass
                 default: title = "MoneyManager";
         }
         getSupportActionBar().setTitle(title);
-        //Log.e("WITHOFJ", String.valueOf(id));
     }
 
     @Override
     public void onRecordsInteraction(Uri uri) {
-        //JUST TESTING
+        Toast.makeText(this,"Floating button clicked",Toast.LENGTH_LONG).show();
+        AddRecordDialog dialog = new AddRecordDialog();
+        dialog.show(getSupportFragmentManager(),"add_record");
     }
 
     @Override
@@ -230,5 +205,20 @@ public class MainActivity extends ALockingClass
         //JUST TESTING
     }
 
+    @Override
+    public void onDateInteraction(DatePicker datePicker) {
+
+
+        //Button button = (Button) getActivity().findViewById(R.id.addRecord_date);
+
+
+        AddRecordDialog fr = (AddRecordDialog) getSupportFragmentManager().findFragmentByTag("add_record");
+        if (fr == null) return;
+        fr.setDateButtonTag(datePicker);
+
+
+
+
+    }
 
 }

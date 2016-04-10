@@ -11,5 +11,9 @@
     <string name="msg_pinMismatch">PINs do not match!</string>
     <string name="encryptString">true</string>
 
-
+    <array name="currencies">
+        <item>czk</item>
+        <item>eur</item>
+        <item>usd</item>
+    </array>
 </resources>

@@ -3,6 +3,7 @@ package pv239.fi.muni.cz.moneymanager;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -64,6 +65,8 @@ public class RecordsFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+
     }
 
     @Override
@@ -86,6 +89,14 @@ public class RecordsFragment extends Fragment {
                 String value = record.dateTime + " " + record.value + record.currency;
                 Toast.makeText(getActivity(), value + " clicked!", Toast.LENGTH_SHORT).show();
 
+            }
+        });
+
+        FloatingActionButton button = (FloatingActionButton)getView().findViewById(R.id.fabAddRecord);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onButtonPressed(null);
             }
         });
     }

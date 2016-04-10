@@ -24,10 +24,9 @@
 
     <com.rengwuxian.materialedittext.MaterialEditText
         android:id="@+id/pinEditText"
-        style="@style/pinMaterialEditText"
+        style="@style/materialEditText.pin"
         app:met_floatingLabelText="Enter your pin"
         android:hint="Enter your pin"
-
         app:met_primaryColor="@color/colorAccent"
         app:met_floatingLabel="highlight"
         app:met_floatingLabelTextSize="14sp"

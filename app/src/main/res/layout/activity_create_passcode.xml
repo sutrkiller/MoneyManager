@@ -26,7 +26,7 @@
 
     <com.rengwuxian.materialedittext.MaterialEditText
         android:id="@+id/editTextEntry"
-        style="@style/pinMaterialEditText"
+        style="@style/materialEditText.pin"
         app:met_floatingLabelText="Enter your pin"
         android:hint="Enter your pin"
 
@@ -36,7 +36,7 @@
 
     <com.rengwuxian.materialedittext.MaterialEditText
         android:id="@+id/editTextConfirm"
-        style="@style/pinMaterialEditText"
+        style="@style/materialEditText.pin"
         android:layout_below="@+id/editTextEntry"
         app:met_floatingLabelText="Confirm your pin"
         android:hint="Confirm your pin"
@@ -45,18 +45,6 @@
         app:met_floatingLabel="highlight"
         app:met_floatingLabelTextSize="14sp"/>
 
-    <!--<Button-->
-        <!--android:id="@+id/buttonCreatePin"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_alignEnd="@+id/editTextConfirm"-->
-        <!--android:layout_alignStart="@+id/editTextConfirm"-->
-        <!--android:layout_below="@+id/editTextConfirm"-->
-        <!--android:layout_marginTop="76dp"-->
-        <!--android:background="@drawable/margin"-->
-        <!--android:hint="Ex. 1234"-->
-        <!--android:onClick="createPinOnClick"-->
-        <!--android:text="Create pin" />-->
 
     <Button
         android:id="@+id/buttonCreatePin"
