@@ -3,7 +3,7 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimary">@color/colorPrimaryDark</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
@@ -27,17 +27,30 @@
         <item name="android:layout_centerHorizontal">true</item>
         <item name="android:maxLength">8</item>
         <item name="android:background">@drawable/margin</item>
-        <item name="android:hint">Ex. 1234</item>
         <item name="android:textAlignment">center</item>
     </style>
 
-    <style name="pinEditButton" parent="Widget.AppCompat.Button.Borderless">
-        <item name="android:layout_width">wrap_content</item>
+    <style name="pinMaterialEditText">
+        <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_alignParentRight">true</item>
-        <item name="android:layout_alignParentTop">true</item>
-        <item name="android:textColor">@color/colorAccent</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:layout_centerHorizontal">true</item>
+        <item name="android:maxLength">16</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:inputType">numberPassword</item>
+        <item name="android:drawableRight">@drawable/ic_visibility_black_24dp</item>
+    </style>
+
+    <style name="pinEditButton" >
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:minWidth">128dp</item>
+        <item name="android:layout_marginLeft">8dp</item>
+        <item name="android:layout_marginRight">8dp</item>
+        <item name="android:layout_marginTop">32dp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:layout_centerHorizontal">true</item>
+
 
     </style>
 

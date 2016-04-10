@@ -1,6 +1,7 @@
 package pv239.fi.muni.cz.moneymanager.adapter;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -65,13 +66,13 @@ public class RecordsAdapter extends BaseAdapter {
         format.setMaximumFractionDigits(2);
         format.setCurrency(record.currency);
 
-
-
         holder.icon.setImageResource(iconId);
         holder.date.setText(Record.formatDateTime(context,record.dateTime));
         holder.value.setText(format.format(record.value.abs().setScale(2).doubleValue()));
+        holder.value.setTextColor(ContextCompat.getColor(context,record.value.compareTo(BigDecimal.ZERO) < 0 ? R.color.recordNegativeValue : R.color.recordPositiveValue));
         //holder.currency.setText(record.currency.getSymbol());
         holder.item.setText(record.item);
+        holder.item.setTextColor(ContextCompat.getColor(context,R.color.black));
         holder.categoryName.setText(record.category.name + ((record.category.details != null && !record.category.details.isEmpty()) ? " ("+record.category.details+")" : ""));
         //holder.categoryDetails.setText(record.category.details);
         return convertView;

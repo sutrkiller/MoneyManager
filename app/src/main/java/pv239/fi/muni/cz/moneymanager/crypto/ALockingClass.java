@@ -45,6 +45,7 @@ public abstract class ALockingClass extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sharedPreferences = getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        sharedPreferences.edit().putBoolean(LOGGED, false).commit();
 
     }
 

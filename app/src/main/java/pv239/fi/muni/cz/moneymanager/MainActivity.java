@@ -26,7 +26,7 @@ public class MainActivity extends ALockingClass
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // deletePin();
+        //deletePin();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -119,7 +119,7 @@ public class MainActivity extends ALockingClass
         // Inflate the menu; this adds items to the action bar if it is present.
 
         getMenuInflater().inflate(R.menu.main, menu);
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override

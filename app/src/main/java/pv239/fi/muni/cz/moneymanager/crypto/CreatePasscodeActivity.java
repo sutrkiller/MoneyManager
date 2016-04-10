@@ -1,7 +1,11 @@
 package pv239.fi.muni.cz.moneymanager.crypto;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -17,13 +21,17 @@ public class CreatePasscodeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getSupportActionBar() != null)
-            getSupportActionBar().hide();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Create pin");
+        }
         setContentView(R.layout.activity_create_passcode);
 
         final EditText first = (EditText) findViewById(R.id.editTextEntry);
         final EditText second = (EditText) findViewById(R.id.editTextConfirm);
 
+
+        first.setOnTouchListener(new PasswordEditTextOnTouchListener(this));
+        second.setOnTouchListener(new PasswordEditTextOnTouchListener(this));
 
         first.addTextChangedListener(new TextValidator(first) {
             @Override
@@ -68,4 +76,8 @@ public class CreatePasscodeActivity extends AppCompatActivity {
 
 
     }
+
+
+
 }
+

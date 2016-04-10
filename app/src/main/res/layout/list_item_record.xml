@@ -22,7 +22,7 @@
         android:paddingTop="16dp"
         android:fontFamily="Roboto Regular"
         android:textSize="16sp"
-        android:textStyle="bold"
+
         />
 
 

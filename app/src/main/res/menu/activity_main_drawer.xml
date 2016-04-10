@@ -10,11 +10,11 @@
         </item>
         <item
             android:id="@+id/nav_categories"
-            android:icon="@drawable/ic_menu_gallery"
+            android:icon="@drawable/ic_local_atm_black_24dp"
             android:title="Categories" />
         <item
             android:id="@+id/nav_stats"
-            android:icon="@drawable/ic_menu_slideshow"
+            android:icon="@drawable/ic_show_chart_black_24dp"
             android:title="Statistics" />
         <!--<item-->
             <!--android:id="@+id/nav_manage"-->

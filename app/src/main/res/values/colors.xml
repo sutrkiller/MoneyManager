@@ -5,4 +5,6 @@
     <color name="colorAccent">#FF4081</color>
     <color name="red">#ff0000</color>
     <color name="black">#000000</color>
+    <color name="recordNegativeValue">#870101</color>
+    <color name="recordPositiveValue">#047800</color>
 </resources>

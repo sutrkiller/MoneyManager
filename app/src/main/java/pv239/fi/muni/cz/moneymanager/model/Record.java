@@ -39,7 +39,7 @@ public class Record {
 
         records.add(new Record(cardKb,Currency.getInstance(Locale.US),"2016-05-17 12:12:12",0,BigDecimal.valueOf(-500.5F),"Shoes"));
         records.add(new Record(cardCSOB,Currency.getInstance(Locale.GERMANY),"2016-05-18 12:12:12",0,BigDecimal.valueOf(-50.5F),"Baker"));
-        records.add(new Record(cash,Currency.getInstance(Locale.UK),"2016-05-20 12:12:12",0,BigDecimal.valueOf(5000.5F),"Smartphone"));
+        records.add(new Record(cash,Currency.getInstance(Locale.UK),"2016-05-20 12:12:12",0,BigDecimal.valueOf(-5000.5F),"Smartphone"));
         records.add(new Record(cash,Currency.getInstance(Locale.US),"2016-06-17 12:12:12",0,BigDecimal.valueOf(500.5F),"Salary"));
         records.add(new Record(cardKb,Currency.getInstance(Locale.UK),"2016-10-17 12:12:12",0,BigDecimal.valueOf(1000.5F),"Bonus"));
         records.add(new Record(cardCSOB,Currency.getInstance(Locale.FRANCE),"2017-02-17 12:12:12",0,BigDecimal.valueOf(-49256.5F),"New car"));
