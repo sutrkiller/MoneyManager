@@ -10,6 +10,13 @@ import android.widget.Toast;
 
 import pv239.fi.muni.cz.moneymanager.R;
 
+/**
+ * Activity for authentication on every run
+ *
+ * @author Tobias Kamenicky <tobias.kamenicky@gmail.com>
+ * @date 10/4/2016
+ */
+
 public class PasscodeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {

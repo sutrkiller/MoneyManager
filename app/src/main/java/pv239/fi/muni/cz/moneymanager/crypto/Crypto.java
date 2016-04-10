@@ -12,6 +12,12 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
+/**
+ * Class containing encryption algotithms
+ *
+ * @author Tobias Kamenicky <tobias.kamenicky@gmail.com>
+ * @date 10/4/2016
+ */
 
 public class Crypto {
     public static final String PBKDF2_DERIVATION_ALGORITHM = "PBKDF2WithHmacSHA1";

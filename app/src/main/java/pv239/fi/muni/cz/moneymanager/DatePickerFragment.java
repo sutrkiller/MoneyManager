@@ -13,7 +13,10 @@ import android.widget.DatePicker;
 import java.util.Calendar;
 
 /**
- * Created by Tobias on 4/10/2016.
+ * Dialog for selecting date
+ *
+ * @author Tobias Kamenicky <tobias.kamenicky@gmail.com>
+ * @date 10/4/2016
  */
 public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
     private DatePicker datePicker;
@@ -27,7 +30,6 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
         int year = bundle.getInt("year",c.get(Calendar.YEAR));
         int month = bundle.getInt("month",c.get(Calendar.MONTH));
         int day = bundle.getInt("day",c.get(Calendar.DAY_OF_MONTH));
-    //TODO: select date on first run
         return new DatePickerDialog(getActivity(),this,year,month,day);
     }
 
@@ -37,10 +39,6 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
             mListener.onDateInteraction(view);
         }
     }
-
-//    public DatePicker getDatePicker() {
-//        return datePicker;
-//    }
 
     @Override
     public void onAttach(Context context) {
@@ -56,10 +54,10 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
     @Override
     public void onDetach() {
         super.onDetach();
+        mListener = null;
     }
 
     public interface OnDateInteractionListener {
-        // TODO: Update argument type and name
         void onDateInteraction(DatePicker datePicker);
     }
 }

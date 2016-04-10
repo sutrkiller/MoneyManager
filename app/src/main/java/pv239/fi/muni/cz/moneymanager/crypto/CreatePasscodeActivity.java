@@ -15,6 +15,13 @@ import javax.crypto.SecretKey;
 import pv239.fi.muni.cz.moneymanager.R;
 import pv239.fi.muni.cz.moneymanager.TextValidator;
 
+/**
+ * Activity for pin creation on first run
+ *
+ * @author Tobias Kamenicky <tobias.kamenicky@gmail.com>
+ * @date 10/4/2016
+ */
+
 public class CreatePasscodeActivity extends AppCompatActivity {
 
 

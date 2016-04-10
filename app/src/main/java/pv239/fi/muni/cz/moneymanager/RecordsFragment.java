@@ -17,12 +17,10 @@ import pv239.fi.muni.cz.moneymanager.model.Record;
 
 
 /**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link OnRecordsInteractionListener} interface
- * to handle interaction events.
- * Use the {@link RecordsFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * Fragment holding list of records.
+ *
+ * @author Tobias Kamenicky <tobias.kamenicky@gmail.com>
+ * @date 10/4/2016
  */
 public class RecordsFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match

@@ -10,12 +10,10 @@ import android.view.ViewGroup;
 
 
 /**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link OnStatsInteractionListener} interface
- * to handle interaction events.
- * Use the {@link StatsFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * Fragment holding all statistics about data.
+ *
+ * @author Tobias Kamenicky <tobias.kamenicky@gmail.com>
+ * @date 10/4/2016
  */
 public class StatsFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match

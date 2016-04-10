@@ -24,6 +24,14 @@ import java.util.Calendar;
 
 import pv239.fi.muni.cz.moneymanager.crypto.ALockingClass;
 
+
+/**
+ * Main activity holding all other fragments. Contains navigation drawer.
+ *
+ * @author Tobias Kamenicky <tobias.kamenicky@gmail.com>
+ * @date 10/4/2016
+ */
+
 public class MainActivity extends ALockingClass
         implements NavigationView.OnNavigationItemSelectedListener, RecordsFragment.OnRecordsInteractionListener, CategoriesFragment.OnCategoriesInteractionListener,StatsFragment.OnStatsInteractionListener, DatePickerFragment.OnDateInteractionListener {
 
@@ -38,17 +46,6 @@ public class MainActivity extends ALockingClass
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
-
-
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -197,21 +194,16 @@ public class MainActivity extends ALockingClass
 
     @Override
     public void onCategoriesInteraction(Uri uri) {
-        //JST TESTING
+        //TODO: edit this method
     }
 
     @Override
     public void onStatsInteraction(Uri uri) {
-        //JUST TESTING
+        //TODO: edit this method
     }
 
     @Override
     public void onDateInteraction(DatePicker datePicker) {
-
-
-        //Button button = (Button) getActivity().findViewById(R.id.addRecord_date);
-
-
         AddRecordDialog fr = (AddRecordDialog) getSupportFragmentManager().findFragmentByTag("add_record");
         if (fr == null) return;
         fr.setDateButtonTag(datePicker);

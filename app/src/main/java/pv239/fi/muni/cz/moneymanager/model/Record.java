@@ -13,6 +13,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
+/**
+ * Category model
+ *
+ * @author Tobias Kamenicky <tobias.kamenicky@gmail.com>
+ * @date 10/4/2016
+ */
+
 public class Record {
     public long id;
     public BigDecimal value;

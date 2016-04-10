@@ -8,6 +8,12 @@ import android.support.v7.app.AppCompatActivity;
 
 import pv239.fi.muni.cz.moneymanager.R;
 
+/**
+ * Parent locking activity ensuring authorization
+ *
+ * @author Tobias Kamenicky <tobias.kamenicky@gmail.com>
+ * @date 10/4/2016
+ */
 public abstract class ALockingClass extends AppCompatActivity {
 
   public static final String PREFS = "MoneyManagerPreferences";

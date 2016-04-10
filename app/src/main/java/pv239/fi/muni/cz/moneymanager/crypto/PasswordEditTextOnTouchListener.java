@@ -9,6 +9,12 @@ import android.widget.EditText;
 
 import pv239.fi.muni.cz.moneymanager.R;
 
+/**
+ * Helper class for showing pin in readable format
+ *
+ * @author Tobias Kamenicky <tobias.kamenicky@gmail.com>
+ * @date 10/4/2016
+ */
 public class PasswordEditTextOnTouchListener implements View.OnTouchListener {
 
     private Context context;

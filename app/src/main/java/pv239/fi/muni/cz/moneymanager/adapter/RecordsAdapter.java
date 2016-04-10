@@ -22,7 +22,10 @@ import pv239.fi.muni.cz.moneymanager.R;
 import pv239.fi.muni.cz.moneymanager.model.Record;
 
 /**
- * Created by Tobias on 4/7/2016.
+ * Adapter for @Record model
+ *
+ * @author Tobias Kamenicky <tobias.kamenicky@gmail.com>
+ * @date 7/4/2016
  */
 public class RecordsAdapter extends BaseAdapter {
     private List<Record> records;

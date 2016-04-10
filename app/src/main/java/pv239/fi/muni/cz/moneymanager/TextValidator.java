@@ -4,6 +4,13 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.TextView;
 
+/**
+ * Simple reusable text validator
+ *
+ * @author Tobias Kamenicky <tobias.kamenicky@gmail.com>
+ * @date 10/4/2016
+ */
+
 public abstract class TextValidator implements TextWatcher {
     private final TextView textView;
 

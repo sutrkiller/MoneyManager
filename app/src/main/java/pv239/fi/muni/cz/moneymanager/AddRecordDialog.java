@@ -33,12 +33,13 @@ import pv239.fi.muni.cz.moneymanager.adapter.NothingSelectedSpinnerAdapter;
 import pv239.fi.muni.cz.moneymanager.model.Category;
 
 /**
- * Created by Tobias on 4/10/2016.
+ * Dialog for adding new record
+ *
+ * @author Tobias Kamenicky <tobias.kamenicky@gmail.com>
+ * @date 10/4/2016
  */
 public class AddRecordDialog extends DialogFragment implements DatePickerFragment.OnDateInteractionListener {
-    View v;
-
-
+    private View v;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -59,8 +60,6 @@ public class AddRecordDialog extends DialogFragment implements DatePickerFragmen
                     }
                 });
 
-        //Bundle arguments = getArguments();
-
         /* All currencies list */
         SortedSet<String> toret = new TreeSet<>();
         Locale[] locs = Locale.getAvailableLocales();
@@ -75,13 +74,12 @@ public class AddRecordDialog extends DialogFragment implements DatePickerFragmen
 
         Spinner spinner = (Spinner) v.findViewById(R.id.addRecord_currencies);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),R.layout.support_simple_spinner_dropdown_item,arr);
-        //ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getActivity(),R.array.currencies,R.layout.support_simple_spinner_dropdown_item);
         adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
         spinner.setSelection(eurPos);
 
         /* Categories spinner */
-        //get categories here
+        //TODO: get categories here
         List<Category> cats = Category.getTestingCategories();
         SortedSet<String> sortedCats = new TreeSet<>();
         for(Category cat : cats) {
@@ -102,8 +100,6 @@ public class AddRecordDialog extends DialogFragment implements DatePickerFragmen
             @Override
             public void onClick(View v) {
                 DialogFragment newFragment = new DatePickerFragment();
-               //TODO: set arguments with date from button
-                //the button can hold tag with current date
                 Bundle bundle = new Bundle();
                 DatePicker date = (DatePicker) dateButton.getTag();
                 if (date!=null) {
@@ -113,12 +109,10 @@ public class AddRecordDialog extends DialogFragment implements DatePickerFragmen
                 }
                 newFragment.setArguments(bundle);
                 newFragment.show(getActivity().getSupportFragmentManager(),"datePicker");
-
             }
         });
 
         return builder.create();
-
     }
 
     public void setDateButtonTag(DatePicker date) {
@@ -141,7 +135,6 @@ public class AddRecordDialog extends DialogFragment implements DatePickerFragmen
     @Override
     public void onDateInteraction(DatePicker datePicker) {
         if (v==null) return;
-        //Button button = (Button) getActivity().findViewById(R.id.addRecord_date);
         int day = datePicker.getDayOfMonth();
         int month = datePicker.getMonth();
         int year = datePicker.getYear();
