@@ -1,5 +1,6 @@
 package pv239.fi.muni.cz.moneymanager;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -10,19 +11,15 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
 import android.widget.DatePicker;
-import android.widget.Toast;
+import android.widget.ListView;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-
+import pv239.fi.muni.cz.moneymanager.adapter.RecordsDbAdapter;
 import pv239.fi.muni.cz.moneymanager.crypto.ALockingClass;
+import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
+import pv239.fi.muni.cz.moneymanager.helper.DatePickerFragment;
 
 
 /**
@@ -33,7 +30,7 @@ import pv239.fi.muni.cz.moneymanager.crypto.ALockingClass;
  */
 
 public class MainActivity extends ALockingClass
-        implements NavigationView.OnNavigationItemSelectedListener, RecordsFragment.OnRecordsInteractionListener, CategoriesFragment.OnCategoriesInteractionListener,StatsFragment.OnStatsInteractionListener, DatePickerFragment.OnDateInteractionListener {
+        implements NavigationView.OnNavigationItemSelectedListener, RecordsFragment.OnRecordsInteractionListener, CategoriesFragment.OnCategoriesInteractionListener,StatsFragment.OnStatsInteractionListener, DatePickerFragment.OnDateInteractionListener, AddRecordDialog.DialogFinishedListener {
 
     private int currentPosition=-1;
 
@@ -43,6 +40,7 @@ public class MainActivity extends ALockingClass
         setContentView(R.layout.activity_main);
 
         //deletePin();
+        this.deleteDatabase("money_manager");
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -187,9 +185,10 @@ public class MainActivity extends ALockingClass
 
     @Override
     public void onRecordsInteraction(Uri uri) {
-        Toast.makeText(this,"Floating button clicked",Toast.LENGTH_LONG).show();
         AddRecordDialog dialog = new AddRecordDialog();
         dialog.show(getSupportFragmentManager(),"add_record");
+
+
     }
 
     @Override
@@ -208,9 +207,14 @@ public class MainActivity extends ALockingClass
         if (fr == null) return;
         fr.setDateButtonTag(datePicker);
 
-
-
-
     }
 
+    @Override
+    public void onFinishedDialog(boolean result) {
+        if (result) {
+            ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.records_list_view);
+            MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
+            ((RecordsDbAdapter)view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
+        }
+    }
 }

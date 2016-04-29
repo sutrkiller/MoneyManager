@@ -1,9 +1,7 @@
 package pv239.fi.muni.cz.moneymanager;
 
 import android.app.AlertDialog;
-import android.app.DatePickerDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.support.v4.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -13,24 +11,26 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Currency;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import pv239.fi.muni.cz.moneymanager.adapter.NothingSelectedSpinnerAdapter;
+import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
+import pv239.fi.muni.cz.moneymanager.helper.DatePickerFragment;
 import pv239.fi.muni.cz.moneymanager.model.Category;
+import pv239.fi.muni.cz.moneymanager.model.Record;
 
 /**
  * Dialog for adding new record
@@ -38,7 +38,7 @@ import pv239.fi.muni.cz.moneymanager.model.Category;
  * @author Tobias Kamenicky <tobias.kamenicky@gmail.com>
  * @date 10/4/2016
  */
-public class AddRecordDialog extends DialogFragment implements DatePickerFragment.OnDateInteractionListener {
+public class AddRecordDialog extends DialogFragment  {
     private View v;
 
     @Override
@@ -50,13 +50,42 @@ public class AddRecordDialog extends DialogFragment implements DatePickerFragmen
                 .setPositiveButton("Create", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        //TODO: add item to database
+
+                        String item = String.valueOf(((TextView) v.findViewById(R.id.addRecord_item)).getText());
+                        String amount = String.valueOf(((TextView) v.findViewById(R.id.addRecord_price)).getText());
+                        Currency currency = Currency.getInstance(String.valueOf(((Spinner) v.findViewById(R.id.addRecord_currencies)).getSelectedItem()));
+                        String category = String.valueOf(((Spinner) v.findViewById(R.id.addRecord_categories)).getSelectedItem());
+                        DatePicker date = ((DatePicker) v.findViewById(R.id.addRecord_date).getTag());
+                        Calendar cal = Calendar.getInstance();
+                        cal.set(date.getYear(),date.getMonth(),date.getDayOfMonth());
+                        Date d = cal.getTime();
+                        SimpleDateFormat iso8601Format = new SimpleDateFormat(
+                                "yyyy-MM-dd HH:mm:ss");
+
+                        String finalDate = iso8601Format.format(d);
+
+
+
+
+                        String[] parts= category.split(" ");
+                        String catName = parts[0];
+                        String catDet = "";
+                        if (parts.length == 2) {
+                            catDet = parts[1].substring(1,parts[1].length()-1);
+                        }
+                        Record rec = new Record(0, new BigDecimal(amount),currency,item,finalDate,new Category(0,catName,catDet));
+                        MMDatabaseHelper helper = MMDatabaseHelper.getInstance(getActivity());
+                        long id = helper.addRecord(rec);
+
+                        DialogFinishedListener ac = (DialogFinishedListener) getActivity();
+                        ac.onFinishedDialog(true);
+                        dialog.dismiss();
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        AddRecordDialog.this.getDialog().cancel();
+                        dialog.cancel();
                     }
                 });
 
@@ -79,8 +108,12 @@ public class AddRecordDialog extends DialogFragment implements DatePickerFragmen
         spinner.setSelection(eurPos);
 
         /* Categories spinner */
-        //TODO: get categories here
-        List<Category> cats = Category.getTestingCategories();
+        //
+
+        MMDatabaseHelper helper = MMDatabaseHelper.getInstance(getActivity());
+        List<Category> cats = helper.getAllCategories();
+
+        //List<Category> cats = Category.getTestingCategories();
         SortedSet<String> sortedCats = new TreeSet<>();
         for(Category cat : cats) {
             try {
@@ -108,7 +141,8 @@ public class AddRecordDialog extends DialogFragment implements DatePickerFragmen
                     bundle.putInt("day", date.getDayOfMonth());
                 }
                 newFragment.setArguments(bundle);
-                newFragment.show(getActivity().getSupportFragmentManager(),"datePicker");
+
+                newFragment.show(getChildFragmentManager(),"datePicker");
             }
         });
 
@@ -132,22 +166,8 @@ public class AddRecordDialog extends DialogFragment implements DatePickerFragmen
         button.setText(dateF);
     }
 
-    @Override
-    public void onDateInteraction(DatePicker datePicker) {
-        if (v==null) return;
-        int day = datePicker.getDayOfMonth();
-        int month = datePicker.getMonth();
-        int year = datePicker.getYear();
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(year,month,day);
-        DateFormat dateFormat = DateFormat.getInstance();
-        dateFormat.setCalendar(calendar);
-
-        DateFormat format = new SimpleDateFormat("EEE, MMM d,yyyy");
-        String date = format.format(calendar.getTime());
-
-        ((Button)v.findViewById(R.id.addRecord_date)).setText(date);
-
-
+    public interface DialogFinishedListener {
+        void onFinishedDialog(boolean result);
     }
+
 }

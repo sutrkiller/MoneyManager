@@ -1,11 +1,7 @@
 package pv239.fi.muni.cz.moneymanager.crypto;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.text.InputType;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -13,7 +9,7 @@ import android.widget.TextView;
 import javax.crypto.SecretKey;
 
 import pv239.fi.muni.cz.moneymanager.R;
-import pv239.fi.muni.cz.moneymanager.TextValidator;
+import pv239.fi.muni.cz.moneymanager.helper.TextValidator;
 
 /**
  * Activity for pin creation on first run

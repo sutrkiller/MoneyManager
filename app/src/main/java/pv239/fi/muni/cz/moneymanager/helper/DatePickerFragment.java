@@ -1,4 +1,4 @@
-package pv239.fi.muni.cz.moneymanager;
+package pv239.fi.muni.cz.moneymanager.helper;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;

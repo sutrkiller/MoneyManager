@@ -1,4 +1,4 @@
-package pv239.fi.muni.cz.moneymanager;
+package pv239.fi.muni.cz.moneymanager.helper;
 
 import android.text.Editable;
 import android.text.TextWatcher;

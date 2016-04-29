@@ -1,9 +1,15 @@
 package pv239.fi.muni.cz.moneymanager;
 
 import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabaseLockedException;
+import android.database.sqlite.SQLiteException;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +19,9 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import pv239.fi.muni.cz.moneymanager.adapter.RecordsAdapter;
+import pv239.fi.muni.cz.moneymanager.adapter.RecordsDbAdapter;
+import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
+import pv239.fi.muni.cz.moneymanager.model.Category;
 import pv239.fi.muni.cz.moneymanager.model.Record;
 
 
@@ -31,6 +40,9 @@ public class RecordsFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
+    //private SQLiteDatabase readableDb;
+    //private Cursor allRecords;
 
     private OnRecordsInteractionListener mListener;
 
@@ -63,7 +75,25 @@ public class RecordsFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-
+/*
+        try {
+            SQLiteOpenHelper sloh = MMDatabaseHelper.getInstance(getActivity());
+            readableDb = sloh.getReadableDatabase();
+            String cols =MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ID+", "
+                    +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_VAL+", "
+                    +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_CURR+", "
+                    +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_DATE+", "
+                    +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ITEM+", "
+                    +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_NAME+", "
+                    +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_DET;
+            allRecords = readableDb.rawQuery("SELECT "+cols+
+                    " FROM "+MMDatabaseHelper.TABLE_RECORD+", "+MMDatabaseHelper.TABLE_CATEGORY+
+                    " WHERE "+MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_CAT_ID_FK+"="+MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_ID+
+                    " ORDER BY "+MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_DATE+" DESC",null);
+        } catch (SQLiteException ex) {
+            throw ex;
+        }
+*/
 
     }
 
@@ -79,13 +109,18 @@ public class RecordsFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         ListView listView = (ListView)getView().findViewById(R.id.records_list_view);
-        listView.setAdapter(new RecordsAdapter(this.getActivity(), Record.getTestingData()));
+        //listView.setAdapter(new RecordsAdapter(this.getActivity(), Record.getTestingData()));
+        MMDatabaseHelper sloh = MMDatabaseHelper.getInstance(getActivity());
+        Cursor allRecords = sloh.getAllRecordsWithCategories();
+        RecordsDbAdapter adapter = new RecordsDbAdapter(getActivity(),allRecords,0);
+        listView.setAdapter(adapter);
+
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Record record = (Record) parent.getItemAtPosition(position);
-                String value = record.dateTime + " " + record.value + record.currency;
-                Toast.makeText(getActivity(), value + " clicked!", Toast.LENGTH_SHORT).show();
+//                Record record = (Record) parent.getItemAtPosition(position);
+//                String value = record.dateTime + " " + record.value + record.currency;
+//                Toast.makeText(getActivity(), value + " clicked!", Toast.LENGTH_SHORT).show();
 
             }
         });
@@ -121,6 +156,9 @@ public class RecordsFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        //allRecords.close();
+        //readableDb.close();
+
     }
 
     /**
