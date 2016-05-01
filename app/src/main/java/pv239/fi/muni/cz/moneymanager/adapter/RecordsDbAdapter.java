@@ -30,16 +30,20 @@ import pv239.fi.muni.cz.moneymanager.model.Record;
 public class RecordsDbAdapter extends CursorAdapter {
 
     private LayoutInflater inflater;
+    private View.OnTouchListener mListener;
 
 
-    public RecordsDbAdapter(Context context, Cursor c, int flags) {
+    public RecordsDbAdapter(Context context, Cursor c, int flags, View.OnTouchListener mListenr) {
         super(context, c, flags);
+        mListener = mListenr;
         inflater = (LayoutInflater.from(context));
     }
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        return inflater.inflate(R.layout.list_item_record,parent,false);
+        View rView = inflater.inflate(R.layout.list_item_record,parent,false);
+        rView.setOnTouchListener(mListener);
+        return rView;
     }
 
     @Override

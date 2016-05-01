@@ -40,7 +40,7 @@ public class MainActivity extends ALockingClass
         setContentView(R.layout.activity_main);
 
         //deletePin();
-        this.deleteDatabase("money_manager");
+        //this.deleteDatabase("money_manager");
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

@@ -150,6 +150,25 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
         return insertedId;
     }
 
+    public long deleteRecord(long id) {
+        SQLiteDatabase db = getReadableDatabase();
+        long ret = 0;
+        db.beginTransaction();
+        try {
+           // String deleteRec = String.format("DELETE FROM %s WHERE %s = ?",TABLE_RECORD,KEY_REC_ID);
+            ret = db.delete(TABLE_RECORD,KEY_CAT_ID +" = ?",new String[]{String.valueOf(id)});
+            if (ret>0) {
+                db.setTransactionSuccessful();
+            }
+        } catch (Exception e) {
+
+        } finally {
+            db.endTransaction();
+        }
+
+        return ret;
+    }
+
     public Category getCategoryById(long id) {
         SQLiteDatabase db = getReadableDatabase();
         Category category = null;
