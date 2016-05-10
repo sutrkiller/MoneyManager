@@ -12,7 +12,6 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.math.BigDecimal;
 import java.text.DateFormat;
@@ -46,11 +45,11 @@ public class AddRecordDialog extends DialogFragment  {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
         v = inflater.inflate(R.layout.dialog_add_record,null);
-        builder.setView(v)
+        final AlertDialog dialog = builder.setView(v)
                 .setPositiveButton("Create", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-
+/*
                         String item = String.valueOf(((TextView) v.findViewById(R.id.addRecord_item)).getText());
                         String amount = String.valueOf(((TextView) v.findViewById(R.id.addRecord_price)).getText());
                         Currency currency = Currency.getInstance(String.valueOf(((Spinner) v.findViewById(R.id.addRecord_currencies)).getSelectedItem()));
@@ -64,22 +63,20 @@ public class AddRecordDialog extends DialogFragment  {
 
                         String finalDate = iso8601Format.format(d);
 
-
-
-
                         String[] parts= category.split(" ");
                         String catName = parts[0];
                         String catDet = "";
                         if (parts.length == 2) {
                             catDet = parts[1].substring(1,parts[1].length()-1);
                         }
+//TODO: validate
                         Record rec = new Record(0, new BigDecimal(amount),currency,item,finalDate,new Category(0,catName,catDet));
                         MMDatabaseHelper helper = MMDatabaseHelper.getInstance(getActivity());
                         long id = helper.addRecord(rec);
 
-                        DialogFinishedListener ac = (DialogFinishedListener) getActivity();
-                        ac.onFinishedDialog(true);
-                        dialog.dismiss();
+                        AddRecordDialogFinishedListener ac = (AddRecordDialogFinishedListener) getActivity();
+                        ac.onAddRecordFinishedDialog(true);
+                        dialog.dismiss();*/
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -87,7 +84,59 @@ public class AddRecordDialog extends DialogFragment  {
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
                     }
+                }).create();
+
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface d) {
+                Button button = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        TextView vitem = (TextView) v.findViewById(R.id.addRecord_item);
+                        TextView vamount = (TextView) v.findViewById(R.id.addRecord_price);
+                        Spinner scategory = (Spinner) v.findViewById(R.id.addRecord_categories);
+
+                        if (vitem.getText().length()==0) {
+                            vitem.setError("Item name cannot be empty");
+                        } else if (vamount.getText().length()==0) {
+                            vamount.setError("Amount cannot be empty");
+                        } else if (scategory.getSelectedItemPosition()==0) {
+
+                        } else {
+
+                            String item = String.valueOf((vitem).getText());
+                            String amount = String.valueOf((vamount).getText());
+                            Currency currency = Currency.getInstance(String.valueOf(((Spinner) v.findViewById(R.id.addRecord_currencies)).getSelectedItem()));
+                            String category = String.valueOf((scategory).getSelectedItem());
+                            DatePicker date = ((DatePicker) v.findViewById(R.id.addRecord_date).getTag());
+                            Calendar cal = Calendar.getInstance();
+                            if (date!=null) {
+                                cal.set(date.getYear(), date.getMonth(), date.getDayOfMonth());
+                            }
+                            Date d = cal.getTime();
+                            SimpleDateFormat iso8601Format = new SimpleDateFormat(
+                                    "yyyy-MM-dd HH:mm:ss");
+                            String finalDate = iso8601Format.format(d);
+
+                            String[] parts = category.split(" ");
+                            String catName = parts[0];
+                            String catDet = "";
+                            if (parts.length == 2) {
+                                catDet = parts[1].substring(1, parts[1].length() - 1);
+                            }
+                            Record rec = new Record(0, new BigDecimal(amount), currency, item, finalDate, new Category(0, catName, catDet));
+                            MMDatabaseHelper helper = MMDatabaseHelper.getInstance(getActivity());
+                            long id = helper.addRecord(rec);
+
+                            AddRecordDialogFinishedListener ac = (AddRecordDialogFinishedListener) getActivity();
+                            ac.onAddRecordFinishedDialog(true);
+                            dialog.dismiss();
+                        }
+                    }
                 });
+            }
+        });
 
         /* All currencies list */
         SortedSet<String> toret = new TreeSet<>();
@@ -111,7 +160,7 @@ public class AddRecordDialog extends DialogFragment  {
         //
 
         MMDatabaseHelper helper = MMDatabaseHelper.getInstance(getActivity());
-        List<Category> cats = helper.getAllCategories();
+        List<Category> cats = helper.getAllCategoriesAsList();
 
         //List<Category> cats = Category.getTestingCategories();
         SortedSet<String> sortedCats = new TreeSet<>();
@@ -146,7 +195,7 @@ public class AddRecordDialog extends DialogFragment  {
             }
         });
 
-        return builder.create();
+        return dialog;
     }
 
     public void setDateButtonTag(DatePicker date) {
@@ -166,8 +215,8 @@ public class AddRecordDialog extends DialogFragment  {
         button.setText(dateF);
     }
 
-    public interface DialogFinishedListener {
-        void onFinishedDialog(boolean result);
+    public interface AddRecordDialogFinishedListener {
+        void onAddRecordFinishedDialog(boolean result);
     }
 
 }

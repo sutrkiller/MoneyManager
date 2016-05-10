@@ -1,6 +1,5 @@
 package pv239.fi.muni.cz.moneymanager;
 
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -14,8 +13,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.DatePicker;
+import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
+import android.widget.WrapperListAdapter;
 
+import pv239.fi.muni.cz.moneymanager.adapter.CategoriesDbAdapter;
 import pv239.fi.muni.cz.moneymanager.adapter.RecordsDbAdapter;
 import pv239.fi.muni.cz.moneymanager.crypto.ALockingClass;
 import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
@@ -30,7 +32,7 @@ import pv239.fi.muni.cz.moneymanager.helper.DatePickerFragment;
  */
 
 public class MainActivity extends ALockingClass
-        implements NavigationView.OnNavigationItemSelectedListener, RecordsFragment.OnRecordsInteractionListener, CategoriesFragment.OnCategoriesInteractionListener,StatsFragment.OnStatsInteractionListener, DatePickerFragment.OnDateInteractionListener, AddRecordDialog.DialogFinishedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, RecordsFragment.OnRecordsInteractionListener, CategoriesFragment.OnCategoriesInteractionListener,StatsFragment.OnStatsInteractionListener, DatePickerFragment.OnDateInteractionListener, AddRecordDialog.AddRecordDialogFinishedListener, AddCategoryDialog.AddCategoryDialogFinishedListener {
 
     private int currentPosition=-1;
 
@@ -184,7 +186,7 @@ public class MainActivity extends ALockingClass
     }
 
     @Override
-    public void onRecordsInteraction(Uri uri) {
+    public void onRecordsAddRecord() {
         AddRecordDialog dialog = new AddRecordDialog();
         dialog.show(getSupportFragmentManager(),"add_record");
 
@@ -192,8 +194,9 @@ public class MainActivity extends ALockingClass
     }
 
     @Override
-    public void onCategoriesInteraction(Uri uri) {
-        //TODO: edit this method
+    public void onCategoriesAddCategory() {
+        AddCategoryDialog dialog = new AddCategoryDialog();
+        dialog.show(getSupportFragmentManager(),"add_category");
     }
 
     @Override
@@ -210,11 +213,23 @@ public class MainActivity extends ALockingClass
     }
 
     @Override
-    public void onFinishedDialog(boolean result) {
+    public void onAddRecordFinishedDialog(boolean result) {
         if (result) {
             ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.records_list_view);
             MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
-            ((RecordsDbAdapter)view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
+            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
+            ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories());
         }
     }
+
+    public void onAddCategoryFinishedDialog(boolean result) {
+        if (result) {
+            //TODO:edit this method
+            ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.categories_list_view);
+            MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
+            //((CategoriesDbAdapter)view.getAdapter()).swapCursor(help.getAllCategories());
+            ((CategoriesDbAdapter)((HeaderViewListAdapter)view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllCategories());
+        }
+    }
+
 }

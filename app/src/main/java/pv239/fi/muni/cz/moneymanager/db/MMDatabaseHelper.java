@@ -156,7 +156,7 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
         db.beginTransaction();
         try {
            // String deleteRec = String.format("DELETE FROM %s WHERE %s = ?",TABLE_RECORD,KEY_REC_ID);
-            ret = db.delete(TABLE_RECORD,KEY_CAT_ID +" = ?",new String[]{String.valueOf(id)});
+            ret = db.delete(TABLE_RECORD,KEY_REC_ID +" = ?",new String[]{String.valueOf(id)});
             if (ret>0) {
                 db.setTransactionSuccessful();
             }
@@ -232,7 +232,39 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
         return categoryId;
     }
 
-    public List<Category> getAllCategories() {
+    public long deleteCategory(long id) {
+        SQLiteDatabase db = getReadableDatabase();
+        long ret = 0;
+        db.beginTransaction();
+        try {
+            ret = db.delete(TABLE_CATEGORY,KEY_CAT_ID+" = ?",new String[]{String.valueOf(id)});
+            if (ret>0) {
+                db.setTransactionSuccessful();
+            }
+        } catch (Exception e) {
+        } finally {
+            db.endTransaction();
+        }
+        return ret;
+    }
+
+    public Cursor getAllCategories() {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            String cols =MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_ID+", "
+                    +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_NAME+", "
+                    +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_DET;
+            cursor = db.rawQuery("SELECT "+cols+
+                    " FROM "+MMDatabaseHelper.TABLE_CATEGORY+
+                    " ORDER BY "+MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_NAME,null);
+        } catch (SQLiteException ex) {
+
+        } finally {
+        }
+        return cursor;
+    }
+    public List<Category> getAllCategoriesAsList() {
         List<Category> categories = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
 

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    >
+
+    <TextView
+        android:id="@+id/addCategory_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textSize="24sp"
+        android:text="Create category"/>
+
+    <com.rengwuxian.materialedittext.MaterialEditText
+        android:id="@+id/addCategory_name"
+        style="@style/materialEditText.text"
+        android:layout_below="@+id/addCategory_title"
+        app:met_floatingLabelText="Category name"
+        android:hint="Category name"
+        app:met_primaryColor="@color/colorAccent"
+        app:met_floatingLabel="highlight"
+        />
+
+
+    <com.rengwuxian.materialedittext.MaterialEditText
+        android:id="@+id/addCategory_details"
+        android:layout_width="match_parent"
+        style="@style/materialEditText"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="80dp"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/addCategory_name"
+        app:met_floatingLabelText="Details"
+        android:hint="Details"
+        app:met_primaryColor="@color/colorAccent"
+        app:met_floatingLabel="highlight"/>
+
+
+
+    <!--<DatePicker-->
+        <!--android:id="@+id/addRecord_date"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_below="@id/addRecord_categories"-->
+        <!--android:layout_marginTop="16dp"-->
+        <!--android:calendarViewShown="false"-->
+        <!--android:datePickerMode="spinner"-->
+        <!--/>-->
+
+</RelativeLayout>

@@ -10,7 +10,7 @@
         class="pv239.fi.muni.cz.moneymanager.helper.BackgroundContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/listViewBackground">
+        android:id="@+id/listViewBackgroundRecords">
 
         <ListView
             android:id="@+id/records_list_view"

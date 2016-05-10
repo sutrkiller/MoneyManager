@@ -1,16 +1,13 @@
 package pv239.fi.muni.cz.moneymanager;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabaseLockedException;
-import android.database.sqlite.SQLiteException;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -19,17 +16,18 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 import java.util.HashMap;
 
-import pv239.fi.muni.cz.moneymanager.adapter.RecordsAdapter;
 import pv239.fi.muni.cz.moneymanager.adapter.RecordsDbAdapter;
 import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
 import pv239.fi.muni.cz.moneymanager.helper.BackgroundContainer;
 import pv239.fi.muni.cz.moneymanager.helper.SwipeDetector;
-import pv239.fi.muni.cz.moneymanager.model.Category;
 import pv239.fi.muni.cz.moneymanager.model.Record;
 
 
@@ -42,12 +40,12 @@ import pv239.fi.muni.cz.moneymanager.model.Record;
 public class RecordsFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    //private static final String ARG_PARAM1 = "param1";
+    //private static final String ARG_PARAM2 = "param2";
 
     // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+  //  private String mParam1;
+   // private String mParam2;
 
 
     BackgroundContainer mBackgroundContainer;
@@ -80,8 +78,8 @@ public class RecordsFragment extends Fragment {
     public static RecordsFragment newInstance(String param1, String param2) {
         RecordsFragment fragment = new RecordsFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        //args.putString(ARG_PARAM1, param1);
+        //args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -90,8 +88,8 @@ public class RecordsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            //mParam1 = getArguments().getString(ARG_PARAM1);
+            //mParam2 = getArguments().getString(ARG_PARAM2);
         }
 /*
         try {
@@ -126,13 +124,23 @@ public class RecordsFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mBackgroundContainer = (BackgroundContainer) getView().findViewById(R.id.listViewBackground);
+        mBackgroundContainer = (BackgroundContainer) getView().findViewById(R.id.listViewBackgroundRecords);
         listView = (ListView)getView().findViewById(R.id.records_list_view);
         //listView.setAdapter(new RecordsAdapter(this.getActivity(), Record.getTestingData()));
         MMDatabaseHelper sloh = MMDatabaseHelper.getInstance(getActivity());
         Cursor allRecords = sloh.getAllRecordsWithCategories();
         adapter = new RecordsDbAdapter(getActivity(),allRecords,0, mTouchListener);
+
+//        TextView footer = new TextView(getActivity());
+//        int height = (int) (5*72 * getResources().getDisplayMetrics().density);
+//        footer.setHeight(height);
+//        listView.addFooterView(new TextView(getActivity()));
+
+        ImageView view = new ImageView(getActivity());
+        view.setImageDrawable(getResources().getDrawable(R.drawable.overscoller_drawable));
+        listView.addFooterView(view);
         listView.setAdapter(adapter);
+
 
         final SwipeDetector swipeDetector = new SwipeDetector();
         //listView.setOnTouchListener(mTouchListener);
@@ -157,15 +165,22 @@ public class RecordsFragment extends Fragment {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onButtonPressed(null);
+                onFabButtonPressed();
             }
         });
     }
 
+    public static float convertDpToPixel(float dp, Context context){
+        Resources resources = context.getResources();
+        DisplayMetrics metrics = resources.getDisplayMetrics();
+        float px = dp * ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+        return px;
+    }
+
     // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
+    public void onFabButtonPressed() {
         if (mListener != null) {
-            mListener.onRecordsInteraction(uri);
+            mListener.onRecordsAddRecord();
         }
     }
 
@@ -189,20 +204,7 @@ public class RecordsFragment extends Fragment {
 
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnRecordsInteractionListener {
-        // TODO: Update argument type and name
-        void onRecordsInteraction(Uri uri);
-    }
+
 
 
 
@@ -246,9 +248,9 @@ public class RecordsFragment extends Fragment {
                     }
                     if (mSwiping) {
                         v.setTranslationX((x - mDownX));
-                        Log.i("x: ", String.valueOf(x));
-                        Log.i("mDownX: ", String.valueOf(mDownX));
-                        Log.i("translationX: ", String.valueOf((int)v.getTranslationX()));
+                    //  Log.i("x: ", String.valueOf(x));
+                    //  Log.i("mDownX: ", String.valueOf(mDownX));
+                    //  Log.i("translationX: ", String.valueOf((int)v.getTranslationX()));
                         mBackgroundContainer.showBackground(v.getTop(), v.getHeight(),  (int)(v.getTranslationX()), v.getWidth(), v.getWidth());
                         mBackgroundContainer.invalidate();
                         v.setAlpha(1 - deltaXAbs / v.getWidth());
@@ -406,4 +408,18 @@ public class RecordsFragment extends Fragment {
         });
     }
 
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p/>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnRecordsInteractionListener {
+        // TODO: Update argument type and name
+        void onRecordsAddRecord();
+    }
 }
