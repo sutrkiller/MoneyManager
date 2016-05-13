@@ -278,6 +278,8 @@ public class CategoriesFragment extends Fragment {
                             adapter.swapCursor(helper.getAllCategories());
                         }
                     }).show();
+        } else {
+            Snackbar.make(getView(),"Category in use, delete the records first, please.",Snackbar.LENGTH_LONG).show();
         }
 
         final ViewTreeObserver observer = listview.getViewTreeObserver();
