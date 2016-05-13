@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
 import pv239.fi.muni.cz.moneymanager.R;
 
@@ -23,6 +24,8 @@ public abstract class ALockingClass extends AppCompatActivity {
     public static final int CheckPin = 1;
     public static final int CreatePin = 2;
     protected static SharedPreferences sharedPreferences;
+
+    public boolean createRunning = false;
 
     public static boolean storePin(Context context, String password) {
         sharedPreferences.edit().putString(KEY,password).putBoolean(LOGGED,true).commit();
@@ -63,21 +66,32 @@ public abstract class ALockingClass extends AppCompatActivity {
                 Intent pass = new Intent(getApplicationContext(), PasscodeActivity.class);
                 startActivityForResult(pass, CheckPin, null);
             } else {
-                Intent createPass = new Intent(getApplicationContext(), CreatePasscodeActivity.class);
-                startActivityForResult(createPass, CreatePin, null);
+                if (!createRunning) {
+                    Intent createPass = new Intent(getApplicationContext(), CreatePasscodeActivity.class);
+                    startActivityForResult(createPass, CreatePin, null);
+                    createRunning = true;
+                }
             }
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == CreatePin) {
+            createRunning = false;
+            if (resultCode == RESULT_OK) {
+            } else if (resultCode == RESULT_CANCELED) {
+                this.finish();
+                System.exit(0);
+            }
+        }
     }
 
     private boolean isLogged() {
         return sharedPreferences.getBoolean(LOGGED,false);
     }
 
-    private boolean isPinStored() {
+    public static boolean isPinStored() {
         return sharedPreferences.contains(KEY);
     }
 

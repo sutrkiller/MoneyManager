@@ -24,6 +24,8 @@ public class CreatePasscodeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Create pin");
         }
@@ -61,6 +63,19 @@ public class CreatePasscodeActivity extends AppCompatActivity {
                }
            }
        });
+
+
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (getParent()==null) {
+            setResult(RESULT_CANCELED);
+        } else {
+            getParent().setResult(RESULT_CANCELED);
+        }
+        finish();
     }
 
     public void createPinOnClick(View view) {
@@ -74,6 +89,12 @@ public class CreatePasscodeActivity extends AppCompatActivity {
         SecretKey secretKey = Crypto.deriveKeyPbkdf2(salt, first.getText().toString());
         String key = Crypto.encrypt(getString(R.string.encryptString),secretKey,salt);
         ALockingClass.storePin(this,key);
+
+        if (getParent()==null) {
+            setResult(RESULT_OK);
+        } else {
+            getParent().setResult(RESULT_OK);
+        }
         finish();
 
 

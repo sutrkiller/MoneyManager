@@ -15,6 +15,7 @@
 
 
         <activity android:name=".crypto.CreatePasscodeActivity"
+            android:launchMode="singleInstance"
             />
         <activity
             android:name=".MainActivity"
