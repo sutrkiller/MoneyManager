@@ -7,4 +7,5 @@
     <color name="black">#000000</color>
     <color name="recordNegativeValue">#870101</color>
     <color name="recordPositiveValue">#047800</color>
+    <color name="neutralColor">#4fc3f7</color>
 </resources>

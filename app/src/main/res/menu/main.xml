@@ -6,6 +6,7 @@
         android:orderInCategory="1"
         android:icon="@drawable/ic_filter_list_black_24dp"
         android:title="Filter"
+        android:onClick="onFilterClick"
         app:showAsAction="ifRoom"
         />
 

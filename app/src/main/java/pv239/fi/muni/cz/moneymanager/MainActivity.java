@@ -15,13 +15,15 @@ import android.view.MenuItem;
 import android.widget.DatePicker;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
-import android.widget.WrapperListAdapter;
+
+import java.util.Date;
 
 import pv239.fi.muni.cz.moneymanager.adapter.CategoriesDbAdapter;
 import pv239.fi.muni.cz.moneymanager.adapter.RecordsDbAdapter;
 import pv239.fi.muni.cz.moneymanager.crypto.ALockingClass;
 import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
 import pv239.fi.muni.cz.moneymanager.helper.DatePickerFragment;
+import pv239.fi.muni.cz.moneymanager.model.FilterRecordsArgs;
 
 
 /**
@@ -32,9 +34,10 @@ import pv239.fi.muni.cz.moneymanager.helper.DatePickerFragment;
  */
 
 public class MainActivity extends ALockingClass
-        implements NavigationView.OnNavigationItemSelectedListener, RecordsFragment.OnRecordsInteractionListener, CategoriesFragment.OnCategoriesInteractionListener,StatsFragment.OnStatsInteractionListener, DatePickerFragment.OnDateInteractionListener, AddRecordDialog.AddRecordDialogFinishedListener, AddCategoryDialog.AddCategoryDialogFinishedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, RecordsFragment.OnRecordsInteractionListener, CategoriesFragment.OnCategoriesInteractionListener,StatsFragment.OnStatsInteractionListener, DatePickerFragment.OnDateInteractionListener, AddRecordDialog.AddRecordDialogFinishedListener, AddCategoryDialog.AddCategoryDialogFinishedListener, FilterRecordsDialog.FilterRecordsDialogFinishedListener {
 
     private int currentPosition=-1;
+    private boolean hideFilter = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,14 +66,18 @@ public class MainActivity extends ALockingClass
             public void onBackStackChanged() {
                 FragmentManager fragMan = getSupportFragmentManager();
                 Fragment fragment = fragMan.findFragmentByTag("visible_fragment");
+                invalidateOptionsMenu();
                 if (fragment instanceof RecordsFragment){
                     currentPosition = R.id.nav_records;
+                    hideFilter = false;
                 }
                 if (fragment instanceof CategoriesFragment){
                     currentPosition = R.id.nav_categories;
+                    hideFilter = false;
                 }
                 if (fragment instanceof StatsFragment){
                     currentPosition = R.id.nav_stats;
+                    hideFilter=true;
                 }
                 setActionBarTitle(currentPosition);
                 navigationView.setCheckedItem(currentPosition);
@@ -83,6 +90,9 @@ public class MainActivity extends ALockingClass
             position = savedInstanceState.getInt("currentPosition");
         }
         onNavigationItemSelected((MenuItem)findViewById(position));
+
+
+
     }
 
     @Override
@@ -99,6 +109,9 @@ public class MainActivity extends ALockingClass
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+
+            menu.findItem(R.id.action_filter).setVisible(!hideFilter);
+
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -205,10 +218,16 @@ public class MainActivity extends ALockingClass
     }
 
     @Override
-    public void onDateInteraction(DatePicker datePicker) {
-        AddRecordDialog fr = (AddRecordDialog) getSupportFragmentManager().findFragmentByTag("add_record");
-        if (fr == null) return;
-        fr.setDateButtonTag(datePicker);
+    public void onDateInteraction(DatePicker datePicker, int caller) {
+        if (caller == DatePickerFragment.ADD_RECORDS) {
+            AddRecordDialog fr = (AddRecordDialog) getSupportFragmentManager().findFragmentByTag("add_record");
+            if (fr == null) return;
+            fr.setDateButtonTag(datePicker);
+        } else if (caller == DatePickerFragment.ORDER_RECORDS) {
+            FilterRecordsDialog fr = (FilterRecordsDialog) getSupportFragmentManager().findFragmentByTag("filter_records");
+            if (fr==null) return;
+            fr.setDateButtonTag(datePicker);
+        }
 
     }
 
@@ -232,4 +251,77 @@ public class MainActivity extends ALockingClass
         }
     }
 
+
+    FilterRecordsArgs recordsArgs;
+    public void onFilterClick(MenuItem item) {
+                switch (currentPosition) {
+                    case R.id.nav_records: {
+                        FilterRecordsDialog filterDialog = new FilterRecordsDialog();
+                        Bundle bundle;
+                        if (recordsArgs!=null) {
+                            bundle = new Bundle();
+                            bundle.putInt("records_order_by",recordsArgs.getOrderBy());
+                            bundle.putInt("records_direction",recordsArgs.getOrderDir());
+                            if (recordsArgs.getDateFrom()!=null)
+                            bundle.putString("records_date_from",DatePickerFragment.dateToString(recordsArgs.getDateFrom()));
+                            if (recordsArgs.getDateTo()!=null)
+                            bundle.putString("records_date_to",DatePickerFragment.dateToString(recordsArgs.getDateTo()));
+                            filterDialog.setArguments(bundle);
+                        }
+                        filterDialog.show(getSupportFragmentManager(),"filter_records");
+                        break;
+                    }
+                    case R.id.nav_categories: {
+                        break;
+                    }
+                    default: break;
+                }
+    }
+
+
+    @Override
+    public void onFilterRecordsFinishedDialog(boolean result, int orderPos, int directionPos, Date from, Date to) {
+        if (result) {
+            recordsArgs = new FilterRecordsArgs();
+            recordsArgs.setOrderBy(orderPos);
+            recordsArgs.setOrderDir(directionPos);
+            recordsArgs.setDateFrom(from);
+            recordsArgs.setDateTo(to);
+
+            String ordeyBy = null;
+            String ordeyDir = null;
+            String dateFrom = null;
+            String dateTo = null;
+
+            switch (orderPos) {
+                case FilterRecordsDialog.ORDER_AMOUNT: ordeyBy = MMDatabaseHelper.KEY_REC_VAL; break;
+                case FilterRecordsDialog.ORDER_DATE: ordeyDir = MMDatabaseHelper.KEY_REC_DATE; break;
+                case FilterRecordsDialog.ORDER_NAME: ordeyDir = MMDatabaseHelper.KEY_REC_ITEM; break;
+                case FilterRecordsDialog.ORDER_CATEGORY: ordeyDir = MMDatabaseHelper.KEY_CAT_NAME; break;
+            }
+
+            switch (directionPos) {
+                case FilterRecordsDialog.DIRECTION_ASC: ordeyDir = "ASC"; break;
+                case FilterRecordsDialog.DIRECTION_DESC: ordeyDir = "DESC"; break;
+            }
+
+            if (from!= null) {
+                dateFrom = MMDatabaseHelper.convertDateForDb(from);
+            }
+            if (to!= null) {
+                dateTo = MMDatabaseHelper.convertDateForDb(to);
+            }
+
+            ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.records_list_view);
+            MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
+            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
+            ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories(dateFrom,dateTo,ordeyBy,ordeyDir));
+        } else {
+            recordsArgs = null;
+            ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.records_list_view);
+            MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
+            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
+            ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories());
+        }
+    }
 }

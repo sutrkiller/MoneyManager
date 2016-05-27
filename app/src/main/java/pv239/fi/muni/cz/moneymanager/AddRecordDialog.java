@@ -115,9 +115,9 @@ public class AddRecordDialog extends DialogFragment  {
                                 cal.set(date.getYear(), date.getMonth(), date.getDayOfMonth());
                             }
                             Date d = cal.getTime();
-                            SimpleDateFormat iso8601Format = new SimpleDateFormat(
-                                    "yyyy-MM-dd HH:mm:ss");
-                            String finalDate = iso8601Format.format(d);
+//                            SimpleDateFormat iso8601Format = new SimpleDateFormat(
+//                                    "yyyy-MM-dd HH:mm:ss");
+                            String finalDate = MMDatabaseHelper.convertDateForDb(d);
 
                             String[] parts = category.split(" ");
                             String catName = parts[0];
@@ -177,7 +177,7 @@ public class AddRecordDialog extends DialogFragment  {
         categories.setAdapter(new NothingSelectedSpinnerAdapter(adapter1,R.layout.contact_spinner_row_nothing_selected,getActivity()));
 
         final Button dateButton = (Button)v.findViewById(R.id.addRecord_date);
-
+        dateButton.setText(DatePickerFragment.formatDate(Calendar.getInstance()));
         dateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -188,7 +188,9 @@ public class AddRecordDialog extends DialogFragment  {
                     bundle.putInt("year", date.getYear());
                     bundle.putInt("month", date.getMonth());
                     bundle.putInt("day", date.getDayOfMonth());
+
                 }
+                bundle.putInt("caller",DatePickerFragment.ADD_RECORDS);
                 newFragment.setArguments(bundle);
 
                 newFragment.show(getChildFragmentManager(),"datePicker");
@@ -198,9 +200,11 @@ public class AddRecordDialog extends DialogFragment  {
         return dialog;
     }
 
+
     public void setDateButtonTag(DatePicker date) {
         Button button = (Button)v.findViewById(R.id.addRecord_date);
-        button.setTag(date);
+        DatePickerFragment.setDateButtonTag(date,button);
+        /*button.setTag(date);
 
         int day = date.getDayOfMonth();
         int month = date.getMonth();
@@ -212,7 +216,7 @@ public class AddRecordDialog extends DialogFragment  {
 
         DateFormat format = new SimpleDateFormat("EEE, MMM d,yyyy");
         String dateF = format.format(calendar.getTime());
-        button.setText(dateF);
+        button.setText(dateF);*/
     }
 
     public interface AddRecordDialogFinishedListener {

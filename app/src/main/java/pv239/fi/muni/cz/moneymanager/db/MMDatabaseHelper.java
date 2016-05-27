@@ -7,10 +7,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabaseLockedException;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Currency;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -105,7 +109,7 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public Cursor getAllRecordsWithCategories() {
-        SQLiteDatabase db = getReadableDatabase();
+        /*SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = null;
         try {
             String cols =MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ID+", "
@@ -123,8 +127,89 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
 
         } finally {
         }
-        return cursor;
+        return cursor;*/
+        return getAllRecordsWithCategories(null,null,null,null);
     }
+
+    public Cursor getAllRecordsWithCategories(String dateFrom, String dateTo, String orderBy, String orderDir) {
+        String cols = MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ID+", "
+                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_VAL+", "
+                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_CURR+", "
+                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_DATE+", "
+                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ITEM+", "
+                +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_NAME+", "
+                +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_DET;
+
+
+        String dateFromClause = "";
+        if (isValidDateForDb(dateFrom))   {
+            dateFromClause = TABLE_RECORD+"."+KEY_REC_DATE+" >= Datetime('"+dateFrom+"')";
+        }
+        String dateToClause = "";
+        if (isValidDateForDb(dateTo)) {
+            dateToClause = TABLE_RECORD+"."+KEY_REC_DATE+" <= Datetime('"+dateTo+"')";
+        }
+        String dateClause = dateFromClause.isEmpty() ? dateToClause : dateFromClause+ (dateToClause.isEmpty() ? "" : " AND "+dateToClause);
+        String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_CAT_ID_FK+"="+TABLE_CATEGORY+"."+KEY_CAT_ID+ (dateClause.isEmpty() ? "" : " AND "+dateClause);
+        String orderByClause = " ORDER BY "+isValidOrderForDb(orderBy) + isValidDirectionForDb(orderDir);
+        String query = "SELECT "+cols+
+                        " FROM "+TABLE_RECORD+", "+TABLE_CATEGORY +
+                        whereClause + orderByClause;
+        Log.i("SQL",query);
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery(query,null);
+        } catch (SQLiteException e) {
+
+        } finally {
+
+        } return cursor;
+
+    }
+
+    public static boolean isValidDateForDb(String date) {
+        if (date==null) return false;
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        dateFormat.setLenient(false);
+        try {
+            dateFormat.parse(date.trim());
+        } catch (ParseException pe) {
+            return false;
+        }
+        return true;
+    }
+
+    public static String isValidOrderForDb(String orderBy) {
+        if (orderBy == null) {
+            return TABLE_RECORD+"."+KEY_REC_DATE;
+        }
+        switch (orderBy) {
+            case KEY_REC_VAL:
+            case KEY_REC_DATE:
+            case KEY_REC_ITEM: return TABLE_RECORD+"."+orderBy;
+            case KEY_CAT_NAME: return TABLE_CATEGORY+"."+KEY_CAT_NAME;
+            default: return TABLE_RECORD+"."+KEY_REC_DATE;
+        }
+    }
+
+    public static String isValidDirectionForDb(String direction) {
+        if (direction ==null) {
+            return " DESC";
+        }
+        switch (direction) {
+            case "ASC":
+            case "DESC": return " "+direction;
+            default: return " DESC";
+        }
+    }
+
+    public static String convertDateForDb(Date date) {
+        SimpleDateFormat iso8601Format = new SimpleDateFormat(
+                "yyyy-MM-dd HH:mm:ss");
+        return iso8601Format.format(date);
+    }
+
 
     public long addRecord(Record record) {
         SQLiteDatabase db = getWritableDatabase();
