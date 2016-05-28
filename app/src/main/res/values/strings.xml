@@ -18,9 +18,14 @@
     <!--</array>-->
 
     <string-array name="records_sort_by">
-        <item>Amount</item>
-        <item>Date</item>
+    <item>Amount</item>
+    <item>Date</item>
+    <item>Name</item>
+    <item>Category</item>
+</string-array>
+
+    <string-array name="categories_sort_by">
         <item>Name</item>
-        <item>Category</item>
+        <item>Details</item>
     </string-array>
 </resources>

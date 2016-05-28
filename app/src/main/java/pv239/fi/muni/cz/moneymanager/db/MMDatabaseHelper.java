@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabaseLockedException;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+import android.widget.CursorAdapter;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -109,25 +110,6 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public Cursor getAllRecordsWithCategories() {
-        /*SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = null;
-        try {
-            String cols =MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ID+", "
-                    +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_VAL+", "
-                    +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_CURR+", "
-                    +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_DATE+", "
-                    +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ITEM+", "
-                    +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_NAME+", "
-                    +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_DET;
-            cursor = db.rawQuery("SELECT "+cols+
-                    " FROM "+MMDatabaseHelper.TABLE_RECORD+", "+MMDatabaseHelper.TABLE_CATEGORY+
-                    " WHERE "+MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_CAT_ID_FK+"="+MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_ID+
-                    " ORDER BY "+MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_DATE+" DESC",null);
-        } catch (SQLiteException ex) {
-
-        } finally {
-        }
-        return cursor;*/
         return getAllRecordsWithCategories(null,null,null,null);
     }
 
@@ -151,7 +133,7 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
         }
         String dateClause = dateFromClause.isEmpty() ? dateToClause : dateFromClause+ (dateToClause.isEmpty() ? "" : " AND "+dateToClause);
         String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_CAT_ID_FK+"="+TABLE_CATEGORY+"."+KEY_CAT_ID+ (dateClause.isEmpty() ? "" : " AND "+dateClause);
-        String orderByClause = " ORDER BY "+isValidOrderForDb(orderBy) + isValidDirectionForDb(orderDir);
+        String orderByClause = " ORDER BY "+isValidOrderForDb(orderBy,TABLE_RECORD+"."+KEY_REC_DATE) + isValidDirectionForDb(orderDir," DESC");
         String query = "SELECT "+cols+
                         " FROM "+TABLE_RECORD+", "+TABLE_CATEGORY +
                         whereClause + orderByClause;
@@ -180,27 +162,28 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public static String isValidOrderForDb(String orderBy) {
+    public static String isValidOrderForDb(String orderBy, String defaultOrder) {
         if (orderBy == null) {
-            return TABLE_RECORD+"."+KEY_REC_DATE;
+            return defaultOrder;
         }
         switch (orderBy) {
             case KEY_REC_VAL:
             case KEY_REC_DATE:
             case KEY_REC_ITEM: return TABLE_RECORD+"."+orderBy;
-            case KEY_CAT_NAME: return TABLE_CATEGORY+"."+KEY_CAT_NAME;
-            default: return TABLE_RECORD+"."+KEY_REC_DATE;
+            case KEY_CAT_NAME: return TABLE_CATEGORY+"."+orderBy;
+            case KEY_CAT_DET: return TABLE_CATEGORY+"."+orderBy;
+            default: return defaultOrder;
         }
     }
 
-    public static String isValidDirectionForDb(String direction) {
+    public static String isValidDirectionForDb(String direction, String defaultDir) {
         if (direction ==null) {
-            return " DESC";
+            return defaultDir;
         }
         switch (direction) {
             case "ASC":
             case "DESC": return " "+direction;
-            default: return " DESC";
+            default: return defaultDir;
         }
     }
 
@@ -334,7 +317,7 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public Cursor getAllCategories() {
-        SQLiteDatabase db = getReadableDatabase();
+        /*SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = null;
         try {
             String cols =MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_ID+", "
@@ -347,8 +330,32 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
 
         } finally {
         }
-        return cursor;
+        return cursor;*/
+        return getAllCategories(null,null);
     }
+
+    public Cursor getAllCategories(String orderBy, String orderDir) {
+        String cols = TABLE_CATEGORY+"."+KEY_CAT_ID+", "
+                +TABLE_CATEGORY+"."+KEY_CAT_NAME+", "
+                +TABLE_CATEGORY+"."+KEY_CAT_DET;
+
+        Log.i("PARAMS",orderBy + "/"+orderDir);
+        String orderByClause = " ORDER BY "+isValidOrderForDb(orderBy,TABLE_CATEGORY+"."+KEY_CAT_NAME) + isValidDirectionForDb(orderDir," ASC");
+        String query = "SELECT "+cols+
+                " FROM "+TABLE_CATEGORY +
+                orderByClause;
+        Log.i("SQL",query);
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery(query,null);
+        } catch (SQLiteException e) {
+
+        } finally {
+
+        } return cursor;
+    }
+
     public List<Category> getAllCategoriesAsList() {
         List<Category> categories = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();

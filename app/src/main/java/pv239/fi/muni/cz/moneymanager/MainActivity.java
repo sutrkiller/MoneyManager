@@ -10,6 +10,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.DatePicker;
@@ -23,6 +24,7 @@ import pv239.fi.muni.cz.moneymanager.adapter.RecordsDbAdapter;
 import pv239.fi.muni.cz.moneymanager.crypto.ALockingClass;
 import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
 import pv239.fi.muni.cz.moneymanager.helper.DatePickerFragment;
+import pv239.fi.muni.cz.moneymanager.model.FilterCategoriesArgs;
 import pv239.fi.muni.cz.moneymanager.model.FilterRecordsArgs;
 
 
@@ -34,7 +36,7 @@ import pv239.fi.muni.cz.moneymanager.model.FilterRecordsArgs;
  */
 
 public class MainActivity extends ALockingClass
-        implements NavigationView.OnNavigationItemSelectedListener, RecordsFragment.OnRecordsInteractionListener, CategoriesFragment.OnCategoriesInteractionListener,StatsFragment.OnStatsInteractionListener, DatePickerFragment.OnDateInteractionListener, AddRecordDialog.AddRecordDialogFinishedListener, AddCategoryDialog.AddCategoryDialogFinishedListener, FilterRecordsDialog.FilterRecordsDialogFinishedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, RecordsFragment.OnRecordsInteractionListener, CategoriesFragment.OnCategoriesInteractionListener,StatsFragment.OnStatsInteractionListener, DatePickerFragment.OnDateInteractionListener, AddRecordDialog.AddRecordDialogFinishedListener, AddCategoryDialog.AddCategoryDialogFinishedListener, FilterRecordsDialog.FilterRecordsDialogFinishedListener, FilterCategoriesDialog.FilterCategoriesDialogFinishedListener {
 
     private int currentPosition=-1;
     private boolean hideFilter = false;
@@ -89,6 +91,8 @@ public class MainActivity extends ALockingClass
         if (savedInstanceState != null) {
             position = savedInstanceState.getInt("currentPosition");
         }
+        Log.i("Pos: ", String.valueOf(position));
+        Log.i("CurPos: ", String.valueOf(currentPosition));
         onNavigationItemSelected((MenuItem)findViewById(position));
 
 
@@ -243,7 +247,7 @@ public class MainActivity extends ALockingClass
 
     public void onAddCategoryFinishedDialog(boolean result) {
         if (result) {
-            //TODO:edit this method
+
             ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.categories_list_view);
             MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
             //((CategoriesDbAdapter)view.getAdapter()).swapCursor(help.getAllCategories());
@@ -253,6 +257,7 @@ public class MainActivity extends ALockingClass
 
 
     FilterRecordsArgs recordsArgs;
+    FilterCategoriesArgs categoriesArgs;
     public void onFilterClick(MenuItem item) {
                 switch (currentPosition) {
                     case R.id.nav_records: {
@@ -272,6 +277,15 @@ public class MainActivity extends ALockingClass
                         break;
                     }
                     case R.id.nav_categories: {
+                        FilterCategoriesDialog filterDialog = new FilterCategoriesDialog();
+                        Bundle bundle;
+                        if (categoriesArgs!=null) {
+                            bundle = new Bundle();
+                            bundle.putInt("categories_order_by",categoriesArgs.getOrderBy());
+                            bundle.putInt("categories_direction",categoriesArgs.getOrderDir());
+                            filterDialog.setArguments(bundle);
+                        }
+                        filterDialog.show(getSupportFragmentManager(),"filter_categories");
                         break;
                     }
                     default: break;
@@ -295,9 +309,9 @@ public class MainActivity extends ALockingClass
 
             switch (orderPos) {
                 case FilterRecordsDialog.ORDER_AMOUNT: ordeyBy = MMDatabaseHelper.KEY_REC_VAL; break;
-                case FilterRecordsDialog.ORDER_DATE: ordeyDir = MMDatabaseHelper.KEY_REC_DATE; break;
-                case FilterRecordsDialog.ORDER_NAME: ordeyDir = MMDatabaseHelper.KEY_REC_ITEM; break;
-                case FilterRecordsDialog.ORDER_CATEGORY: ordeyDir = MMDatabaseHelper.KEY_CAT_NAME; break;
+                case FilterRecordsDialog.ORDER_DATE: ordeyBy = MMDatabaseHelper.KEY_REC_DATE; break;
+                case FilterRecordsDialog.ORDER_NAME: ordeyBy = MMDatabaseHelper.KEY_REC_ITEM; break;
+                case FilterRecordsDialog.ORDER_CATEGORY: ordeyBy = MMDatabaseHelper.KEY_CAT_NAME; break;
             }
 
             switch (directionPos) {
@@ -322,6 +336,39 @@ public class MainActivity extends ALockingClass
             MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
             //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
             ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories());
+        }
+    }
+
+    @Override
+    public void onFilterCategoriesFinishedDialog(boolean result, int orderPos, int directionPos) {
+        if (result) {
+            categoriesArgs = new FilterCategoriesArgs();
+            categoriesArgs.setOrderBy(orderPos);
+            categoriesArgs.setOrderDir(directionPos);
+
+            String ordeyBy = null;
+            String ordeyDir = null;
+
+            switch (orderPos) {
+                case FilterCategoriesDialog.ORDER_NAME: ordeyBy = MMDatabaseHelper.KEY_CAT_NAME; break;
+                case FilterCategoriesDialog.ORDER_DETAILS: ordeyBy = MMDatabaseHelper.KEY_CAT_DET; break;
+            }
+
+            switch (directionPos) {
+                case FilterCategoriesDialog.DIRECTION_ASC: ordeyDir = "ASC"; break;
+                case FilterCategoriesDialog.DIRECTION_DESC: ordeyDir = "DESC"; break;
+            }
+
+            ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.categories_list_view);
+            MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
+            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
+            ((CategoriesDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllCategories(ordeyBy,ordeyDir));
+        } else {
+            categoriesArgs = null;
+            ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.categories_list_view);
+            MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
+            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
+            ((CategoriesDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllCategories());
         }
     }
 }
