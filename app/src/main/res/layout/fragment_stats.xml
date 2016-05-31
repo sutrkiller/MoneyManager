@@ -1,13 +1,198 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="pv239.fi.muni.cz.moneymanager.StatsFragment">
+    tools:context=".StatsFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="stats" />
 
-</FrameLayout>
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:rowCount="1"
+        android:columnCount="3"
+        android:id="@+id/gridViewTopMenuStats"
+        android:background="#4fd527">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="&lt; Previous Month"
+            android:id="@+id/previousMonth"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:layout_gravity="left"
+            android:layout_row="0"
+            android:layout_column="0"
+            android:background="#46bc22" />
+
+        <Space
+            android:layout_width="20px"
+            android:layout_height="20px"
+            android:layout_row="0"
+            android:layout_column="1" />
+
+        <Button
+            android:layout_gravity="right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Next Month >"
+            android:id="@+id/nextMonth"
+            android:layout_alignBottom="@+id/previousMonth"
+            android:layout_alignParentEnd="true"
+            android:layout_row="0"
+            android:layout_column="2"
+            android:background="#46bc22" />
+
+
+    </GridLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true"
+        android:id="@+id/scrollViewStats"
+        android:layout_below="@+id/gridViewTopMenuStats"
+        android:nestedScrollingEnabled="false">
+
+        <GridLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/gridViewTopMenuStats"
+            android:rowCount="6"
+            android:columnCount="1"
+            android:id="@+id/gridViewScreenStats">
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:layout_row="0"/>
+
+            <!-- Upper Balances -->
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_row="1"
+                android:background="@drawable/box"
+                android:padding="5dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="Month: "
+                    android:id="@+id/monthStats"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:layout_row="1"
+                    android:layout_column="1" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="Starting balance: CZK"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:id="@+id/startBalance"
+                    android:layout_row="0"
+                    android:layout_column="0" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="Ending balance: CZK"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:id="@+id/endBalance"
+                    android:layout_row="2"
+                    android:layout_column="0" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:layout_row="2"/>
+
+            <!-- Middle income balances -->
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="400dp"
+                android:background="@drawable/box"
+                android:layout_gravity="center"
+                android:id="@+id/liner"
+                android:layout_row="3"
+                android:layout_column="0"
+                android:layout_margin="10dp"
+                android:padding="5dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="Income: CZK"
+                    android:id="@+id/incomeStats"
+                    android:layout_row="1"
+                    android:layout_column="1" />
+
+
+                <ListView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/listViewIncomeStats"
+                    android:layout_row="2"
+                    android:layout_column="0"
+                    android:nestedScrollingEnabled="true"/>
+
+            </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:layout_row="4"/>
+
+            <!-- Bottom expence balances -->
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="400dp"
+                android:background="@drawable/box"
+                android:layout_gravity="center"
+                android:layout_row="5"
+                android:layout_column="0"
+                android:layout_margin="10dp"
+                android:padding="5dp"
+                android:nestedScrollingEnabled="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="Expences: CZK"
+                    android:id="@+id/expenseStats"
+                    android:layout_row="1"
+                    android:layout_column="1" />
+
+                <ListView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/listViewExpences"
+                    android:layout_row="2"
+                    android:layout_column="0" />
+
+            </LinearLayout>
+
+        </GridLayout>
+
+    </ScrollView>
+
+
+</RelativeLayout>

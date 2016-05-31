@@ -88,6 +88,7 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
                     +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_ID+", "
                     +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_NAME+", "
                     +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_DET;
+
             String recSelect = String.format("SELECT %s FROM %s WHERE %s = ? AND %s = %s", cols, TABLE_RECORD+", "+TABLE_CATEGORY, MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ID,MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_CAT_ID_FK,MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_ID);
             Cursor cursor = db.rawQuery(recSelect,new String[] {String.valueOf(id)});
             try {
@@ -111,6 +112,57 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
 
     public Cursor getAllRecordsWithCategories() {
         return getAllRecordsWithCategories(null,null,null,null);
+    }
+
+    // TO DO for positive records and negative records
+    public Cursor getAllIncomesRecords()
+    {
+        String cols = MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ID+", "
+                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_VAL+", "
+                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_CURR+", "
+                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_DATE+", "
+                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ITEM;
+
+        String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_VAL+">"+"0";
+        String query = "SELECT "+cols+
+                " FROM "+TABLE_RECORD+
+                whereClause;
+        Log.i("SQL",query);
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery(query,null);
+        } catch (SQLiteException e) {
+
+        } finally {
+
+        } return cursor;
+
+    }
+
+    public Cursor getAllExpensesRecords()
+    {
+        String cols = MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ID+", "
+                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_VAL+", "
+                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_CURR+", "
+                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_DATE+", "
+                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ITEM;
+
+        String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_VAL+" < "+" 0";
+        String query = "SELECT "+cols+
+                " FROM "+TABLE_RECORD+
+                whereClause;
+        Log.i("SQL",query);
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery(query,null);
+        } catch (SQLiteException e) {
+
+        } finally {
+
+        } return cursor;
+
     }
 
     public Cursor getAllRecordsWithCategories(String dateFrom, String dateTo, String orderBy, String orderDir) {

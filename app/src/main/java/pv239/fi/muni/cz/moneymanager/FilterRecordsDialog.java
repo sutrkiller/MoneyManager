@@ -232,4 +232,5 @@ public class FilterRecordsDialog extends DialogFragment {
     public interface FilterRecordsDialogFinishedListener {
         void onFilterRecordsFinishedDialog(boolean result,int orderPos,int directionPos, Date from, Date to);
     }
+
 }
