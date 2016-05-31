@@ -1,12 +1,25 @@
 package pv239.fi.muni.cz.moneymanager;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.ScrollView;
+
+import pv239.fi.muni.cz.moneymanager.adapter.RecordsAdapter;
+import pv239.fi.muni.cz.moneymanager.adapter.RecordsDbAdapter;
+import pv239.fi.muni.cz.moneymanager.adapter.RecordsDbToStatsAdapter;
+import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
+import pv239.fi.muni.cz.moneymanager.model.Record;
 
 
 /**
@@ -24,6 +37,8 @@ public class StatsFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private ListView incomeListView;
+    private ListView expensesListView;
 
     private OnStatsInteractionListener mListener;
 
@@ -63,6 +78,31 @@ public class StatsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_stats, container, false);
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+
+        super.onActivityCreated(savedInstanceState);
+
+        incomeListView = (ListView) getView().findViewById(R.id.listViewIncomeStats);
+        expensesListView = (ListView) getView().findViewById(R.id.listViewExpences);
+
+        //Creating income list
+        MMDatabaseHelper sloh = MMDatabaseHelper.getInstance(getActivity());
+        Cursor incomeRecords = sloh.getAllIncomesRecords();
+       /* ImageView view = new ImageView(getActivity());
+        view.setImageDrawable(getResources().getDrawable(R.drawable.overscoller_drawable));*/
+        RecordsDbToStatsAdapter incomeAdapter = new RecordsDbToStatsAdapter(this.getContext(), incomeRecords, 0);
+        incomeListView.setAdapter(incomeAdapter);
+
+        //Creating expenses list
+        Cursor expensesRecords = sloh.getAllExpensesRecords();
+        /*ImageView view = new ImageView(getActivity());
+        view.setImageDrawable(getResources().getDrawable(R.drawable.overscoller_drawable));*/
+        RecordsDbToStatsAdapter expensesAdapter = new RecordsDbToStatsAdapter(this.getContext(), expensesRecords, 0);
+        expensesListView.setAdapter(expensesAdapter);
+
     }
 
     // TODO: Rename method, update argument and hook method into UI event
