@@ -4,16 +4,15 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabaseLockedException;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-import android.widget.CursorAdapter;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Currency;
 import java.util.Date;
 import java.util.List;
@@ -67,6 +66,7 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         updateMyDb(db, 0, DB_VERSION);
+
     }
 
     @Override
@@ -114,18 +114,25 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
         return getAllRecordsWithCategories(null,null,null,null);
     }
 
-    // TO DO for positive records and negative records
+
     public Cursor getAllIncomesRecords()
     {
+        SetDates setDates = new SetDates().invoke();
+        Date startDate = setDates.getStartDate();
+        Date endDate = setDates.getEndDate();
+
         String cols = MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ID+", "
                 +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_VAL+", "
                 +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_CURR+", "
                 +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_DATE+", "
-                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ITEM;
+                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ITEM+", "
+                +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_NAME;
+                ;
 
-        String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_VAL+">"+"0";
+        String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_VAL+">"+"0 AND "+TABLE_RECORD+"."+KEY_REC_CAT_ID_FK+"="+TABLE_CATEGORY+"."+KEY_CAT_ID+
+                             " AND "+TABLE_RECORD+"."+KEY_REC_DATE+" BETWEEN '"+convertDateForDb(startDate)+ "' AND '"+ convertDateForDb(endDate)+"'";
         String query = "SELECT "+cols+
-                " FROM "+TABLE_RECORD+
+                " FROM "+TABLE_RECORD+ ", "+TABLE_CATEGORY+
                 whereClause;
         Log.i("SQL",query);
         SQLiteDatabase db = getReadableDatabase();
@@ -142,15 +149,21 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
 
     public Cursor getAllExpensesRecords()
     {
+        SetDates setDates = new SetDates().invoke();
+        Date startDate = setDates.getStartDate();
+        Date endDate = setDates.getEndDate();
+
         String cols = MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ID+", "
                 +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_VAL+", "
                 +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_CURR+", "
                 +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_DATE+", "
-                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ITEM;
+                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ITEM+", "
+                +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_NAME;
 
-        String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_VAL+" < "+" 0";
+        String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_VAL+" < "+"0 AND "+TABLE_RECORD+"."+KEY_REC_CAT_ID_FK+"="+TABLE_CATEGORY+"."+KEY_CAT_ID+
+                             " AND "+TABLE_RECORD+"."+KEY_REC_DATE+" BETWEEN '"+convertDateForDb(startDate)+ "' AND '"+ convertDateForDb(endDate)+"'";
         String query = "SELECT "+cols+
-                " FROM "+TABLE_RECORD+
+                " FROM "+TABLE_RECORD+ ", "+TABLE_CATEGORY+
                 whereClause;
         Log.i("SQL",query);
         SQLiteDatabase db = getReadableDatabase();
@@ -163,6 +176,56 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
 
         } return cursor;
 
+    }
+
+    public Integer getIncomesSum()
+    {
+        SetDates setDates = new SetDates().invoke();
+        Date startDate = setDates.getStartDate();
+        Date endDate = setDates.getEndDate();
+
+       // String currentDate = convertDateForDb(new Date().setTime(22));
+        String col = TABLE_RECORD+"."+KEY_REC_VAL;
+        String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_VAL+" >"+" 0 AND "+TABLE_RECORD+"."+KEY_REC_DATE+" BETWEEN '"+convertDateForDb(startDate)+ "' AND '"+ convertDateForDb(endDate)+"'";
+        String query = "SELECT SUM("+col+
+                ") FROM "+TABLE_RECORD+
+                whereClause;
+        Log.i("SQL",query);
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery(query,null);
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(0);
+            }
+        } catch (SQLiteException e) {
+        } finally {
+        } return 0;
+    }
+
+    public Integer getExpensesSum()
+    {
+        SetDates setDates = new SetDates().invoke();
+        Date startDate = setDates.getStartDate();
+        Date endDate = setDates.getEndDate();
+
+        // String currentDate = convertDateForDb(new Date().setTime(22));
+        String col = TABLE_RECORD+"."+KEY_REC_VAL;
+        String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_VAL+" <"+" 0 AND "+TABLE_RECORD+"."+KEY_REC_DATE+" BETWEEN '"+convertDateForDb(startDate)+ "' AND '"+ convertDateForDb(endDate)+"'";
+        String query = "SELECT SUM("+col+
+                ") FROM "+TABLE_RECORD+
+                whereClause;
+        Log.i("SQL",query);
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery(query,null);
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(0);
+            }
+        } catch (SQLiteException e) {
+        } finally {
+        } return 0;
     }
 
     public Cursor getAllRecordsWithCategories(String dateFrom, String dateTo, String orderBy, String orderDir) {
@@ -490,4 +553,36 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
     }
 
 
+    private class SetDates {
+        private Date startDate;
+        private Date endDate;
+
+        public Date getStartDate() {
+            return startDate;
+        }
+
+        public Date getEndDate() {
+            return endDate;
+        }
+
+        public SetDates invoke() {
+            Calendar startCal = Calendar.getInstance();
+            startCal.set(Calendar.DATE, startCal.getActualMinimum(Calendar.DAY_OF_MONTH));
+            startCal.set(Calendar.HOUR_OF_DAY, startCal.getActualMinimum(Calendar.HOUR_OF_DAY));
+            startCal.set(Calendar.MINUTE, startCal.getActualMinimum(Calendar.MINUTE));
+            startCal.set(Calendar.SECOND, startCal.getActualMinimum(Calendar.SECOND));
+            startCal.set(Calendar.MILLISECOND, startCal.getActualMinimum(Calendar.MILLISECOND));
+
+            Calendar endCal = Calendar.getInstance();
+            endCal.set(Calendar.DATE, endCal.getActualMaximum(Calendar.DAY_OF_MONTH));
+            endCal.set(Calendar.HOUR_OF_DAY, endCal.getActualMaximum(Calendar.HOUR_OF_DAY));
+            endCal.set(Calendar.MINUTE, endCal.getActualMaximum(Calendar.MINUTE));
+            endCal.set(Calendar.SECOND, endCal.getActualMaximum(Calendar.SECOND));
+            endCal.set(Calendar.MILLISECOND, endCal.getActualMaximum(Calendar.MILLISECOND));
+
+            startDate = startCal.getTime();
+            endDate = endCal.getTime();
+            return this;
+        }
+    }
 }

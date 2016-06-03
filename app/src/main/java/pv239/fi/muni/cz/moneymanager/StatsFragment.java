@@ -5,21 +5,24 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ScrollView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
-import pv239.fi.muni.cz.moneymanager.adapter.RecordsAdapter;
-import pv239.fi.muni.cz.moneymanager.adapter.RecordsDbAdapter;
+import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.util.Calendar;
+import java.util.Locale;
+
+import pv239.fi.muni.cz.moneymanager.adapter.ExpensesSumStatsAdapter;
 import pv239.fi.muni.cz.moneymanager.adapter.RecordsDbToStatsAdapter;
+import pv239.fi.muni.cz.moneymanager.adapter.IncomeSumStatsAdapter;
 import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
-import pv239.fi.muni.cz.moneymanager.model.Record;
 
 
 /**
@@ -85,23 +88,48 @@ public class StatsFragment extends Fragment {
 
         super.onActivityCreated(savedInstanceState);
 
-        incomeListView = (ListView) getView().findViewById(R.id.listViewIncomeStats);
-        expensesListView = (ListView) getView().findViewById(R.id.listViewExpences);
+        /* TO DO LIST:
+           - aktivovat buttony   ???Swipe efektom???
+           - fragment pre detail Incomes a Expenses
+           - ak budu buttony tak prepracovat kod, aby filtroval podla mesiacov (nateray nastavene umelo)
+           - doriesit preco nechce fungovat pre 1. sekciu match parent width
+           - relativnu height pre 2. a 3. sekciu
+         */
+        //Setting range dates
+        TextView start = (TextView) getView().findViewById(R.id.startMonthStats);
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DATE, cal.getActualMinimum(Calendar.DAY_OF_MONTH));
+        cal.set(Calendar.HOUR_OF_DAY, cal.getActualMinimum(Calendar.HOUR_OF_DAY));
+        start.setText(cal.getActualMinimum(Calendar.DAY_OF_MONTH)+"."+cal.get(Calendar.MONTH)+"."+cal.get(Calendar.YEAR));
 
+        TextView end = (TextView) getView().findViewById(R.id.endMonthStats);
+        end.setText(cal.getActualMaximum(Calendar.DAY_OF_MONTH)+"."+cal.get(Calendar.MONTH)+"."+cal.get(Calendar.YEAR));
+
+        // Setting Starting balance. Ending balance is set as - for current month because its never
+        // closed as default.
         //Creating income list
+        incomeListView = (ListView) getView().findViewById(R.id.listViewIncomeStats);
         MMDatabaseHelper sloh = MMDatabaseHelper.getInstance(getActivity());
         Cursor incomeRecords = sloh.getAllIncomesRecords();
-       /* ImageView view = new ImageView(getActivity());
-        view.setImageDrawable(getResources().getDrawable(R.drawable.overscoller_drawable));*/
         RecordsDbToStatsAdapter incomeAdapter = new RecordsDbToStatsAdapter(this.getContext(), incomeRecords, 0);
         incomeListView.setAdapter(incomeAdapter);
 
+        expensesListView = (ListView) getView().findViewById(R.id.listViewExpences);
         //Creating expenses list
         Cursor expensesRecords = sloh.getAllExpensesRecords();
-        /*ImageView view = new ImageView(getActivity());
-        view.setImageDrawable(getResources().getDrawable(R.drawable.overscoller_drawable));*/
         RecordsDbToStatsAdapter expensesAdapter = new RecordsDbToStatsAdapter(this.getContext(), expensesRecords, 0);
         expensesListView.setAdapter(expensesAdapter);
+
+        //Fetching Summaries of incomes and expenses
+        TextView incSum = (TextView) getView().findViewById(R.id.incomeSumStats);
+        TextView expSum = (TextView) getView().findViewById(R.id.expenseSumStats);
+        BigDecimal incValue = new BigDecimal(sloh.getIncomesSum().toString());
+        BigDecimal expValue = new BigDecimal(sloh.getExpensesSum().toString());
+
+        NumberFormat format = NumberFormat.getCurrencyInstance(Locale.getDefault());
+        format.setMaximumFractionDigits(2);
+        incSum.setText(format.format(incValue.abs().setScale(2).doubleValue()));
+        expSum.setText(format.format(expValue.abs().setScale(2).doubleValue()));
 
     }
 

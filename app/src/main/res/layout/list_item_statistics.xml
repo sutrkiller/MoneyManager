@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="72dp"
+
+    >
+
+
+    <ImageView
+        android:id="@+id/statistics_item_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="16dp"/>
+
+
+    <TextView
+        android:id="@+id/statistics_item_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:layout_marginLeft="72dp"
+        android:paddingTop="16dp"
+        android:fontFamily="Roboto Regular"
+        android:textSize="16sp"
+        android:textStyle="bold"
+
+        />
+
+
+    <TextView
+        android:id="@+id/statistics_item_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:layout_alignTop="@id/category_item_name"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="16dp"
+        android:paddingTop="16dp"
+        />
+
+
+
+</RelativeLayout>
