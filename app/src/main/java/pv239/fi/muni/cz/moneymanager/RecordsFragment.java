@@ -138,7 +138,7 @@ public class RecordsFragment extends Fragment {
 
         ImageView view = new ImageView(getActivity());
         view.setImageDrawable(getResources().getDrawable(R.drawable.overscoller_drawable));
-        listView.addFooterView(view);
+            listView.addFooterView(view);
         listView.setAdapter(adapter);
 
 

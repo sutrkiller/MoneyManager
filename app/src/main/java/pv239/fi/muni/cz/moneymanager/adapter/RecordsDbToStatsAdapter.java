@@ -7,7 +7,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.amulyakhare.textdrawable.TextDrawable;
+import com.amulyakhare.textdrawable.util.ColorGenerator;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -30,15 +34,27 @@ public class RecordsDbToStatsAdapter extends CursorAdapter {
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        View rView = inflater.inflate(R.layout.list_item_fragment,parent,false);
+        View rView = inflater.inflate(R.layout.list_item_statistics,parent,false);
         return rView;
     }
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
 
-        TextView fname = (TextView) view.findViewById(R.id.fragment_item_name);
-        TextView fvalue = (TextView) view.findViewById(R.id.fragmet_item_value);
+        TextView fname = (TextView) view.findViewById(R.id.statistics_item_name);
+        TextView fvalue = (TextView) view.findViewById(R.id.statistics_item_value);
+        ImageView ficon = (ImageView) view.findViewById(R.id.statistics_item_icon);
+
+        String catName = cursor.getString(4);
+        ColorGenerator generator = ColorGenerator.MATERIAL; // or use DEFAULT
+// generate color based on a key (same key returns the same color), useful for list/grid views
+        int color2 = generator.getColor(catName);
+// declare the builder object once.
+        TextDrawable draw = TextDrawable.builder().buildRound(String.valueOf(catName.charAt(0)).toUpperCase(),color2);
+// reuse the builder specs to create multiple drawables
+        ficon.setImageDrawable(draw);
+
+
         BigDecimal value = new BigDecimal(cursor.getDouble(1));
         fname.setText(cursor.getString(4));
         fvalue.setText(cursor.getString(1));
