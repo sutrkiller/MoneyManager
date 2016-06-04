@@ -1,6 +1,12 @@
 package pv239.fi.muni.cz.moneymanager;
 
+import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -16,9 +22,20 @@ import android.view.MenuItem;
 import android.widget.DatePicker;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import android.os.Environment;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
+import au.com.bytecode.opencsv.CSVWriter;
 import pv239.fi.muni.cz.moneymanager.adapter.CategoriesDbAdapter;
 import pv239.fi.muni.cz.moneymanager.adapter.RecordsDbAdapter;
 import pv239.fi.muni.cz.moneymanager.crypto.ALockingClass;
@@ -43,6 +60,8 @@ public class MainActivity extends ALockingClass
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -292,6 +311,10 @@ public class MainActivity extends ALockingClass
                 }
     }
 
+    public void  onExportClick(MenuItem item) {
+        ExportDatabaseCSVTask task=new ExportDatabaseCSVTask(this); task.execute();
+
+    }
 
     @Override
     public void onFilterRecordsFinishedDialog(boolean result, int orderPos, int directionPos, Date from, Date to) {
@@ -362,13 +385,122 @@ public class MainActivity extends ALockingClass
             ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.categories_list_view);
             MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
             //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
-            ((CategoriesDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllCategories(ordeyBy,ordeyDir));
+            ((CategoriesDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllCategories(ordeyBy, ordeyDir));
         } else {
             categoriesArgs = null;
             ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.categories_list_view);
             MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
             //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
             ((CategoriesDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllCategories());
+        }
+    }
+
+    private class ExportDatabaseCSVTask extends AsyncTask { private final ProgressDialog dialog = new ProgressDialog(MainActivity.this);
+
+        Context context;
+
+        private ExportDatabaseCSVTask(Context context)
+        {
+            this.context = context;
+        }
+
+        @Override
+        protected Object doInBackground(Object[] params) {
+            /*File exportDir = Environment.getExternalStorageDirectory();
+            if (!exportDir.exists()) {
+                exportDir.getParentFile().mkdirs();
+            }
+
+            File file = new File(exportDir, "Hovno.csv");
+
+
+            try {
+
+                //file.getParentFile().mkdirs();
+                file.createNewFile();
+                CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
+
+                //data
+                ArrayList<String> listdata= new ArrayList<String>();
+                listdata.add("Aniket");
+                listdata.add("Shinde");
+                listdata.add("pune");
+                listdata.add("anything@anything");
+                //Headers
+                String arrStr1[] ={"First Name", "Last Name", "Address", "Email"};
+                csvWrite.writeNext(arrStr1);
+
+                String arrStr[] ={listdata.get(0), listdata.get(1), listdata.get(2), listdata.get(3)};
+                csvWrite.writeNext(arrStr);
+
+                csvWrite.close();
+                return "";
+            }
+            catch (IOException e){
+                Log.e("MainActivity", e.getMessage(), e);
+                return "";
+            }*//*
+            File dbFile=getDatabasePath("MyDBName.db");
+            DBHelper dbhelper = new DBHelper(getApplicationContext());*/
+
+            MMDatabaseHelper help = MMDatabaseHelper.getInstance(context);
+
+            File exportDir = new File(Environment.getExternalStorageDirectory(), "");
+            if (!exportDir.exists())
+            {
+                exportDir.mkdirs();
+            }
+
+            File file = new File(exportDir, "csvname.csv");
+            try
+            {
+                file.createNewFile();
+                CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
+                //SQLiteDatabase db = dbhelper.getReadableDatabase();
+                Cursor curCSV = help.getAllRecordsWithCategories();//db.rawQuery("SELECT * FROM contacts",null);
+                csvWrite.writeNext(curCSV.getColumnNames());
+                //List<String[]> database = new ArrayList<String[]>();
+                while(curCSV.moveToNext())
+                {
+                    //database.add(new String[] {curCSV.getString(0),curCSV.getString(1), curCSV.getString(2), curCSV.getString(3), curCSV.getString(4), curCSV.getString(5), curCSV.getString(6)});
+                    //Which column you want to exprort
+                    String arrStr[] ={curCSV.getString(0),curCSV.getString(1), curCSV.getString(2), curCSV.getString(3), curCSV.getString(4), curCSV.getString(5), curCSV.getString(6)};
+                    csvWrite.writeNext(arrStr);
+                }
+                //csvWrite.writeAll(database);
+                csvWrite.close();
+                curCSV.close();
+                return "";
+            }
+            catch(Exception sqlEx)
+            {
+                Log.e("MainActivity", sqlEx.getMessage(), sqlEx);
+                return "b";
+            }
+        }
+
+        @Override
+        protected void onPreExecute() {
+
+            this.dialog.setMessage("Exporting database...");
+            this.dialog.show();
+
+        }
+
+
+        @SuppressLint("NewApi")
+        @Override
+        protected void onPostExecute(final Object success) {
+
+            if (this.dialog.isShowing()){
+                this.dialog.dismiss();
+            }
+            if (success.toString().isEmpty()){
+                Toast.makeText(MainActivity.this, "Export successful!", Toast.LENGTH_SHORT).show();
+            }
+            else {
+                Toast.makeText(MainActivity.this, "Export failed!", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

@@ -33,4 +33,5 @@ dependencies {
     compile 'com.android.support:support-v4:23.3.0'
     compile 'com.rengwuxian.materialedittext:library:2.1.4'
     compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
+    compile files('libs/opencsv-2.4 (1).jar')
 }
