@@ -17,6 +17,12 @@
         android:onClick="onExportClick"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_sync"
+        android:orderInCategory="100"
+        android:title="Call API"
+        android:onClick="onSyncClick"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"
