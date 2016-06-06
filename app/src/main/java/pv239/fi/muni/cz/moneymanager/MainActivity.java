@@ -40,6 +40,7 @@ import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.http.FileContent;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
@@ -51,9 +52,32 @@ import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.ParentReference;
 import com.google.api.services.sheets.v4.SheetsScopes;
+import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
+import com.google.api.services.sheets.v4.model.CellData;
+import com.google.api.services.sheets.v4.model.CellFormat;
+import com.google.api.services.sheets.v4.model.Color;
+import com.google.api.services.sheets.v4.model.CopyPasteRequest;
+import com.google.api.services.sheets.v4.model.DeleteSheetRequest;
+import com.google.api.services.sheets.v4.model.ExtendedValue;
+import com.google.api.services.sheets.v4.model.GridCoordinate;
+import com.google.api.services.sheets.v4.model.GridRange;
+import com.google.api.services.sheets.v4.model.RepeatCellRequest;
+import com.google.api.services.sheets.v4.model.Request;
+import com.google.api.services.sheets.v4.model.RowData;
+import com.google.api.services.sheets.v4.model.SheetProperties;
+import com.google.api.services.sheets.v4.model.Spreadsheet;
+import com.google.api.services.sheets.v4.model.UpdateCellsRequest;
+import com.google.api.services.sheets.v4.model.UpdateSheetPropertiesRequest;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRichTextString;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -107,7 +131,7 @@ public class MainActivity extends ALockingClass
     private static final String PREF_ACCOUNT_NAME = "accountName";
     private static final String FILE_NAME = "MoneyManager";
     private static final String PREF_FILE_RES = "MoneyManagerSpreadsheet";
-    private static final String[] SCOPES = { SheetsScopes.SPREADSHEETS_READONLY };
+    private static final String[] SCOPES = { SheetsScopes.SPREADSHEETS, DriveScopes.DRIVE_FILE };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -226,7 +250,7 @@ public class MainActivity extends ALockingClass
                         .setSelectedAccountName(mCredential.getSelectedAccountName())).build();
 
 
-            new MakeRequestTask(mCredential).execute();
+            new MakeRequestTask(mCredential, this).execute();
         }
     }
 
@@ -422,14 +446,16 @@ public class MainActivity extends ALockingClass
     private class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
         private com.google.api.services.sheets.v4.Sheets mService = null;
         private Exception mLastError = null;
+        private Context context;
 
-        public MakeRequestTask(GoogleAccountCredential credential) {
+        public MakeRequestTask(GoogleAccountCredential credential, Context context) {
             HttpTransport transport = AndroidHttp.newCompatibleTransport();
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
             mService = new com.google.api.services.sheets.v4.Sheets.Builder(
                     transport, jsonFactory, credential)
                     .setApplicationName("Google Sheets API MoneyManager")
                     .build();
+            this.context = context;
         }
 
         /**
@@ -443,20 +469,23 @@ public class MainActivity extends ALockingClass
                 long dbModif = dbpath.lastModified();
                 Log.i("DB Modified: ", String.valueOf(dbModif));
                 long driveModif = 0;
-
+                String resId;
                 if (mGOOSvc!= null && isDeviceOnline()) {
                     try {
                         FileList fileList = mGOOSvc.files().list().setQ("title='" + FILE_NAME + "' and trashed=false").execute();
                         if (fileList.getItems().isEmpty()) {
                             Log.i("Google Drive", "Creating file");
-                            String resId = testCreateSheet();
+                            resId = testCreateSheet();
+
                             if (resId != null) {
                                 SharedPreferences prefs = getPreferences(MODE_PRIVATE);
                                 prefs.edit().putString(PREF_FILE_RES,resId).commit(); //save resId for further editing
+                                testUpdateContent(resId);
                             }
                         } else {
                             Log.i("Google Drive", "File already exists");
                             driveModif = fileList.getItems().get(0).getModifiedDate().getValue();
+                            resId = fileList.getItems().get(0).getId();
                             Log.i("Drive Modified: ", String.valueOf(driveModif));
                         }
 
@@ -464,10 +493,13 @@ public class MainActivity extends ALockingClass
                         if (Math.abs(dbModif-driveModif)>=SYNC_TIME_MIN_DIF) {  //if changes are at least SYNC_TIME_MIN_DIF apart
                             if (dbModif-driveModif<=SYNC_TIME_MIN_DIF) {
                                 //drive is newer -> download data
+                                testUpdateContent(resId);
                             } else if (dbModif-driveModif >=SYNC_TIME_MIN_DIF) {
                                 //db is newer -> upload data
+                                testUpdateContent(resId);
                             } else {
                                 //no pending changes...
+                                testUpdateContent(resId);
                             }
                         }
 
@@ -516,6 +548,18 @@ public class MainActivity extends ALockingClass
                         meta.setTitle(FILE_NAME);
                         meta.setMimeType("application/vnd.google-apps.spreadsheet");
 
+                    //MMDatabaseHelper help = MMDatabaseHelper.getInstance(context);
+                        //Cursor curCSV = help.getAllRecordsWithCategories();
+                        java.io.File fileContent = new java.io.File(Environment.getExternalStorageDirectory(), "MoneyManager.xls");
+
+
+                        Spreadsheet testSheet = new Spreadsheet();
+
+
+                        FileContent mediaContent = new FileContent("application/vnd.google-apps.spreadsheet", fileContent);
+
+                        //Cursor curCSV = help.getAllRecordsWithCategories();
+
                         com.google.api.services.drive.model.File gF1 = mGOOSvc.files().insert(meta).execute();
                         if (gF1 != null) {
                             rsId = gF1.getId();
@@ -526,6 +570,108 @@ public class MainActivity extends ALockingClass
                 return rsId;
             }
 
+        private void testUpdateContent(String spreadsheetId) throws IOException {
+
+            MMDatabaseHelper help = MMDatabaseHelper.getInstance(context);
+            Cursor curCSV = help.getAllRecordsWithCategories();
+
+            List<Request> requests = new ArrayList<>();
+
+            List<CellData> values = new ArrayList<>();
+            List<RowData> rows = new ArrayList<>();
+
+            String headers[] = curCSV.getColumnNames();
+
+            values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(headers[0]))
+                    .setUserEnteredFormat(new CellFormat()
+                            .setBackgroundColor(new Color()
+                                    .setGreen(Float.valueOf(1)))));
+            values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(headers[1]))
+                    .setUserEnteredFormat(new CellFormat()
+                            .setBackgroundColor(new Color()
+                                    .setGreen(Float.valueOf(1)))));
+            values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(headers[2]))
+                    .setUserEnteredFormat(new CellFormat()
+                            .setBackgroundColor(new Color()
+                                    .setGreen(Float.valueOf(1)))));
+            values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(headers[3]))
+                    .setUserEnteredFormat(new CellFormat()
+                            .setBackgroundColor(new Color()
+                                    .setGreen(Float.valueOf(1)))));
+            values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(headers[4]))
+                    .setUserEnteredFormat(new CellFormat()
+                            .setBackgroundColor(new Color()
+                                    .setGreen(Float.valueOf(1)))));
+            values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(headers[5]))
+                    .setUserEnteredFormat(new CellFormat()
+                            .setBackgroundColor(new Color()
+                                    .setGreen(Float.valueOf(1)))));
+            values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(headers[6]))
+                    .setUserEnteredFormat(new CellFormat()
+                            .setBackgroundColor(new Color()
+                                    .setGreen(Float.valueOf(1)))));
+
+            rows.add(new RowData().setValues(values));
+
+            while(curCSV.moveToNext())
+
+            {
+                values = new ArrayList<>();
+                values.add(new CellData()
+                        .setUserEnteredValue(new ExtendedValue()
+                                .setStringValue(curCSV.getString(0))));
+                values.add(new CellData()
+                        .setUserEnteredValue(new ExtendedValue()
+                                .setStringValue(curCSV.getString(1))));
+                values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(curCSV.getString(2))));
+                values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(curCSV.getString(3))));
+                values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(curCSV.getString(4))));
+                values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(curCSV.getString(5))));
+                values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(curCSV.getString(6))));
+
+                rows.add(new RowData().setValues(values));
+            }
+
+            //todo request na clear sheetu requests.add(new Request().setDeleteSheet(new DeleteSheetRequest()));
+            requests.add(new Request()
+                    .setUpdateCells(new UpdateCellsRequest()
+                            .setStart(new GridCoordinate()
+                                    .setSheetId(0)
+                                    .setRowIndex(0)
+                                    .setColumnIndex(0))
+                            .setRows(rows)
+                            .setFields("userEnteredValue,userEnteredFormat.backgroundColor")));
+
+
+            BatchUpdateSpreadsheetRequest batchUpdateRequest = new BatchUpdateSpreadsheetRequest()
+                    .setRequests(requests);
+            this.mService.spreadsheets().batchUpdate(spreadsheetId, batchUpdateRequest)
+                    .execute();
+        }
 
         @Override
         protected void onPreExecute() {
@@ -771,28 +917,10 @@ public class MainActivity extends ALockingClass
     }
 
     public void  onSyncClick(MenuItem item) {
+
         //ExportDatabaseCSVTask task=new ExportDatabaseCSVTask(this); task.execute();
-
         getResultsFromApi();
-        /*
-        mOutputText = new TextView(this);
-        mOutputText.setLayoutParams(tlp);
-        mOutputText.setPadding(16, 16, 16, 16);
-        mOutputText.setVerticalScrollBarEnabled(true);
-        mOutputText.setMovementMethod(new ScrollingMovementMethod());
-        mOutputText.setText(
-                "Click the \'" + BUTTON_TEXT +"\' button to test the API.");
-        drawer.addView(mOutputText);
 
-        mProgress = new ProgressDialog(this);
-        mProgress.setMessage("Calling Google Sheets API ...");
-
-        //setContentView(drawer);
-
-        // Initialize credentials and service object.
-        mCredential = GoogleAccountCredential.usingOAuth2(
-                getApplicationContext(), Arrays.asList(SCOPES))
-                .setBackOff(new ExponentialBackOff());*/
 
     }
 
@@ -886,43 +1014,68 @@ public class MainActivity extends ALockingClass
 
         @Override
         protected Object doInBackground(Object[] params) {
-            /*File exportDir = Environment.getExternalStorageDirectory();
-            if (!exportDir.exists()) {
-                exportDir.getParentFile().mkdirs();
+
+            MMDatabaseHelper help = MMDatabaseHelper.getInstance(context);
+            Cursor curCSV = help.getAllRecordsWithCategories();
+
+            HSSFWorkbook workbook = new HSSFWorkbook();
+
+            HSSFSheet sheet = workbook.createSheet("Test");
+
+            String headers[] = curCSV.getColumnNames();
+
+            HSSFRow row0 = sheet.createRow((short) 0);
+            row0.createCell(0).setCellValue(headers[0]);
+            row0.createCell(1).setCellValue(headers[1]);
+            row0.createCell(2).setCellValue(headers[2]);
+            row0.createCell(3).setCellValue(headers[3]);
+            row0.createCell(4).setCellValue(headers[4]);
+            row0.createCell(5).setCellValue(headers[5]);
+            row0.createCell(6).setCellValue(headers[6]);
+
+            int counter = 1;
+
+            while(curCSV.moveToNext())
+            {
+                HSSFRow row = sheet.createRow((short)counter);
+                row.createCell(0).setCellValue(curCSV.getString(0));
+                row.createCell(1).setCellValue(curCSV.getString(1));
+                row.createCell(2).setCellValue(curCSV.getString(2));
+                row.createCell(3).setCellValue(curCSV.getString(3));
+                row.createCell(4).setCellValue(curCSV.getString(4));
+                row.createCell(5).setCellValue(curCSV.getString(5));
+                row.createCell(6).setCellValue(curCSV.getString(6));
+                //String arrStr[] ={curCSV.getString(0),curCSV.getString(1), curCSV.getString(2), curCSV.getString(3), curCSV.getString(4), curCSV.getString(5), curCSV.getString(6)};
+                //csvWrite.writeNext(arrStr);
+                counter++;
             }
-
-            File file = new File(exportDir, "Hovno.csv");
-
-
+                    FileOutputStream fos = null;
             try {
 
-                //file.getParentFile().mkdirs();
-                file.createNewFile();
-                CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
+                String str_path = Environment.getExternalStorageDirectory().toString();
+                File file ;
+                file = new File(str_path, getString(R.string.app_name) + ".xls");
+                fos = new FileOutputStream(file);
 
-                //data
-                ArrayList<String> listdata= new ArrayList<String>();
-                listdata.add("Aniket");
-                listdata.add("Shinde");
-                listdata.add("pune");
-                listdata.add("anything@anything");
-                //Headers
-                String arrStr1[] ={"First Name", "Last Name", "Address", "Email"};
-                csvWrite.writeNext(arrStr1);
 
-                String arrStr[] ={listdata.get(0), listdata.get(1), listdata.get(2), listdata.get(3)};
-                csvWrite.writeNext(arrStr);
-
-                csvWrite.close();
+                workbook.write(fos);
                 return "";
+            } catch (IOException e) {
+                e.printStackTrace();
+                return "b";
+            } finally {
+                if (fos != null) {
+                    try {
+                        fos.flush();
+                        fos.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+               // Toast.makeText(MainActivity.this, "Excel Sheet Generated", Toast.LENGTH_SHORT).show();
+
             }
-            catch (IOException e){
-                Log.e("MainActivity", e.getMessage(), e);
-                return "";
-            }*//*
-            File dbFile=getDatabasePath("MyDBName.db");
-            DBHelper dbhelper = new DBHelper(getApplicationContext());*/
-
+/*
             MMDatabaseHelper help = MMDatabaseHelper.getInstance(context);
 
             File exportDir = new File(Environment.getExternalStorageDirectory(), "");
@@ -930,6 +1083,8 @@ public class MainActivity extends ALockingClass
             {
                 exportDir.mkdirs();
             }
+
+            HSSFWorkbook workbook = new HSSFWorkbook();
 
             File file = new File(exportDir, "csvname.csv");
             try
@@ -956,7 +1111,7 @@ public class MainActivity extends ALockingClass
             {
                 Log.e("MainActivity", sqlEx.getMessage(), sqlEx);
                 return "b";
-            }
+            }*/
         }
 
         @Override

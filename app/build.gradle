@@ -10,6 +10,8 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+        // Enabling multidex support.
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -44,4 +46,5 @@ dependencies {
     compile 'com.rengwuxian.materialedittext:library:2.1.4'
     compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
     compile files('libs/opencsv-2.4 (1).jar')
+    compile files('libs/poi-3.14-20160307.jar')
 }
