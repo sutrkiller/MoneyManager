@@ -1,37 +1,40 @@
 package pv239.fi.muni.cz.moneymanager;
 
 import android.Manifest;
+import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.os.Bundle;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
-import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import android.os.Environment;
-
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -39,17 +42,22 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlaySe
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.drive.model.FileList;
+import com.google.api.services.drive.model.ParentReference;
+import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -63,32 +71,6 @@ import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
 import pv239.fi.muni.cz.moneymanager.helper.DatePickerFragment;
 import pv239.fi.muni.cz.moneymanager.model.FilterCategoriesArgs;
 import pv239.fi.muni.cz.moneymanager.model.FilterRecordsArgs;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
-import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
-
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.ExponentialBackOff;
-
-import com.google.api.services.sheets.v4.SheetsScopes;
-
-import com.google.api.services.sheets.v4.model.*;
-
-import android.Manifest;
-import android.accounts.AccountManager;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.support.annotation.NonNull;
-import android.widget.Button;
-import android.widget.TextView;
 
 
 
@@ -106,6 +88,8 @@ public class MainActivity extends ALockingClass
     private boolean hideFilter = false;
 
     GoogleAccountCredential mCredential;
+    private static Drive mGOOSvc;
+
     private TextView mOutputText;
     private Button mCallApiButton;
     ProgressDialog mProgress;
@@ -117,6 +101,8 @@ public class MainActivity extends ALockingClass
 
     private static final String BUTTON_TEXT = "Call Google Sheets API";
     private static final String PREF_ACCOUNT_NAME = "accountName";
+    private static final String FILE_NAME = "MoneyManager";
+    private static final String PREF_FILE_RES = "MoneyManagerSpreadsheet";
     private static final String[] SCOPES = { SheetsScopes.SPREADSHEETS_READONLY };
 
     @Override
@@ -211,6 +197,9 @@ public class MainActivity extends ALockingClass
         mCredential = GoogleAccountCredential.usingOAuth2(
                 getApplicationContext(), Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff());
+
+
+
     }
 
     /**
@@ -228,6 +217,11 @@ public class MainActivity extends ALockingClass
         } else if (! isDeviceOnline()) {
             mOutputText.setText("No network connection available.");
         } else {
+            mGOOSvc = new Drive.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(),
+                    GoogleAccountCredential.usingOAuth2(this, Collections.singletonList(DriveScopes.DRIVE_FILE))
+                        .setSelectedAccountName(mCredential.getSelectedAccountName())).build();
+
+
             new MakeRequestTask(mCredential).execute();
         }
     }
@@ -280,7 +274,7 @@ public class MainActivity extends ALockingClass
     @Override
     protected void onActivityResult(
             int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+
         switch(requestCode) {
             case REQUEST_GOOGLE_PLAY_SERVICES:
                 if (resultCode != RESULT_OK) {
@@ -311,6 +305,9 @@ public class MainActivity extends ALockingClass
                 if (resultCode == RESULT_OK) {
                     getResultsFromApi();
                 }
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
                 break;
         }
     }
@@ -411,6 +408,9 @@ public class MainActivity extends ALockingClass
         dialog.show();
     }
 
+
+
+
     /**
      * An asynchronous task that handles the Google Sheets API call.
      * Placing the API calls in their own task ensures the UI stays responsive.
@@ -435,10 +435,25 @@ public class MainActivity extends ALockingClass
         @Override
         protected List<String> doInBackground(Void... params) {
             try {
-                //testCreateSheet();
+                if (mGOOSvc!= null && isDeviceOnline()) {
+                    try {
+                        FileList fileList = mGOOSvc.files().list().setQ("title='" + FILE_NAME + "' and trashed=false").execute();
+                        if (fileList.getItems().isEmpty()) {
+                            Log.i("Google Drive", "Creating file");
+                            String resId = testCreateSheet();
+                            if (resId != null) {
+                                SharedPreferences prefs = getPreferences(MODE_PRIVATE);
+                                prefs.edit().putString(PREF_FILE_RES,resId).commit(); //save resId for further editing
+                            }
+                        } else {
+                            Log.i("Google Drive", "File already exists");
+                        }
+                        //TODO sync
+                    } catch (Exception e) {
+                        Log.e("Drive Error", Log.getStackTraceString(e));
+                    }
+                }
                 return getDataFromApi();
-
-
             } catch (Exception e) {
                 mLastError = e;
                 cancel(true);
@@ -469,21 +484,25 @@ public class MainActivity extends ALockingClass
             return results;
         }
 
-        private void testCreateSheet() throws IOException {
-            String spreadsheetId = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms";
-            String range = "Class Data!A2:E";
-            List<String> results = new ArrayList<String>();
-            com.google.api.services.sheets.v4.model.Spreadsheet content = new com.google.api.services.sheets.v4.model.Spreadsheet();
-            this.mService.spreadsheets().create(content).execute();/*
-            List<List<Object>> values = response.getValues();
-            if (values != null) {
-                results.add("Name, Major");
-                for (List row : values) {
-                    results.add(row.get(0) + ", " + row.get(4));
-                }
+        private String testCreateSheet() throws IOException {
+            String rsId = null;
+            if (mGOOSvc!= null && isDeviceOnline()) {
+                try {
+                        com.google.api.services.drive.model.File meta = new com.google.api.services.drive.model.File();
+                        meta.setParents(Collections.singletonList(new ParentReference().setId("root")));
+                        meta.setTitle(FILE_NAME);
+                        meta.setMimeType("application/vnd.google-apps.spreadsheet");
+
+                        com.google.api.services.drive.model.File gF1 = mGOOSvc.files().insert(meta).execute();
+                        if (gF1 != null) {
+                            rsId = gF1.getId();
+                        }
+                } catch (Exception e) {
+                    Log.e("Drive Error", Log.getStackTraceString(e));
+                }}
+                return rsId;
             }
-            //return results;*/
-        }
+
 
         @Override
         protected void onPreExecute() {
