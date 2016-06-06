@@ -36,7 +36,7 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
     public static final String KEY_REC_CAT_ID_FK = "categoryId";
     public static final String KEY_REC_DATE = "date";
     public static final String KEY_REC_ITEM = "item";
-    private static final String DB_NAME = "money_manager";
+    public static final String DB_NAME = "money_manager";
     private static final int DB_VERSION = 1;
     private static MMDatabaseHelper sInstance;
 
@@ -127,7 +127,6 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
                 +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_DATE+", "
                 +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ITEM+", "
                 +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_NAME;
-                ;
 
         String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_VAL+">"+"0 AND "+TABLE_RECORD+"."+KEY_REC_CAT_ID_FK+"="+TABLE_CATEGORY+"."+KEY_CAT_ID+
                              " AND "+TABLE_RECORD+"."+KEY_REC_DATE+" BETWEEN '"+convertDateForDb(startDate)+ "' AND '"+ convertDateForDb(endDate)+"'";

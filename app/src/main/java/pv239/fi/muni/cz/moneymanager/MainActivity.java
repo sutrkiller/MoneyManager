@@ -44,6 +44,7 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.DateTime;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
@@ -57,10 +58,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-
+import static java.util.concurrent.TimeUnit.*;
 import au.com.bytecode.opencsv.CSVWriter;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -98,6 +100,8 @@ public class MainActivity extends ALockingClass
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
+
+    private static final long SYNC_TIME_MIN_DIF = MILLISECONDS.convert(1,MINUTES);
 
     private static final String BUTTON_TEXT = "Call Google Sheets API";
     private static final String PREF_ACCOUNT_NAME = "accountName";
@@ -435,6 +439,11 @@ public class MainActivity extends ALockingClass
         @Override
         protected List<String> doInBackground(Void... params) {
             try {
+                File dbpath = getDatabasePath(MMDatabaseHelper.DB_NAME);
+                long dbModif = dbpath.lastModified();
+                Log.i("DB Modified: ", String.valueOf(dbModif));
+                long driveModif = 0;
+
                 if (mGOOSvc!= null && isDeviceOnline()) {
                     try {
                         FileList fileList = mGOOSvc.files().list().setQ("title='" + FILE_NAME + "' and trashed=false").execute();
@@ -447,8 +456,22 @@ public class MainActivity extends ALockingClass
                             }
                         } else {
                             Log.i("Google Drive", "File already exists");
+                            driveModif = fileList.getItems().get(0).getModifiedDate().getValue();
+                            Log.i("Drive Modified: ", String.valueOf(driveModif));
                         }
-                        //TODO sync
+
+
+                        if (Math.abs(dbModif-driveModif)>=SYNC_TIME_MIN_DIF) {  //if changes are at least SYNC_TIME_MIN_DIF apart
+                            if (dbModif-driveModif<=SYNC_TIME_MIN_DIF) {
+                                //drive is newer -> download data
+                            } else if (dbModif-driveModif >=SYNC_TIME_MIN_DIF) {
+                                //db is newer -> upload data
+                            } else {
+                                //no pending changes...
+                            }
+                        }
+
+
                     } catch (Exception e) {
                         Log.e("Drive Error", Log.getStackTraceString(e));
                     }
