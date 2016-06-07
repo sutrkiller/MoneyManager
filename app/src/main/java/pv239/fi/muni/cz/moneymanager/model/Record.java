@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import pv239.fi.muni.cz.moneymanager.helper.ExchangeRateCalculator;
+
 /**
  * Category model
  *
@@ -27,32 +29,23 @@ public class Record {
     public Category category;
     public String dateTime;
     public String item;
+    public BigDecimal valueInEur;
 
     public Record(long id, BigDecimal value, Currency currency, String item,  String dateTime, Category category) {
+        this(id,value,ExchangeRateCalculator.TransferRate(currency, Currency.getInstance("EUR"),value),currency,item,dateTime,category);
+    }
+
+    public Record(long id, BigDecimal value, BigDecimal valueInEur, Currency currency, String item,  String dateTime, Category category) {
         this.category = category;
         this.currency = currency;
         this.dateTime = dateTime;
         this.id = id;
         this.value = value;
         this.item = item;
+
+        this.valueInEur =  valueInEur == null ? BigDecimal.ZERO : valueInEur;
     }
 
-    public static List<Record> getTestingData() {
-        ArrayList<Record> records = new ArrayList<>();
-
-        Category cardKb  = new Category(0,"Card","KB");
-        Category cardCSOB  = new Category(1,"Card","CSOB");
-        Category cash  = new Category(2,"Cash","");
-
-//        records.add(new Record(0,cardKb,Currency.getInstance(Locale.US),"2016-05-17 12:12:12",0,BigDecimal.valueOf(-500.5F),"Shoes"));
-//        records.add(new Record(1,cardCSOB,Currency.getInstance(Locale.GERMANY),"2016-05-18 12:12:12",0,BigDecimal.valueOf(-50.5F),"Baker"));
-//        records.add(new Record(2,cash,Currency.getInstance(Locale.UK),"2016-05-20 12:12:12",0,BigDecimal.valueOf(-5000.5F),"Smartphone"));
-//        records.add(new Record(3,cash,Currency.getInstance(Locale.US),"2016-06-17 12:12:12",0,BigDecimal.valueOf(500.5F),"Salary"));
-//        records.add(new Record(4,cardKb,Currency.getInstance(Locale.UK),"2016-10-17 12:12:12",0,BigDecimal.valueOf(1000.5F),"Bonus"));
-//        records.add(new Record(5,cardCSOB,Currency.getInstance(Locale.FRANCE),"2017-02-17 12:12:12",0,BigDecimal.valueOf(-49256.5F),"New car"));
-
-        return records;
-    }
 
     public static String formatDateTime(Context context, String timeToFormat) {
 

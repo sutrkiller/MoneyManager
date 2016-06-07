@@ -135,7 +135,7 @@ public class MainActivity extends ALockingClass
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
 
-    private static final long SYNC_TIME_MIN_DIF = MILLISECONDS.convert(20,SECONDS);
+    private static final long SYNC_TIME_MIN_DIF = MILLISECONDS.convert(5,SECONDS);
 
     private static final String BUTTON_TEXT = "Call Google Sheets API";
     private static final String PREF_ACCOUNT_NAME = "accountName";
@@ -491,6 +491,7 @@ public class MainActivity extends ALockingClass
                             if (resId != null) {
                                 SharedPreferences prefs = getPreferences(MODE_PRIVATE);
                                 prefs.edit().putString(PREF_FILE_RES,resId).commit(); //save resId for further editing
+                                result = 1;
                                 testUpdateContent(resId);
                             }
                         } else {
@@ -498,25 +499,28 @@ public class MainActivity extends ALockingClass
                             driveModif = fileList.getItems().get(0).getModifiedDate().getValue();
                             resId = fileList.getItems().get(0).getId();
                             Log.i("Drive Modified: ", String.valueOf(driveModif));
-                        }
 
 
-                        if (Math.abs(dbModif-driveModif)>=SYNC_TIME_MIN_DIF) {  //if changes are at least SYNC_TIME_MIN_DIF apart
-                            if (dbModif-driveModif<=SYNC_TIME_MIN_DIF) {
-                                //drive is newer -> download data
-                                //testUpdateContent(resId);
-                                testDownloadContent(resId);
-                                result = 0;
-                            } else if (dbModif-driveModif >=SYNC_TIME_MIN_DIF) {
-                                //db is newer -> upload data
-                                testUpdateContent(resId);
-                                //testDownloadContent(resId);
-                                result = 1;
-                            } else {
-                                result = -1;
-                                //no pending changes...
-                                //testUpdateContent(resId);
-                                //testDownloadContent(resId);
+                            if (Math.abs(dbModif - driveModif) >= SYNC_TIME_MIN_DIF) {  //if changes are at least SYNC_TIME_MIN_DIF apart
+                                if (dbModif - driveModif <= SYNC_TIME_MIN_DIF) {
+                                    //drive is newer -> download data
+                                    //testUpdateContent(resId);
+                                    testDownloadContent(resId);
+                                    result = 0;
+                                    Log.i("Drive: ", "Changes downloaded");
+                                } else if (dbModif - driveModif >= SYNC_TIME_MIN_DIF) {
+                                    //db is newer -> upload data
+                                    testUpdateContent(resId);
+                                    //testDownloadContent(resId);
+                                    result = 1;
+                                    Log.i("Drive: ", "Changes updated");
+                                } else {
+                                    result = -1;
+                                    //no pending changes...
+                                    //testUpdateContent(resId);
+                                    //testDownloadContent(resId);
+                                    Log.i("Drive: ", "No changes");
+                                }
                             }
                         }
 
@@ -529,6 +533,7 @@ public class MainActivity extends ALockingClass
             } catch (Exception e) {
                 mLastError = e;
                 cancel(true);
+                result = -1;
                 return null;
             }
         }
@@ -621,6 +626,12 @@ public class MainActivity extends ALockingClass
                                     .setGreen(Float.valueOf(1)))));
             values.add(new CellData()
                     .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(headers[7]))
+                    .setUserEnteredFormat(new CellFormat()
+                            .setBackgroundColor(new Color()
+                                    .setGreen(Float.valueOf(1)))));
+            values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
                             .setStringValue(headers[3]))
                     .setUserEnteredFormat(new CellFormat()
                             .setBackgroundColor(new Color()
@@ -660,6 +671,9 @@ public class MainActivity extends ALockingClass
                     .setUserEnteredValue(new ExtendedValue()
                             .setStringValue(curCSV.getString(2))));
                 values.add(new CellData()
+                        .setUserEnteredValue(new ExtendedValue()
+                                .setStringValue(curCSV.getString(7))));
+                values.add(new CellData()
                     .setUserEnteredValue(new ExtendedValue()
                             .setStringValue(curCSV.getString(3))));
                 values.add(new CellData()
@@ -675,9 +689,11 @@ public class MainActivity extends ALockingClass
                 rows.add(new RowData().setValues(values));
             }
 
-            int end = mService.spreadsheets().values().get(spreadsheetId,"A:G").setMajorDimension("ROWS").execute().getValues().size();
-            if (rows.size()-1 <=end) {
+            List<List<Object>> list = mService.spreadsheets().values().get(spreadsheetId,"A:H").setMajorDimension("ROWS").execute().getValues();
+            int end = list == null ? -2 : list.size();
+            if (rows.size()-1 <end) {
                 Request request = new Request().setDeleteDimension(new DeleteDimensionRequest().setRange(new DimensionRange().setSheetId(0).setDimension("ROWS").setStartIndex(rows.size() - 1).setEndIndex(end)));
+                Log.i("REQUEST: ",rows.size()-1+"  " +end);
                 requests.add(request);
             }
 
@@ -702,7 +718,7 @@ public class MainActivity extends ALockingClass
         private void testDownloadContent(String resId) {
             try {
                 List<Record> result = new ArrayList<>();
-                String range = "A:G";
+                String range = "A:H";
                 ValueRange response = mService.spreadsheets().values().get(resId,range).setMajorDimension("ROWS").execute();
                 MMDatabaseHelper db = MMDatabaseHelper.getInstance(getApplicationContext());
                 db.deleteAllRecords();
@@ -710,15 +726,16 @@ public class MainActivity extends ALockingClass
                 if (values!= null && values.size()>1) {
                     values.remove(0);
                     for (List row : values) {
-                        Log.i("INFO: ", row.get(0).toString() + row.get(1) + row.get(2) + row.get(3) + row.get(4) + row.get(5)+ (row.size()==6 ? "":row.get(6)));
+                        //Log.i("INFO: ", row.get(0).toString() + row.get(1) + row.get(2) + row.get(3) + row.get(4) + row.get(5)+ (row.size()==6 ? "":row.get(6)));
                         long id = Long.parseLong(row.get(0).toString());
                         BigDecimal value = new BigDecimal(row.get(1).toString());
                         Currency currency = Currency.getInstance(row.get(2).toString());
-                        String date = row.get(3).toString();
-                        String item = row.get(4).toString();
-                        Category category = new Category(0,row.get(5).toString(),row.size()==6 ? "":row.get(6).toString());
+                        BigDecimal valInEur = new BigDecimal(row.get(3).toString());
+                        String date = row.get(4).toString();
+                        String item = row.get(5).toString();
+                        Category category = new Category(0,row.get(6).toString(),row.size()==7 ? "":row.get(7).toString());
 
-                        Record record = new Record(0,value,currency,item,date,category);
+                        Record record = new Record(0,value,valInEur,currency,item,date,category);
                         db.addRecord(record);
                     }
                 }
@@ -926,6 +943,10 @@ public class MainActivity extends ALockingClass
             MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
             //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
             ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories());
+
+            File dbpath = getDatabasePath(MMDatabaseHelper.DB_NAME);
+            long dbModif = dbpath.lastModified();
+            Log.i("DB Modified: ", String.valueOf(dbModif));
         }
     }
 
