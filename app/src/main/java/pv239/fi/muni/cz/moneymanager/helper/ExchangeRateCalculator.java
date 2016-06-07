@@ -15,7 +15,9 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Currency;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 
@@ -27,8 +29,10 @@ import javax.annotation.Nonnull;
 public class ExchangeRateCalculator {
 
 
-
+    private static Map<String,BigDecimal> cache = new HashMap<>();
     private static class HttpAsyncTask extends AsyncTask<Currency, Void, BigDecimal> {
+
+
         @Override
         protected BigDecimal doInBackground(Currency... urls) {
 
@@ -43,17 +47,20 @@ public class ExchangeRateCalculator {
                 Log.e("Error parsing",Log.getStackTraceString(e));
                 return BigDecimal.ONE;
             }
+            BigDecimal result = BigDecimal.ONE;
             try {
                 URLConnection connection = new URL(url  + query).openConnection();
                 connection.setRequestProperty("Accept-Charset", charset);
                 InputStream response = connection.getInputStream();
                 Scanner scannerr = new Scanner(response);
                 String responseBody = scannerr.useDelimiter(",").next();
-                return scannerr.nextBigDecimal();
+                result = scannerr.nextBigDecimal();
+                scannerr.close();
             } catch (IOException e) {
                 Log.e("Error connection",Log.getStackTraceString(e));
                 return BigDecimal.ONE;
             }
+            return result;
         }
         // onPostExecute displays the results of the AsyncTask.
         @Override
@@ -63,6 +70,10 @@ public class ExchangeRateCalculator {
     }
 
     public static BigDecimal TransferRate(@Nonnull Currency curFrom,@Nonnull Currency curTo, BigDecimal value) {
+        if (cache.containsKey(curFrom.getCurrencyCode()+curTo.getCurrencyCode())) {
+            return cache.get(curFrom.getCurrencyCode()+curTo.getCurrencyCode());
+        }
+
         try {
             return new HttpAsyncTask().execute(curFrom,curTo).get().multiply(value);
         } catch (InterruptedException e) {

@@ -175,10 +175,6 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
 
     public Cursor getAllIncomesRecords()
     {
-        SetDates setDates = new SetDates().invoke();
-        Date startDate = setDates.getStartDate();
-        Date endDate = setDates.getEndDate();
-
         String cols = MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ID+", "
                 +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_VAL+", "
                 +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_CURR+", "
@@ -186,8 +182,7 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
                 +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ITEM+", "
                 +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_NAME;
 
-        String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_VAL+">"+"0 AND "+TABLE_RECORD+"."+KEY_REC_CAT_ID_FK+"="+TABLE_CATEGORY+"."+KEY_CAT_ID+
-                             " AND "+TABLE_RECORD+"."+KEY_REC_DATE+" BETWEEN '"+convertDateForDb(startDate)+ "' AND '"+ convertDateForDb(endDate)+"'";
+        String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_VAL+">"+"0 AND "+TABLE_RECORD+"."+KEY_REC_CAT_ID_FK+"="+TABLE_CATEGORY+"."+KEY_CAT_ID;
         String query = "SELECT "+cols+
                 " FROM "+TABLE_RECORD+ ", "+TABLE_CATEGORY+
                 whereClause;
@@ -204,23 +199,24 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    public Cursor getAllExpensesRecords()
+    public int getCurrentBalanceForOneDay(Date day)
     {
-        SetDates setDates = new SetDates().invoke();
-        Date startDate = setDates.getStartDate();
-        Date endDate = setDates.getEndDate();
+        Log.i("THIS IS DAY","                   "+day.toString());
+        Calendar startCal = Calendar.getInstance();
+        startCal.setTime(day);
+        startCal.set(Calendar.HOUR_OF_DAY,0);
+        startCal.set(Calendar.MINUTE,0);
+        startCal.set(Calendar.SECOND,0);
+        Calendar endCal = Calendar.getInstance();
+        endCal.setTime(day);
+        endCal.set(Calendar.HOUR_OF_DAY,23);
+        endCal.set(Calendar.MINUTE,59);
+        endCal.set(Calendar.SECOND,59);
 
-        String cols = MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ID+", "
-                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_VAL+", "
-                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_CURR+", "
-                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_DATE+", "
-                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ITEM+", "
-                +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_NAME;
-
-        String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_VAL+" < "+"0 AND "+TABLE_RECORD+"."+KEY_REC_CAT_ID_FK+"="+TABLE_CATEGORY+"."+KEY_CAT_ID+
-                             " AND "+TABLE_RECORD+"."+KEY_REC_DATE+" BETWEEN '"+convertDateForDb(startDate)+ "' AND '"+ convertDateForDb(endDate)+"'";
-        String query = "SELECT "+cols+
-                " FROM "+TABLE_RECORD+ ", "+TABLE_CATEGORY+
+        String cols = MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_VAL;
+        String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_DATE+" < '"+convertDateForDb(startCal.getTime())+"'";
+        String query = "SELECT SUM("+cols+
+                ") FROM "+TABLE_RECORD+ ", "+TABLE_CATEGORY+
                 whereClause;
         Log.i("SQL",query);
         SQLiteDatabase db = getReadableDatabase();
@@ -231,8 +227,140 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
 
         } finally {
 
-        } return cursor;
+        }
 
+        cursor.moveToFirst();
+        return cursor.getInt(0);
+
+    }
+
+    public Integer getSumRecordsInRange(String operator, int days, int months, int years)
+    {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR, (days)*(-1));
+        calendar.add(Calendar.MONTH, (months)*(-1));
+        calendar.add(Calendar.YEAR, (years)*(-1));
+        // String currentDate = convertDateForDb(new Date().setTime(22));
+        String valueExp = "";
+        if (operator !=null)
+        {
+            valueExp = TABLE_RECORD+"."+KEY_REC_VAL+" "+operator+" 0";
+        }
+        String col = TABLE_RECORD+"."+KEY_REC_VAL;
+        String whereClause = " WHERE " +valueExp+" AND "+TABLE_RECORD+"."+KEY_REC_DATE+" BETWEEN '"+convertDateForDb(calendar.getTime())+ "' AND '"+ convertDateForDb(Calendar.getInstance().getTime())+"'";
+        String query = "SELECT SUM("+col+
+                ") FROM "+TABLE_RECORD+
+                whereClause;
+        Log.i("SQL",query);
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery(query,null);
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(0);
+            }
+        } catch (SQLiteException e) {
+        } finally {
+        } return 0;
+    }
+
+    public Integer getExpensesSum(int days, int months, int years)
+    {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR, (days)*(-1));
+        calendar.add(Calendar.MONTH, (months)*(-1));
+        calendar.add(Calendar.YEAR, (years)*(-1));
+        // String currentDate = convertDateForDb(new Date().setTime(22));
+        String col = TABLE_RECORD+"."+KEY_REC_VAL;
+        String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_VAL+" <"+" 0 AND "+TABLE_RECORD+"."+KEY_REC_DATE+" BETWEEN '"+convertDateForDb(calendar.getTime())+ "' AND '"+ convertDateForDb(Calendar.getInstance().getTime())+"'";
+        String query = "SELECT SUM("+col+
+                ") FROM "+TABLE_RECORD+
+                whereClause;
+        Log.i("SQL",query);
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery(query,null);
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(0);
+            }
+        } catch (SQLiteException e) {
+        } finally {
+        } return 0;
+    }
+
+    public Cursor getRecordsInRange(String operator, int days, int months, int years)
+    {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR, (days)*(-1));
+        calendar.add(Calendar.MONTH, (months)*(-1));
+        calendar.add(Calendar.YEAR, (years)*(-1));
+        // String currentDate = convertDateForDb(new Date().setTime(22));
+        String cols = MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ID+", "
+                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_VAL+", "
+                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_CURR+", "
+                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_DATE+", "
+                +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ITEM+", "
+                +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_NAME;
+
+        String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_VAL+" "+operator+" "+"0"+
+                " AND "+TABLE_RECORD+"."+KEY_REC_CAT_ID_FK+"="+TABLE_CATEGORY+"."+KEY_CAT_ID+
+                " AND "+TABLE_RECORD+"."+KEY_REC_DATE+
+                " BETWEEN '"+convertDateForDb(calendar.getTime())+
+                "' AND '"+ convertDateForDb(Calendar.getInstance().getTime())+"'";
+
+        String query = "SELECT "+cols+
+                " FROM "+TABLE_RECORD+ ", "+TABLE_CATEGORY+
+                whereClause;
+        Log.i("SQL",query);
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery(query,null);
+        } catch (SQLiteException e) {
+        } finally {
+        } return cursor;
+    }
+
+    public Integer getStartingBal(Date date)
+    {
+        String col = TABLE_RECORD+"."+KEY_REC_VAL;
+        String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_DATE+" < '"+convertDateForDb(date)+"'";
+        String query = "SELECT SUM("+col+
+                ") FROM "+TABLE_RECORD+
+                whereClause;
+        Log.i("SQL",query);
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery(query,null);
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(0);
+            }
+        } catch (SQLiteException e) {
+        } finally {
+        } return 0;
+    }
+
+    public Integer getEndingBal()
+    {
+        Calendar calendar = Calendar.getInstance();
+        String col = TABLE_RECORD+"."+KEY_REC_VAL;
+        String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_DATE+" < '"+convertDateForDb(calendar.getTime())+"'";
+        String query = "SELECT SUM("+col+
+                ") FROM "+TABLE_RECORD+
+                whereClause;
+        Log.i("SQL",query);
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery(query,null);
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(0);
+            }
+        } catch (SQLiteException e) {
+        } finally {
+        } return 0;
     }
 
     public Integer getIncomesSum()

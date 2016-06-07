@@ -6,245 +6,33 @@
 
     <!-- TODO: Update blank fragment layout -->
 
-
-    <GridLayout
+    <!--android:elevation="6dp"-->
+    <android.support.design.widget.TabLayout
+        android:id="@+id/tab_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:rowCount="1"
-        android:columnCount="3"
-        android:id="@+id/gridViewTopMenuStats"
-        android:background="#4fd527">
+        android:background="?attr/colorPrimary"
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="&lt; Previous Month"
-            android:id="@+id/previousMonth"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true"
-            android:layout_gravity="left"
-            android:layout_row="0"
-            android:layout_column="0"
-            android:background="#46bc22" />
+        android:minHeight="?attr/actionBarSize"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        />
 
-        <Space
-            android:layout_width="20px"
-            android:layout_height="20px"
-            android:layout_row="0"
-            android:layout_column="1" />
-
-        <Button
-            android:layout_gravity="right"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Next Month >"
-            android:id="@+id/nextMonth"
-            android:layout_alignBottom="@+id/previousMonth"
-            android:layout_alignParentEnd="true"
-            android:layout_row="0"
-            android:layout_column="2"
-            android:background="#46bc22" />
-
-
-    </GridLayout>
-
-    <ScrollView
+    <pv239.fi.muni.cz.moneymanager.CustomViewPager
+        android:id="@+id/pager"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fillViewport="true"
-        android:id="@+id/scrollViewStats"
-        android:layout_below="@+id/gridViewTopMenuStats"
-        android:nestedScrollingEnabled="false">
-
-        <GridLayout
-            android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_below="@id/tab_layout"
+        >
+        <android.support.v4.view.PagerTitleStrip
+            android:id="@+id/pager_title_strip"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_below="@+id/gridViewTopMenuStats"
-            android:rowCount="6"
-            android:columnCount="1"
-            android:id="@+id/gridViewScreenStats">
+            android:layout_gravity="top"
+            android:background="#33b5e5"
+            android:textColor="#fff"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp" />
 
-            <Space
-                android:layout_height="10dp"
-                />
-            <!-- Upper Balances -->
-            <RelativeLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:background="@drawable/box"
-                android:padding="5dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="Start "
-                    android:id="@+id/startMonthStats"
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_toRightOf="@+id/startMonthStats"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text=" - "
-                    android:id="@+id/tillMonthStats"
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_toRightOf="@+id/tillMonthStats"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="End "
-                    android:id="@+id/endMonthStats"
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/startMonthStats"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="Starting balance: "
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    android:id="@+id/startBalanceLabel"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_toRightOf="@+id/startBalanceLabel"
-                    android:layout_below="@+id/startMonthStats"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text=""
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    android:id="@+id/startBalance"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/startBalance"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="Ending balance: "
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    android:id="@+id/endBalanceLabel" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/startMonthStats"
-                    android:layout_toRightOf="@+id/endBalanceLabel"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text=""
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    android:id="@+id/endBalance"/>
-
-            </RelativeLayout>
-
-            <!-- Middle income balances -->
-            <RelativeLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="400dp"
-                android:background="@drawable/box"
-                android:layout_gravity="center"
-                android:id="@+id/liner"
-                android:layout_row="3"
-                android:layout_column="0"
-                android:layout_margin="10dp"
-                android:padding="5dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="20dp"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="Income:"
-                    android:id="@+id/incomeStats" />
-
-                <TextView
-
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text=""
-                    android:textColor="@color/recordPositiveValue"
-                    android:id="@+id/incomeSumStats"
-                    android:textAlignment="textEnd"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentEnd="true" />
-
-                <ListView
-                    android:layout_below="@id/incomeStats"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/listViewIncomeStats"
-                    android:layout_row="2"
-                    android:nestedScrollingEnabled="true"/>
-
-            </RelativeLayout>
-
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:layout_row="4"/>
-
-            <!-- Bottom expence balances -->
-            <RelativeLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="400dp"
-                android:background="@drawable/box"
-                android:layout_gravity="center"
-                android:layout_row="5"
-                android:id="@+id/rel"
-                android:layout_column="0"
-                android:layout_margin="10dp"
-                android:padding="5dp"
-                android:nestedScrollingEnabled="true">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="20dp"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="Expenses:"
-                    android:id="@+id/expenseStats" />
-
-                <TextView
-
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text=""
-                    android:textColor="@color/recordNegativeValue"
-                    android:id="@+id/expenseSumStats"
-                    android:textAlignment="textEnd"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentEnd="true" />
-
-                <ListView
-                    android:layout_below="@id/expenseStats"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/listViewExpences"
-                    android:layout_row="2"
-                    android:nestedScrollingEnabled="true"/>
-
-            </RelativeLayout>
-
-        </GridLayout>
-
-    </ScrollView>
-
+    </pv239.fi.muni.cz.moneymanager.CustomViewPager>
 
 </RelativeLayout>

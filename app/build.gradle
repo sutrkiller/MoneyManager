@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    buildToolsVersion "23.0.3"
 
     defaultConfig {
         applicationId "pv239.fi.muni.cz.moneymanager"
@@ -30,10 +30,10 @@ repositories{
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.3.0'
-    compile 'com.android.support:design:23.3.0'
-    compile 'com.android.support:support-v4:23.3.0'
-    compile 'com.google.android.gms:play-services-identity:8.4.0'
+    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.android.support:design:23.4.0'
+    compile 'com.android.support:support-v4:23.4.0'
+    compile 'com.google.android.gms:play-services-identity:9.0.2'
     compile 'pub.devrel:easypermissions:0.1.5'
     compile('com.google.api-client:google-api-client-android:1.22.0') {
         exclude group: 'org.apache.httpcomponents'
@@ -45,6 +45,8 @@ dependencies {
     compile 'com.google.http-client:google-http-client-gson:1.20.0'
     compile 'com.rengwuxian.materialedittext:library:2.1.4'
     compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
+    compile "com.androidplot:androidplot-core:0.9.8"
+    compile 'com.jjoe64:graphview:4.0.1'
     compile files('libs/opencsv-2.4 (1).jar')
     compile files('libs/poi-3.14-20160307.jar')
 }
