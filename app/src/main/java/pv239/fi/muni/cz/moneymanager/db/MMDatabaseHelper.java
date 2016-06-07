@@ -32,11 +32,12 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
     public static final String KEY_CAT_DET = "details";
     public static final String KEY_REC_ID = "_id";
     public static final String KEY_REC_VAL = "value";
+    public static final String KEY_REC_VALEUR = "value_in_eur";
     public static final String KEY_REC_CURR = "currency";
     public static final String KEY_REC_CAT_ID_FK = "categoryId";
     public static final String KEY_REC_DATE = "date";
     public static final String KEY_REC_ITEM = "item";
-    private static final String DB_NAME = "money_manager";
+    public static final String DB_NAME = "money_manager";
     private static final int DB_VERSION = 1;
     private static MMDatabaseHelper sInstance;
 
@@ -45,7 +46,7 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public MMDatabaseHelper(Context context, SQLiteDatabase.CursorFactory factory) {
-        super(context, DB_NAME, factory, DB_VERSION); 
+        super(context, DB_NAME, factory, DB_VERSION);
     }
 
     public static synchronized MMDatabaseHelper getInstance(Context context) {
@@ -74,6 +75,62 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
         updateMyDb(db, oldVersion, newVersion);
     }
 
+    private void updateMyDb(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if (oldVersion < 1) {
+            String CREATE_CATEGORY_TABLE = "CREATE TABLE " + TABLE_CATEGORY + " (" +
+                    KEY_CAT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    KEY_CAT_NAME + " TEXT," +
+                    KEY_CAT_DET + " TEXT);";
+
+            String CREATE_RECORD_TABLE = "CREATE TABLE " + TABLE_RECORD + " (" +
+                    KEY_REC_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    KEY_REC_VAL + " REAL," +
+                    KEY_REC_VALEUR + " REAL, "+
+                    KEY_REC_CURR + " TEXT," +
+                    KEY_REC_CAT_ID_FK + " INTEGER REFERENCES " + TABLE_CATEGORY + "," +
+                    KEY_REC_DATE + " TEXT," +
+                    KEY_REC_ITEM + " TEXT);";
+
+            db.execSQL(CREATE_CATEGORY_TABLE);
+            db.execSQL(CREATE_RECORD_TABLE);
+
+            insertCategory(db, new Category(0, "Cash", ""));
+            insertCategory(db, new Category(1, "Card", "KB"));
+            insertCategory(db, new Category(2, "Card", "CSOB"));
+            insertCategory(db, new Category(3, "Card", "Ceska Sporitelna"));
+
+            Category cardKb = new Category(1, "Card", "KB");
+            Category cardCSOB = new Category(2, "Card", "CSOB");
+            Category cash = new Category(3, "Cash", "");
+            Category cardCS = new Category(4, "Card", "Ceska Sporitelna");
+
+//            insertRecord(db, new Record(0,BigDecimal.valueOf(-500.5F),Currency.getInstance(Locale.US),"Shoes", "2016-05-17 12:12:12", cardKb));
+//            insertRecord(db, new Record(1,BigDecimal.valueOf(-50.5F),Currency.getInstance(Locale.GERMANY),"Baker", "2016-05-18 12:12:12", cardCSOB));
+//            insertRecord(db, new Record(2,BigDecimal.valueOf(-5000.5F),Currency.getInstance(Locale.UK),"Smartphone", "2016-05-20 12:12:12", cash));
+//            insertRecord(db, new Record(3,BigDecimal.valueOf(500.5F),Currency.getInstance(Locale.US),"Salary", "2016-06-17 12:12:12", cardCS));
+//            insertRecord(db, new Record(4,BigDecimal.valueOf(1000.5F),Currency.getInstance(Locale.UK),"Bonus", "2016-10-17 12:12:12", cardKb));
+//            insertRecord(db, new Record(5,BigDecimal.valueOf(-49256.5F),Currency.getInstance(Locale.FRANCE),"New car", "2017-05-17 12:12:12", cardCSOB));
+        }
+    }
+
+    private static void insertCategory(SQLiteDatabase db, Category category) {
+        ContentValues catValues = new ContentValues();
+        catValues.put(KEY_CAT_NAME, category.name);
+        catValues.put(KEY_CAT_DET, category.details);
+        db.insert(TABLE_CATEGORY, null, catValues);
+    }
+
+    private static void insertRecord(SQLiteDatabase db, Record record) {
+        ContentValues recValues = new ContentValues();
+        recValues.put(KEY_REC_VAL, String.valueOf(record.value));
+        recValues.put(KEY_REC_CURR, record.currency.getCurrencyCode());
+        recValues.put(KEY_REC_CAT_ID_FK, record.category.id);
+        recValues.put(KEY_REC_DATE, record.dateTime);
+        recValues.put(KEY_REC_ITEM, record.item);
+        recValues.put(KEY_REC_VALEUR, String.valueOf(record.valueInEur));
+        db.insert(TABLE_RECORD, null, recValues);
+    }
+
     public Record getRecordById(long id) {
         SQLiteDatabase db = getReadableDatabase();
         Record record = null;
@@ -87,14 +144,15 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
                     +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ITEM+", "
                     +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_ID+", "
                     +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_NAME+", "
-                    +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_DET;
+                    +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_DET+", "
+                    +TABLE_RECORD+"."+KEY_REC_VALEUR; //changed
 
             String recSelect = String.format("SELECT %s FROM %s WHERE %s = ? AND %s = %s", cols, TABLE_RECORD+", "+TABLE_CATEGORY, MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ID,MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_CAT_ID_FK,MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_ID);
             Cursor cursor = db.rawQuery(recSelect,new String[] {String.valueOf(id)});
             try {
                 if (cursor.moveToFirst()) {
                     category = new Category(cursor.getInt(5), cursor.getString(6), cursor.getString(7));
-                    record = new Record(id, BigDecimal.valueOf(cursor.getDouble(1)), Currency.getInstance(cursor.getString(2)),cursor.getString(4),cursor.getString(3),category);
+                    record = new Record(id, BigDecimal.valueOf(cursor.getDouble(1)),BigDecimal.valueOf(cursor.getDouble(8)), Currency.getInstance(cursor.getString(2)),cursor.getString(4),cursor.getString(3),category);
                     db.setTransactionSuccessful();
                 }
             } finally {
@@ -127,7 +185,6 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
                 +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_DATE+", "
                 +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ITEM+", "
                 +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_NAME;
-                ;
 
         String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_VAL+">"+"0 AND "+TABLE_RECORD+"."+KEY_REC_CAT_ID_FK+"="+TABLE_CATEGORY+"."+KEY_CAT_ID+
                              " AND "+TABLE_RECORD+"."+KEY_REC_DATE+" BETWEEN '"+convertDateForDb(startDate)+ "' AND '"+ convertDateForDb(endDate)+"'";
@@ -235,7 +292,8 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
                 +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_DATE+", "
                 +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ITEM+", "
                 +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_NAME+", "
-                +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_DET;
+                +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_DET+", "
+                +TABLE_RECORD+"."+KEY_REC_VALEUR;
 
 
         String dateFromClause = "";
@@ -308,7 +366,6 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
         return iso8601Format.format(date);
     }
 
-
     public long addRecord(Record record) {
         SQLiteDatabase db = getWritableDatabase();
         long insertedId = -1;
@@ -322,6 +379,7 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
             recValues.put(KEY_REC_CAT_ID_FK, categoryId);
             recValues.put(KEY_REC_DATE, record.dateTime);
             recValues.put(KEY_REC_ITEM, record.item);
+            recValues.put(KEY_REC_VALEUR, String.valueOf(record.valueInEur));
 
             insertedId = db.insertOrThrow(TABLE_RECORD,null,recValues);
             db.setTransactionSuccessful();
@@ -349,6 +407,23 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
             db.endTransaction();
         }
 
+        return ret;
+    }
+
+    public long deleteAllRecords() {
+        SQLiteDatabase db = getReadableDatabase();
+        long ret = 0;
+        db.beginTransaction();
+        try {
+            ret = db.delete(TABLE_RECORD,null,null);
+            if (ret>= 0) {
+                db.setTransactionSuccessful();
+            }
+        } catch (Exception e) {
+
+        } finally {
+            db.endTransaction();
+        }
         return ret;
     }
 
@@ -498,59 +573,7 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
         return categories;
     }
 
-    private void updateMyDb(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion < 1) {
-            String CREATE_CATEGORY_TABLE = "CREATE TABLE " + TABLE_CATEGORY + " (" +
-                    KEY_CAT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    KEY_CAT_NAME + " TEXT," +
-                    KEY_CAT_DET + " TEXT);";
 
-            String CREATE_RECORD_TABLE = "CREATE TABLE " + TABLE_RECORD + " (" +
-                    KEY_REC_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    KEY_REC_VAL + " REAL," +
-                    KEY_REC_CURR + " TEXT," +
-                    KEY_REC_CAT_ID_FK + " INTEGER REFERENCES " + TABLE_CATEGORY + "," +
-                    KEY_REC_DATE + " TEXT," +
-                    KEY_REC_ITEM + " TEXT);";
-
-            db.execSQL(CREATE_CATEGORY_TABLE);
-            db.execSQL(CREATE_RECORD_TABLE);
-
-            insertCategory(db, new Category(0, "Cash", ""));
-            insertCategory(db, new Category(1, "Card", "KB"));
-            insertCategory(db, new Category(2, "Card", "CSOB"));
-            insertCategory(db, new Category(3, "Card", "Ceska Sporitelna"));
-
-            Category cardKb = new Category(1, "Card", "KB");
-            Category cardCSOB = new Category(2, "Card", "CSOB");
-            Category cash = new Category(3, "Cash", "");
-            Category cardCS = new Category(4, "Card", "Ceska Sporitelna");
-
-            insertRecord(db, new Record(0,BigDecimal.valueOf(-500.5F),Currency.getInstance(Locale.US),"Shoes", "2016-05-17 12:12:12", cardKb));
-            insertRecord(db, new Record(1,BigDecimal.valueOf(-50.5F),Currency.getInstance(Locale.GERMANY),"Baker", "2016-05-18 12:12:12", cardCSOB));
-            insertRecord(db, new Record(2,BigDecimal.valueOf(-5000.5F),Currency.getInstance(Locale.UK),"Smartphone", "2016-05-20 12:12:12", cash));
-            insertRecord(db, new Record(3,BigDecimal.valueOf(500.5F),Currency.getInstance(Locale.US),"Salary", "2016-06-17 12:12:12", cardCS));
-            insertRecord(db, new Record(4,BigDecimal.valueOf(1000.5F),Currency.getInstance(Locale.UK),"Bonus", "2016-10-17 12:12:12", cardKb));
-            insertRecord(db, new Record(5,BigDecimal.valueOf(-49256.5F),Currency.getInstance(Locale.FRANCE),"New car", "2017-05-17 12:12:12", cardCSOB));
-        }
-    }
-
-    private static void insertCategory(SQLiteDatabase db, Category category) {
-        ContentValues catValues = new ContentValues();
-        catValues.put(KEY_CAT_NAME, category.name);
-        catValues.put(KEY_CAT_DET, category.details);
-        db.insert(TABLE_CATEGORY, null, catValues);
-    }
-
-    private static void insertRecord(SQLiteDatabase db, Record record) {
-        ContentValues recValues = new ContentValues();
-        recValues.put(KEY_REC_VAL, String.valueOf(record.value));
-        recValues.put(KEY_REC_CURR, record.currency.getCurrencyCode());
-        recValues.put(KEY_REC_CAT_ID_FK, record.category.id);
-        recValues.put(KEY_REC_DATE, record.dateTime);
-        recValues.put(KEY_REC_ITEM, record.item);
-        db.insert(TABLE_RECORD, null, recValues);
-    }
 
 
     private class SetDates {
