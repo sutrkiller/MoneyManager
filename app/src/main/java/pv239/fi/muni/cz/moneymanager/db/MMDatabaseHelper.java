@@ -307,7 +307,6 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
         return iso8601Format.format(date);
     }
 
-
     public long addRecord(Record record) {
         SQLiteDatabase db = getWritableDatabase();
         long insertedId = -1;
@@ -348,6 +347,23 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
             db.endTransaction();
         }
 
+        return ret;
+    }
+
+    public long deleteAllRecords() {
+        SQLiteDatabase db = getReadableDatabase();
+        long ret = 0;
+        db.beginTransaction();
+        try {
+            ret = db.delete(TABLE_RECORD,null,null);
+            if (ret>= 0) {
+                db.setTransactionSuccessful();
+            }
+        } catch (Exception e) {
+
+        } finally {
+            db.endTransaction();
+        }
         return ret;
     }
 

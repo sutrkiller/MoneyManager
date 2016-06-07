@@ -29,6 +29,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.GridView;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -51,19 +52,25 @@ import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.ParentReference;
+import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
+import com.google.api.services.sheets.v4.model.BatchGetValuesResponse;
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
 import com.google.api.services.sheets.v4.model.CellData;
 import com.google.api.services.sheets.v4.model.CellFormat;
 import com.google.api.services.sheets.v4.model.Color;
 import com.google.api.services.sheets.v4.model.CopyPasteRequest;
+import com.google.api.services.sheets.v4.model.DeleteDimensionRequest;
 import com.google.api.services.sheets.v4.model.DeleteSheetRequest;
+import com.google.api.services.sheets.v4.model.DimensionRange;
 import com.google.api.services.sheets.v4.model.ExtendedValue;
 import com.google.api.services.sheets.v4.model.GridCoordinate;
+import com.google.api.services.sheets.v4.model.GridData;
 import com.google.api.services.sheets.v4.model.GridRange;
 import com.google.api.services.sheets.v4.model.RepeatCellRequest;
 import com.google.api.services.sheets.v4.model.Request;
 import com.google.api.services.sheets.v4.model.RowData;
+import com.google.api.services.sheets.v4.model.Sheet;
 import com.google.api.services.sheets.v4.model.SheetProperties;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.UpdateCellsRequest;
@@ -80,10 +87,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 import static java.util.concurrent.TimeUnit.*;
@@ -95,9 +104,10 @@ import pv239.fi.muni.cz.moneymanager.adapter.RecordsDbAdapter;
 import pv239.fi.muni.cz.moneymanager.crypto.ALockingClass;
 import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
 import pv239.fi.muni.cz.moneymanager.helper.DatePickerFragment;
+import pv239.fi.muni.cz.moneymanager.model.Category;
 import pv239.fi.muni.cz.moneymanager.model.FilterCategoriesArgs;
 import pv239.fi.muni.cz.moneymanager.model.FilterRecordsArgs;
-
+import pv239.fi.muni.cz.moneymanager.model.Record;
 
 
 /**
@@ -125,7 +135,7 @@ public class MainActivity extends ALockingClass
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
 
-    private static final long SYNC_TIME_MIN_DIF = MILLISECONDS.convert(1,MINUTES);
+    private static final long SYNC_TIME_MIN_DIF = MILLISECONDS.convert(20,SECONDS);
 
     private static final String BUTTON_TEXT = "Call Google Sheets API";
     private static final String PREF_ACCOUNT_NAME = "accountName";
@@ -443,10 +453,11 @@ public class MainActivity extends ALockingClass
      * An asynchronous task that handles the Google Sheets API call.
      * Placing the API calls in their own task ensures the UI stays responsive.
      */
-    private class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
+    private class MakeRequestTask extends AsyncTask<Void, Void, Integer> {
         private com.google.api.services.sheets.v4.Sheets mService = null;
         private Exception mLastError = null;
         private Context context;
+        private int result = -1;
 
         public MakeRequestTask(GoogleAccountCredential credential, Context context) {
             HttpTransport transport = AndroidHttp.newCompatibleTransport();
@@ -463,7 +474,7 @@ public class MainActivity extends ALockingClass
          * @param params no parameters needed for this task.
          */
         @Override
-        protected List<String> doInBackground(Void... params) {
+        protected Integer doInBackground(Void... params) {
             try {
                 File dbpath = getDatabasePath(MMDatabaseHelper.DB_NAME);
                 long dbModif = dbpath.lastModified();
@@ -493,13 +504,19 @@ public class MainActivity extends ALockingClass
                         if (Math.abs(dbModif-driveModif)>=SYNC_TIME_MIN_DIF) {  //if changes are at least SYNC_TIME_MIN_DIF apart
                             if (dbModif-driveModif<=SYNC_TIME_MIN_DIF) {
                                 //drive is newer -> download data
-                                testUpdateContent(resId);
+                                //testUpdateContent(resId);
+                                testDownloadContent(resId);
+                                result = 0;
                             } else if (dbModif-driveModif >=SYNC_TIME_MIN_DIF) {
                                 //db is newer -> upload data
                                 testUpdateContent(resId);
+                                //testDownloadContent(resId);
+                                result = 1;
                             } else {
+                                result = -1;
                                 //no pending changes...
-                                testUpdateContent(resId);
+                                //testUpdateContent(resId);
+                                //testDownloadContent(resId);
                             }
                         }
 
@@ -508,7 +525,7 @@ public class MainActivity extends ALockingClass
                         Log.e("Drive Error", Log.getStackTraceString(e));
                     }
                 }
-                return getDataFromApi();
+                return result;
             } catch (Exception e) {
                 mLastError = e;
                 cancel(true);
@@ -553,10 +570,10 @@ public class MainActivity extends ALockingClass
                         java.io.File fileContent = new java.io.File(Environment.getExternalStorageDirectory(), "MoneyManager.xls");
 
 
-                        Spreadsheet testSheet = new Spreadsheet();
+                        //Spreadsheet testSheet = new Spreadsheet();
 
 
-                        FileContent mediaContent = new FileContent("application/vnd.google-apps.spreadsheet", fileContent);
+                        //FileContent mediaContent = new FileContent("application/vnd.google-apps.spreadsheet", fileContent);
 
                         //Cursor curCSV = help.getAllRecordsWithCategories();
 
@@ -569,6 +586,8 @@ public class MainActivity extends ALockingClass
                 }}
                 return rsId;
             }
+
+
 
         private void testUpdateContent(String spreadsheetId) throws IOException {
 
@@ -656,6 +675,10 @@ public class MainActivity extends ALockingClass
                 rows.add(new RowData().setValues(values));
             }
 
+            int end = mService.spreadsheets().values().get(spreadsheetId,"A:G").setMajorDimension("ROWS").execute().getValues().size();
+            Request request = new Request().setDeleteDimension(new DeleteDimensionRequest().setRange(new DimensionRange().setSheetId(0).setDimension("ROWS").setStartIndex(0).setEndIndex(end)));
+            requests.add(request);
+
             //todo request na clear sheetu requests.add(new Request().setDeleteSheet(new DeleteSheetRequest()));
             requests.add(new Request()
                     .setUpdateCells(new UpdateCellsRequest()
@@ -673,6 +696,38 @@ public class MainActivity extends ALockingClass
                     .execute();
         }
 
+
+        private void testDownloadContent(String resId) {
+            try {
+                List<Record> result = new ArrayList<>();
+                String range = "A:G";
+                ValueRange response = mService.spreadsheets().values().get(resId,range).setMajorDimension("ROWS").execute();
+                MMDatabaseHelper db = MMDatabaseHelper.getInstance(getApplicationContext());
+                db.deleteAllRecords();
+                List<List<Object>> values = response.getValues();
+                if (values!= null && values.size()>1) {
+                    values.remove(0);
+                    for (List row : values) {
+                        Log.i("INFO: ", row.get(0).toString() + row.get(1) + row.get(2) + row.get(3) + row.get(4) + row.get(5)+ (row.size()==6 ? "":row.get(6)));
+                        long id = Long.parseLong(row.get(0).toString());
+                        BigDecimal value = new BigDecimal(row.get(1).toString());
+                        Currency currency = Currency.getInstance(row.get(2).toString());
+                        String date = row.get(3).toString();
+                        String item = row.get(4).toString();
+                        Category category = new Category(0,row.get(5).toString(),row.size()==6 ? "":row.get(6).toString());
+
+                        Record record = new Record(0,value,currency,item,date,category);
+                        db.addRecord(record);
+                    }
+                }
+
+                Log.i("DEBUG INFO: ", String.valueOf(values.get(0).size()));
+
+            } catch (IOException e) {
+                Log.e("Error read drive",Log.getStackTraceString(e));
+            }
+        }
+
         @Override
         protected void onPreExecute() {
             //mOutputText.setText("");
@@ -681,18 +736,26 @@ public class MainActivity extends ALockingClass
         }
 
         @Override
-        protected void onPostExecute(List<String> output) {
+        protected void onPostExecute(Integer output) {
             //mProgress.hide();
-            if (output == null || output.size() == 0) {
+            //if (output == null || output.size() == 0) {
                 //mOutputText.setText("No results returned.");
-                Toast.makeText(MainActivity.this, "ApiCall Failed!", Toast.LENGTH_SHORT).show();
-                Log.i("Api: ", "nok");
-            } else {
+                //Toast.makeText(MainActivity.this, "ApiCall Failed!", Toast.LENGTH_SHORT).show();
+                //Log.i("Api: ", "nok");
+            //} else {
                 //output.add(0, "Data retrieved using the Google Sheets API:");
                 //mOutputText.setText(TextUtils.join("\n", output));
-                Toast.makeText(MainActivity.this, "ApiCall successful!", Toast.LENGTH_SHORT).show();
-                Log.i("Api: ok", output.toString());
-            }
+               // Toast.makeText(MainActivity.this, "ApiCall successful!", Toast.LENGTH_SHORT).show();
+                Log.i("RESULT:", String.valueOf(output));
+                if (output != null)
+                if (output == 0 && currentPosition == R.id.nav_records) {
+                    ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.records_list_view);
+                    MMDatabaseHelper help = MMDatabaseHelper.getInstance(MainActivity.this);
+                    //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
+                    ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories());
+                }
+
+            //}
         }
 
         //toDo change this
