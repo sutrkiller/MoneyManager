@@ -1,11 +1,25 @@
 package pv239.fi.muni.cz.moneymanager;
 
+import android.Manifest;
+import android.accounts.AccountManager;
+import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.os.Bundle;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -13,19 +27,87 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.GridView;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.http.FileContent;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.DateTime;
+import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.drive.model.FileList;
+import com.google.api.services.drive.model.ParentReference;
+import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.SheetsScopes;
+import com.google.api.services.sheets.v4.model.BatchGetValuesResponse;
+import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
+import com.google.api.services.sheets.v4.model.CellData;
+import com.google.api.services.sheets.v4.model.CellFormat;
+import com.google.api.services.sheets.v4.model.Color;
+import com.google.api.services.sheets.v4.model.CopyPasteRequest;
+import com.google.api.services.sheets.v4.model.DeleteDimensionRequest;
+import com.google.api.services.sheets.v4.model.DeleteSheetRequest;
+import com.google.api.services.sheets.v4.model.DimensionRange;
+import com.google.api.services.sheets.v4.model.ExtendedValue;
+import com.google.api.services.sheets.v4.model.GridCoordinate;
+import com.google.api.services.sheets.v4.model.GridData;
+import com.google.api.services.sheets.v4.model.GridRange;
+import com.google.api.services.sheets.v4.model.RepeatCellRequest;
+import com.google.api.services.sheets.v4.model.Request;
+import com.google.api.services.sheets.v4.model.RowData;
+import com.google.api.services.sheets.v4.model.Sheet;
+import com.google.api.services.sheets.v4.model.SheetProperties;
+import com.google.api.services.sheets.v4.model.Spreadsheet;
+import com.google.api.services.sheets.v4.model.UpdateCellsRequest;
+import com.google.api.services.sheets.v4.model.UpdateSheetPropertiesRequest;
+import com.google.api.services.sheets.v4.model.ValueRange;
+
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRichTextString;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Currency;
 import java.util.Date;
-
+import java.util.List;
+import static java.util.concurrent.TimeUnit.*;
+import au.com.bytecode.opencsv.CSVWriter;
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
 import pv239.fi.muni.cz.moneymanager.adapter.CategoriesDbAdapter;
 import pv239.fi.muni.cz.moneymanager.adapter.RecordsDbAdapter;
 import pv239.fi.muni.cz.moneymanager.crypto.ALockingClass;
 import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
 import pv239.fi.muni.cz.moneymanager.helper.DatePickerFragment;
+import pv239.fi.muni.cz.moneymanager.model.Category;
 import pv239.fi.muni.cz.moneymanager.model.FilterCategoriesArgs;
 import pv239.fi.muni.cz.moneymanager.model.FilterRecordsArgs;
+import pv239.fi.muni.cz.moneymanager.model.Record;
 
 
 /**
@@ -36,13 +118,35 @@ import pv239.fi.muni.cz.moneymanager.model.FilterRecordsArgs;
  */
 
 public class MainActivity extends ALockingClass
-        implements NavigationView.OnNavigationItemSelectedListener, RecordsFragment.OnRecordsInteractionListener, CategoriesFragment.OnCategoriesInteractionListener,StatsFragment.OnStatsInteractionListener, DatePickerFragment.OnDateInteractionListener, AddRecordDialog.AddRecordDialogFinishedListener, AddCategoryDialog.AddCategoryDialogFinishedListener, FilterRecordsDialog.FilterRecordsDialogFinishedListener, FilterCategoriesDialog.FilterCategoriesDialogFinishedListener {
+        implements EasyPermissions.PermissionCallbacks,NavigationView.OnNavigationItemSelectedListener, RecordsFragment.OnRecordsInteractionListener, CategoriesFragment.OnCategoriesInteractionListener,StatsFragment.OnStatsInteractionListener, DatePickerFragment.OnDateInteractionListener, AddRecordDialog.AddRecordDialogFinishedListener, AddCategoryDialog.AddCategoryDialogFinishedListener, FilterRecordsDialog.FilterRecordsDialogFinishedListener, FilterCategoriesDialog.FilterCategoriesDialogFinishedListener {
 
     private int currentPosition=-1;
     private boolean hideFilter = false;
 
+    GoogleAccountCredential mCredential;
+    private static Drive mGOOSvc;
+
+    private TextView mOutputText;
+    private Button mCallApiButton;
+    ProgressDialog mProgress;
+
+    static final int REQUEST_ACCOUNT_PICKER = 1000;
+    static final int REQUEST_AUTHORIZATION = 1001;
+    static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
+    static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
+
+    private static final long SYNC_TIME_MIN_DIF = MILLISECONDS.convert(5,SECONDS);
+
+    private static final String BUTTON_TEXT = "Call Google Sheets API";
+    private static final String PREF_ACCOUNT_NAME = "accountName";
+    private static final String FILE_NAME = "MoneyManager";
+    private static final String PREF_FILE_RES = "MoneyManagerSpreadsheet";
+    private static final String[] SCOPES = { SheetsScopes.SPREADSHEETS, DriveScopes.DRIVE_FILE };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -95,8 +199,605 @@ public class MainActivity extends ALockingClass
         Log.i("CurPos: ", String.valueOf(currentPosition));
         onNavigationItemSelected((MenuItem)findViewById(position));
 
+/*
+        ViewGroup.LayoutParams tlp = new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        mCallApiButton = new Button(this);
+        mCallApiButton.setText(BUTTON_TEXT);
+        mCallApiButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCallApiButton.setEnabled(false);
+                mOutputText.setText("");
+                getResultsFromApi();
+                mCallApiButton.setEnabled(true);
+            }
+        });
+        drawer.addView(mCallApiButton);
+
+        mOutputText = new TextView(this);
+        mOutputText.setLayoutParams(tlp);
+        mOutputText.setPadding(100, 116, 116, 116);
+        mOutputText.setVerticalScrollBarEnabled(true);
+        mOutputText.setMovementMethod(new ScrollingMovementMethod());
+        mOutputText.setText(
+                "Click the \'" + BUTTON_TEXT + "\' button to test the API.");
+        drawer.addView(mOutputText);
+
+        mProgress = new ProgressDialog(this);
+        mProgress.setMessage("Calling Google Sheets API ...");
+
+        setContentView(drawer);*/
+
+        // Initialize credentials and service object.
+        mCredential = GoogleAccountCredential.usingOAuth2(
+                getApplicationContext(), Arrays.asList(SCOPES))
+                .setBackOff(new ExponentialBackOff());
 
 
+
+    }
+
+    /**
+     * Attempt to call the API, after verifying that all the preconditions are
+     * satisfied. The preconditions are: Google Play Services installed, an
+     * account was selected and the device currently has online access. If any
+     * of the preconditions are not satisfied, the app will prompt the user as
+     * appropriate.
+     */
+    private void getResultsFromApi() {
+        if (! isGooglePlayServicesAvailable()) {
+            acquireGooglePlayServices();
+        } else if (mCredential.getSelectedAccountName() == null) {
+            chooseAccount();
+        } else if (! isDeviceOnline()) {
+            mOutputText.setText("No network connection available.");
+        } else {
+            mGOOSvc = new Drive.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(),
+                    GoogleAccountCredential.usingOAuth2(this, Collections.singletonList(DriveScopes.DRIVE_FILE))
+                        .setSelectedAccountName(mCredential.getSelectedAccountName())).build();
+
+
+            new MakeRequestTask(mCredential, this).execute();
+        }
+    }
+
+    /**
+     * Attempts to set the account used with the API credentials. If an account
+     * name was previously saved it will use that one; otherwise an account
+     * picker dialog will be shown to the user. Note that the setting the
+     * account to use with the credentials object requires the app to have the
+     * GET_ACCOUNTS permission, which is requested here if it is not already
+     * present. The AfterPermissionGranted annotation indicates that this
+     * function will be rerun automatically whenever the GET_ACCOUNTS permission
+     * is granted.
+     */
+    @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS)
+    private void chooseAccount() {
+        if (EasyPermissions.hasPermissions(
+                this, Manifest.permission.GET_ACCOUNTS)) {
+            String accountName = getPreferences(Context.MODE_PRIVATE)
+                    .getString(PREF_ACCOUNT_NAME, null);
+            if (accountName != null) {
+                mCredential.setSelectedAccountName(accountName);
+                getResultsFromApi();
+            } else {
+                // Start a dialog from which the user can choose an account
+                startActivityForResult(
+                        mCredential.newChooseAccountIntent(),
+                        REQUEST_ACCOUNT_PICKER);
+            }
+        } else {
+            // Request the GET_ACCOUNTS permission via a user dialog
+            EasyPermissions.requestPermissions(
+                    this,
+                    "This app needs to access your Google account (via Contacts).",
+                    REQUEST_PERMISSION_GET_ACCOUNTS,
+                    Manifest.permission.GET_ACCOUNTS);
+        }
+    }
+
+    /**
+     * Called when an activity launched here (specifically, AccountPicker
+     * and authorization) exits, giving you the requestCode you started it with,
+     * the resultCode it returned, and any additional data from it.
+     * @param requestCode code indicating which activity result is incoming.
+     * @param resultCode code indicating the result of the incoming
+     *     activity result.
+     * @param data Intent (containing result data) returned by incoming
+     *     activity result.
+     */
+    @Override
+    protected void onActivityResult(
+            int requestCode, int resultCode, Intent data) {
+
+        switch(requestCode) {
+            case REQUEST_GOOGLE_PLAY_SERVICES:
+                if (resultCode != RESULT_OK) {
+                    mOutputText.setText(
+                            "This app requires Google Play Services. Please install " +
+                                    "Google Play Services on your device and relaunch this app.");
+                } else {
+                    getResultsFromApi();
+                }
+                break;
+            case REQUEST_ACCOUNT_PICKER:
+                if (resultCode == RESULT_OK && data != null &&
+                        data.getExtras() != null) {
+                    String accountName =
+                            data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+                    if (accountName != null) {
+                        SharedPreferences settings =
+                                getPreferences(Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.putString(PREF_ACCOUNT_NAME, accountName);
+                        editor.apply();
+                        mCredential.setSelectedAccountName(accountName);
+                        getResultsFromApi();
+                    }
+                }
+                break;
+            case REQUEST_AUTHORIZATION:
+                if (resultCode == RESULT_OK) {
+                    getResultsFromApi();
+                }
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
+        }
+    }
+
+    /**
+     * Respond to requests for permissions at runtime for API 23 and above.
+     * @param requestCode The request code passed in
+     *     requestPermissions(android.app.Activity, String, int, String[])
+     * @param permissions The requested permissions. Never null.
+     * @param grantResults The grant results for the corresponding permissions
+     *     which is either PERMISSION_GRANTED or PERMISSION_DENIED. Never null.
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(
+                requestCode, permissions, grantResults, this);
+    }
+
+    /**
+     * Callback for when a permission is granted using the EasyPermissions
+     * library.
+     * @param requestCode The request code associated with the requested
+     *         permission
+     * @param list The requested permission list. Never null.
+     */
+    @Override
+    public void onPermissionsGranted(int requestCode, List<String> list) {
+        // Do nothing.
+    }
+
+    /**
+     * Callback for when a permission is denied using the EasyPermissions
+     * library.
+     * @param requestCode The request code associated with the requested
+     *         permission
+     * @param list The requested permission list. Never null.
+     */
+    @Override
+    public void onPermissionsDenied(int requestCode, List<String> list) {
+        // Do nothing.
+    }
+
+    /**
+     * Checks whether the device currently has a network connection.
+     * @return true if the device has a network connection, false otherwise.
+     */
+    private boolean isDeviceOnline() {
+        ConnectivityManager connMgr =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        return (networkInfo != null && networkInfo.isConnected());
+    }
+
+    /**
+     * Check that Google Play services APK is installed and up to date.
+     * @return true if Google Play Services is available and up to
+     *     date on this device; false otherwise.
+     */
+    private boolean isGooglePlayServicesAvailable() {
+        GoogleApiAvailability apiAvailability =
+                GoogleApiAvailability.getInstance();
+        final int connectionStatusCode =
+                apiAvailability.isGooglePlayServicesAvailable(this);
+        return connectionStatusCode == ConnectionResult.SUCCESS;
+    }
+
+    /**
+     * Attempt to resolve a missing, out-of-date, invalid or disabled Google
+     * Play Services installation via a user dialog, if possible.
+     */
+    private void acquireGooglePlayServices() {
+        GoogleApiAvailability apiAvailability =
+                GoogleApiAvailability.getInstance();
+        final int connectionStatusCode =
+                apiAvailability.isGooglePlayServicesAvailable(this);
+        if (apiAvailability.isUserResolvableError(connectionStatusCode)) {
+            showGooglePlayServicesAvailabilityErrorDialog(connectionStatusCode);
+        }
+    }
+
+
+    /**
+     * Display an error dialog showing that Google Play Services is missing
+     * or out of date.
+     * @param connectionStatusCode code describing the presence (or lack of)
+     *     Google Play Services on this device.
+     */
+    void showGooglePlayServicesAvailabilityErrorDialog(
+            final int connectionStatusCode) {
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        Dialog dialog = apiAvailability.getErrorDialog(
+                MainActivity.this,
+                connectionStatusCode,
+                REQUEST_GOOGLE_PLAY_SERVICES);
+        dialog.show();
+    }
+
+
+
+
+    /**
+     * An asynchronous task that handles the Google Sheets API call.
+     * Placing the API calls in their own task ensures the UI stays responsive.
+     */
+    private class MakeRequestTask extends AsyncTask<Void, Void, Integer> {
+        private com.google.api.services.sheets.v4.Sheets mService = null;
+        private Exception mLastError = null;
+        private Context context;
+        private int result = -1;
+
+        public MakeRequestTask(GoogleAccountCredential credential, Context context) {
+            HttpTransport transport = AndroidHttp.newCompatibleTransport();
+            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+            mService = new com.google.api.services.sheets.v4.Sheets.Builder(
+                    transport, jsonFactory, credential)
+                    .setApplicationName("Google Sheets API MoneyManager")
+                    .build();
+            this.context = context;
+        }
+
+        /**
+         * Background task to call Google Sheets API.
+         * @param params no parameters needed for this task.
+         */
+        @Override
+        protected Integer doInBackground(Void... params) {
+            try {
+                File dbpath = getDatabasePath(MMDatabaseHelper.DB_NAME);
+                long dbModif = dbpath.lastModified();
+                Log.i("DB Modified: ", String.valueOf(dbModif));
+                long driveModif = 0;
+                String resId;
+                if (mGOOSvc!= null && isDeviceOnline()) {
+                    try {
+                        FileList fileList = mGOOSvc.files().list().setQ("title='" + FILE_NAME + "' and trashed=false").execute();
+                        if (fileList.getItems().isEmpty()) {
+                            Log.i("Google Drive", "Creating file");
+                            resId = testCreateSheet();
+
+                            if (resId != null) {
+                                SharedPreferences prefs = getPreferences(MODE_PRIVATE);
+                                prefs.edit().putString(PREF_FILE_RES,resId).commit(); //save resId for further editing
+                                result = 1;
+                                testUpdateContent(resId);
+                            }
+                        } else {
+                            Log.i("Google Drive", "File already exists");
+                            driveModif = fileList.getItems().get(0).getModifiedDate().getValue();
+                            resId = fileList.getItems().get(0).getId();
+                            Log.i("Drive Modified: ", String.valueOf(driveModif));
+
+
+                            if (Math.abs(dbModif - driveModif) >= SYNC_TIME_MIN_DIF) {  //if changes are at least SYNC_TIME_MIN_DIF apart
+                                if (dbModif - driveModif <= SYNC_TIME_MIN_DIF) {
+                                    //drive is newer -> download data
+                                    //testUpdateContent(resId);
+                                    testDownloadContent(resId);
+                                    result = 0;
+                                    Log.i("Drive: ", "Changes downloaded");
+                                } else if (dbModif - driveModif >= SYNC_TIME_MIN_DIF) {
+                                    //db is newer -> upload data
+                                    testUpdateContent(resId);
+                                    //testDownloadContent(resId);
+                                    result = 1;
+                                    Log.i("Drive: ", "Changes updated");
+                                } else {
+                                    result = -1;
+                                    //no pending changes...
+                                    //testUpdateContent(resId);
+                                    //testDownloadContent(resId);
+                                    Log.i("Drive: ", "No changes");
+                                }
+                            }
+                        }
+
+
+                    } catch (Exception e) {
+                        Log.e("Drive Error", Log.getStackTraceString(e));
+                    }
+                }
+                return result;
+            } catch (Exception e) {
+                mLastError = e;
+                cancel(true);
+                result = -1;
+                return null;
+            }
+        }
+
+        /**
+         * Fetch a list of names and majors of students in a sample spreadsheet:
+         * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
+         * @return List of names and majors
+         * @throws IOException
+         */
+        private List<String> getDataFromApi() throws IOException {
+            String spreadsheetId = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms";
+            String range = "Class Data!A2:E";
+            List<String> results = new ArrayList<String>();
+            ValueRange response = this.mService.spreadsheets().values()
+                    .get(spreadsheetId, range)
+                    .execute();
+            List<List<Object>> values = response.getValues();
+            if (values != null) {
+                results.add("Name, Major");
+                for (List row : values) {
+                    results.add(row.get(0) + ", " + row.get(4));
+                }
+            }
+            return results;
+        }
+
+        private String testCreateSheet() throws IOException {
+            String rsId = null;
+            if (mGOOSvc!= null && isDeviceOnline()) {
+                try {
+                        com.google.api.services.drive.model.File meta = new com.google.api.services.drive.model.File();
+                        meta.setParents(Collections.singletonList(new ParentReference().setId("root")));
+                        meta.setTitle(FILE_NAME);
+                        meta.setMimeType("application/vnd.google-apps.spreadsheet");
+
+                    //MMDatabaseHelper help = MMDatabaseHelper.getInstance(context);
+                        //Cursor curCSV = help.getAllRecordsWithCategories();
+                        java.io.File fileContent = new java.io.File(Environment.getExternalStorageDirectory(), "MoneyManager.xls");
+
+
+                        //Spreadsheet testSheet = new Spreadsheet();
+
+
+                        //FileContent mediaContent = new FileContent("application/vnd.google-apps.spreadsheet", fileContent);
+
+                        //Cursor curCSV = help.getAllRecordsWithCategories();
+
+                        com.google.api.services.drive.model.File gF1 = mGOOSvc.files().insert(meta).execute();
+                        if (gF1 != null) {
+                            rsId = gF1.getId();
+                        }
+                } catch (Exception e) {
+                    Log.e("Drive Error", Log.getStackTraceString(e));
+                }}
+                return rsId;
+            }
+
+
+
+        private void testUpdateContent(String spreadsheetId) throws IOException {
+
+            MMDatabaseHelper help = MMDatabaseHelper.getInstance(context);
+            Cursor curCSV = help.getAllRecordsWithCategories();
+
+            List<Request> requests = new ArrayList<>();
+
+            List<CellData> values = new ArrayList<>();
+            List<RowData> rows = new ArrayList<>();
+
+            String headers[] = curCSV.getColumnNames();
+
+            values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(headers[0]))
+                    .setUserEnteredFormat(new CellFormat()
+                            .setBackgroundColor(new Color()
+                                    .setGreen(Float.valueOf(1)))));
+            values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(headers[1]))
+                    .setUserEnteredFormat(new CellFormat()
+                            .setBackgroundColor(new Color()
+                                    .setGreen(Float.valueOf(1)))));
+            values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(headers[2]))
+                    .setUserEnteredFormat(new CellFormat()
+                            .setBackgroundColor(new Color()
+                                    .setGreen(Float.valueOf(1)))));
+            values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(headers[7]))
+                    .setUserEnteredFormat(new CellFormat()
+                            .setBackgroundColor(new Color()
+                                    .setGreen(Float.valueOf(1)))));
+            values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(headers[3]))
+                    .setUserEnteredFormat(new CellFormat()
+                            .setBackgroundColor(new Color()
+                                    .setGreen(Float.valueOf(1)))));
+            values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(headers[4]))
+                    .setUserEnteredFormat(new CellFormat()
+                            .setBackgroundColor(new Color()
+                                    .setGreen(Float.valueOf(1)))));
+            values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(headers[5]))
+                    .setUserEnteredFormat(new CellFormat()
+                            .setBackgroundColor(new Color()
+                                    .setGreen(Float.valueOf(1)))));
+            values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(headers[6]))
+                    .setUserEnteredFormat(new CellFormat()
+                            .setBackgroundColor(new Color()
+                                    .setGreen(Float.valueOf(1)))));
+
+            rows.add(new RowData().setValues(values));
+
+            while(curCSV.moveToNext())
+
+            {
+                values = new ArrayList<>();
+                values.add(new CellData()
+                        .setUserEnteredValue(new ExtendedValue()
+                                .setStringValue(curCSV.getString(0))));
+                values.add(new CellData()
+                        .setUserEnteredValue(new ExtendedValue()
+                                .setStringValue(curCSV.getString(1))));
+                values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(curCSV.getString(2))));
+                values.add(new CellData()
+                        .setUserEnteredValue(new ExtendedValue()
+                                .setStringValue(curCSV.getString(7))));
+                values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(curCSV.getString(3))));
+                values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(curCSV.getString(4))));
+                values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(curCSV.getString(5))));
+                values.add(new CellData()
+                    .setUserEnteredValue(new ExtendedValue()
+                            .setStringValue(curCSV.getString(6))));
+
+                rows.add(new RowData().setValues(values));
+            }
+
+            List<List<Object>> list = mService.spreadsheets().values().get(spreadsheetId,"A:H").setMajorDimension("ROWS").execute().getValues();
+            int end = list == null ? -2 : list.size();
+            if (rows.size()-1 <end) {
+                Request request = new Request().setDeleteDimension(new DeleteDimensionRequest().setRange(new DimensionRange().setSheetId(0).setDimension("ROWS").setStartIndex(rows.size() - 1).setEndIndex(end)));
+                Log.i("REQUEST: ",rows.size()-1+"  " +end);
+                requests.add(request);
+            }
+
+            //todo request na clear sheetu requests.add(new Request().setDeleteSheet(new DeleteSheetRequest()));
+            requests.add(new Request()
+                    .setUpdateCells(new UpdateCellsRequest()
+                            .setStart(new GridCoordinate()
+                                    .setSheetId(0)
+                                    .setRowIndex(0)
+                                    .setColumnIndex(0))
+                            .setRows(rows)
+                            .setFields("userEnteredValue,userEnteredFormat.backgroundColor")));
+
+
+            BatchUpdateSpreadsheetRequest batchUpdateRequest = new BatchUpdateSpreadsheetRequest()
+                    .setRequests(requests);
+            this.mService.spreadsheets().batchUpdate(spreadsheetId, batchUpdateRequest)
+                    .execute();
+        }
+
+
+        private void testDownloadContent(String resId) {
+            try {
+                List<Record> result = new ArrayList<>();
+                String range = "A:H";
+                ValueRange response = mService.spreadsheets().values().get(resId,range).setMajorDimension("ROWS").execute();
+                MMDatabaseHelper db = MMDatabaseHelper.getInstance(getApplicationContext());
+                db.deleteAllRecords();
+                List<List<Object>> values = response.getValues();
+                if (values!= null && values.size()>1) {
+                    values.remove(0);
+                    for (List row : values) {
+                        //Log.i("INFO: ", row.get(0).toString() + row.get(1) + row.get(2) + row.get(3) + row.get(4) + row.get(5)+ (row.size()==6 ? "":row.get(6)));
+                        long id = Long.parseLong(row.get(0).toString());
+                        BigDecimal value = new BigDecimal(row.get(1).toString());
+                        Currency currency = Currency.getInstance(row.get(2).toString());
+                        BigDecimal valInEur = new BigDecimal(row.get(3).toString());
+                        String date = row.get(4).toString();
+                        String item = row.get(5).toString();
+                        Category category = new Category(0,row.get(6).toString(),row.size()==7 ? "":row.get(7).toString());
+
+                        Record record = new Record(0,value,valInEur,currency,item,date,category);
+                        db.addRecord(record);
+                    }
+                }
+
+                Log.i("DEBUG INFO: ", String.valueOf(values.get(0).size()));
+
+            } catch (IOException e) {
+                Log.e("Error read drive",Log.getStackTraceString(e));
+            }
+        }
+
+        @Override
+        protected void onPreExecute() {
+            //mOutputText.setText("");
+            //mProgress.show();
+            Toast.makeText(MainActivity.this, "Calling the Api!", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        protected void onPostExecute(Integer output) {
+            //mProgress.hide();
+            //if (output == null || output.size() == 0) {
+                //mOutputText.setText("No results returned.");
+                //Toast.makeText(MainActivity.this, "ApiCall Failed!", Toast.LENGTH_SHORT).show();
+                //Log.i("Api: ", "nok");
+            //} else {
+                //output.add(0, "Data retrieved using the Google Sheets API:");
+                //mOutputText.setText(TextUtils.join("\n", output));
+               // Toast.makeText(MainActivity.this, "ApiCall successful!", Toast.LENGTH_SHORT).show();
+                Log.i("RESULT:", String.valueOf(output));
+                if (output != null)
+                if (output == 0 && currentPosition == R.id.nav_records) {
+                    ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.records_list_view);
+                    MMDatabaseHelper help = MMDatabaseHelper.getInstance(MainActivity.this);
+                    //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
+                    ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories());
+                }
+
+            //}
+        }
+
+        //toDo change this
+        @Override
+        protected void onCancelled() {
+            //mProgress.hide();
+            if (mLastError != null) {
+                if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
+                    showGooglePlayServicesAvailabilityErrorDialog(
+                            ((GooglePlayServicesAvailabilityIOException) mLastError)
+                                    .getConnectionStatusCode());
+                } else if (mLastError instanceof UserRecoverableAuthIOException) {
+                    startActivityForResult(
+                            ((UserRecoverableAuthIOException) mLastError).getIntent(),
+                            MainActivity.REQUEST_AUTHORIZATION);
+                } else {
+
+                    Log.i("Error",mLastError.getMessage().toString());
+                }
+            } else {
+                mOutputText.setText("Request cancelled.");
+            }
+        }
     }
 
     @Override
@@ -242,6 +943,10 @@ public class MainActivity extends ALockingClass
             MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
             //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
             ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories());
+
+            File dbpath = getDatabasePath(MMDatabaseHelper.DB_NAME);
+            long dbModif = dbpath.lastModified();
+            Log.i("DB Modified: ", String.valueOf(dbModif));
         }
     }
 
@@ -292,6 +997,18 @@ public class MainActivity extends ALockingClass
                 }
     }
 
+    public void  onExportClick(MenuItem item) {
+        ExportDatabaseCSVTask task=new ExportDatabaseCSVTask(this); task.execute();
+
+    }
+
+    public void  onSyncClick(MenuItem item) {
+
+        //ExportDatabaseCSVTask task=new ExportDatabaseCSVTask(this); task.execute();
+        getResultsFromApi();
+
+
+    }
 
     @Override
     public void onFilterRecordsFinishedDialog(boolean result, int orderPos, int directionPos, Date from, Date to) {
@@ -362,13 +1079,149 @@ public class MainActivity extends ALockingClass
             ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.categories_list_view);
             MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
             //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
-            ((CategoriesDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllCategories(ordeyBy,ordeyDir));
+            ((CategoriesDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllCategories(ordeyBy, ordeyDir));
         } else {
             categoriesArgs = null;
             ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.categories_list_view);
             MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
             //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
             ((CategoriesDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllCategories());
+        }
+    }
+
+    private class ExportDatabaseCSVTask extends AsyncTask { private final ProgressDialog dialog = new ProgressDialog(MainActivity.this);
+
+        Context context;
+
+        private ExportDatabaseCSVTask(Context context)
+        {
+            this.context = context;
+        }
+
+        @Override
+        protected Object doInBackground(Object[] params) {
+
+            MMDatabaseHelper help = MMDatabaseHelper.getInstance(context);
+            Cursor curCSV = help.getAllRecordsWithCategories();
+
+            HSSFWorkbook workbook = new HSSFWorkbook();
+
+            HSSFSheet sheet = workbook.createSheet("Test");
+
+            String headers[] = curCSV.getColumnNames();
+
+            HSSFRow row0 = sheet.createRow((short) 0);
+            row0.createCell(0).setCellValue(headers[0]);
+            row0.createCell(1).setCellValue(headers[1]);
+            row0.createCell(2).setCellValue(headers[2]);
+            row0.createCell(3).setCellValue(headers[3]);
+            row0.createCell(4).setCellValue(headers[4]);
+            row0.createCell(5).setCellValue(headers[5]);
+            row0.createCell(6).setCellValue(headers[6]);
+
+            int counter = 1;
+
+            while(curCSV.moveToNext())
+            {
+                HSSFRow row = sheet.createRow((short)counter);
+                row.createCell(0).setCellValue(curCSV.getString(0));
+                row.createCell(1).setCellValue(curCSV.getString(1));
+                row.createCell(2).setCellValue(curCSV.getString(2));
+                row.createCell(3).setCellValue(curCSV.getString(3));
+                row.createCell(4).setCellValue(curCSV.getString(4));
+                row.createCell(5).setCellValue(curCSV.getString(5));
+                row.createCell(6).setCellValue(curCSV.getString(6));
+                //String arrStr[] ={curCSV.getString(0),curCSV.getString(1), curCSV.getString(2), curCSV.getString(3), curCSV.getString(4), curCSV.getString(5), curCSV.getString(6)};
+                //csvWrite.writeNext(arrStr);
+                counter++;
+            }
+                    FileOutputStream fos = null;
+            try {
+
+                String str_path = Environment.getExternalStorageDirectory().toString();
+                File file ;
+                file = new File(str_path, getString(R.string.app_name) + ".xls");
+                fos = new FileOutputStream(file);
+
+
+                workbook.write(fos);
+                return "";
+            } catch (IOException e) {
+                e.printStackTrace();
+                return "b";
+            } finally {
+                if (fos != null) {
+                    try {
+                        fos.flush();
+                        fos.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+               // Toast.makeText(MainActivity.this, "Excel Sheet Generated", Toast.LENGTH_SHORT).show();
+
+            }
+/*
+            MMDatabaseHelper help = MMDatabaseHelper.getInstance(context);
+
+            File exportDir = new File(Environment.getExternalStorageDirectory(), "");
+            if (!exportDir.exists())
+            {
+                exportDir.mkdirs();
+            }
+
+            HSSFWorkbook workbook = new HSSFWorkbook();
+
+            File file = new File(exportDir, "csvname.csv");
+            try
+            {
+                file.createNewFile();
+                CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
+                //SQLiteDatabase db = dbhelper.getReadableDatabase();
+                Cursor curCSV = help.getAllRecordsWithCategories();//db.rawQuery("SELECT * FROM contacts",null);
+                csvWrite.writeNext(curCSV.getColumnNames());
+                //List<String[]> database = new ArrayList<String[]>();
+                while(curCSV.moveToNext())
+                {
+                    //database.add(new String[] {curCSV.getString(0),curCSV.getString(1), curCSV.getString(2), curCSV.getString(3), curCSV.getString(4), curCSV.getString(5), curCSV.getString(6)});
+                    //Which column you want to exprort
+                    String arrStr[] ={curCSV.getString(0),curCSV.getString(1), curCSV.getString(2), curCSV.getString(3), curCSV.getString(4), curCSV.getString(5), curCSV.getString(6)};
+                    csvWrite.writeNext(arrStr);
+                }
+                //csvWrite.writeAll(database);
+                csvWrite.close();
+                curCSV.close();
+                return "";
+            }
+            catch(Exception sqlEx)
+            {
+                Log.e("MainActivity", sqlEx.getMessage(), sqlEx);
+                return "b";
+            }*/
+        }
+
+        @Override
+        protected void onPreExecute() {
+
+            this.dialog.setMessage("Exporting database...");
+            this.dialog.show();
+
+        }
+
+
+        @SuppressLint("NewApi")
+        @Override
+        protected void onPostExecute(final Object success) {
+
+            if (this.dialog.isShowing()){
+                this.dialog.dismiss();
+            }
+            if (success.toString().isEmpty()){
+                Toast.makeText(MainActivity.this, "Export successful!", Toast.LENGTH_SHORT).show();
+            }
+            else {
+                Toast.makeText(MainActivity.this, "Export failed!", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }
