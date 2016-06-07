@@ -5,7 +5,6 @@ import android.app.Dialog;
 import android.support.v4.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -29,7 +28,6 @@ import java.util.TreeSet;
 import pv239.fi.muni.cz.moneymanager.adapter.NothingSelectedSpinnerAdapter;
 import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
 import pv239.fi.muni.cz.moneymanager.helper.DatePickerFragment;
-import pv239.fi.muni.cz.moneymanager.helper.ExchangeRateCalculator;
 import pv239.fi.muni.cz.moneymanager.model.Category;
 import pv239.fi.muni.cz.moneymanager.model.Record;
 
@@ -127,9 +125,6 @@ public class AddRecordDialog extends DialogFragment  {
                             if (parts.length == 2) {
                                 catDet = parts[1].substring(1, parts[1].length() - 1);
                             }
-
-                            Log.i("EXCHANGERATE: ", String.valueOf(ExchangeRateCalculator.TransferRate(currency, Currency.getInstance("EUR"),new BigDecimal(amount))));
-
                             Record rec = new Record(0, new BigDecimal(amount), currency, item, finalDate, new Category(0, catName, catDet));
                             MMDatabaseHelper helper = MMDatabaseHelper.getInstance(getActivity());
                             long id = helper.addRecord(rec);
