@@ -45,7 +45,7 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public MMDatabaseHelper(Context context, SQLiteDatabase.CursorFactory factory) {
-        super(context, DB_NAME, factory, DB_VERSION); 
+        super(context, DB_NAME, factory, DB_VERSION);
     }
 
     public static synchronized MMDatabaseHelper getInstance(Context context) {
