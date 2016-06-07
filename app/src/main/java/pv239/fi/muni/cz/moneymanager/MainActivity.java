@@ -676,7 +676,7 @@ public class MainActivity extends ALockingClass
             }
 
             int end = mService.spreadsheets().values().get(spreadsheetId,"A:G").setMajorDimension("ROWS").execute().getValues().size();
-            Request request = new Request().setDeleteDimension(new DeleteDimensionRequest().setRange(new DimensionRange().setSheetId(0).setDimension("ROWS").setStartIndex(0).setEndIndex(end)));
+            Request request = new Request().setDeleteDimension(new DeleteDimensionRequest().setRange(new DimensionRange().setSheetId(0).setDimension("ROWS").setStartIndex(rows.size()-1).setEndIndex(end)));
             requests.add(request);
 
             //todo request na clear sheetu requests.add(new Request().setDeleteSheet(new DeleteSheetRequest()));
