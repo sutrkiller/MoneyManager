@@ -517,7 +517,7 @@ public class MainActivity extends ALockingClass
                                     result = 1;
                                     Log.i("Drive: ", "Changes updated");
                                 } else {
-                                    result = -1;
+                                    result = 2;
                                     //no pending changes...
                                     //testUpdateContent(resId);
                                     //testDownloadContent(resId);
@@ -753,20 +753,25 @@ public class MainActivity extends ALockingClass
         @Override
         protected void onPreExecute() {
 
-            Toast.makeText(MainActivity.this, "Calling the Api!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Sync in progress!", Toast.LENGTH_SHORT).show();
         }
 
         @Override
         protected void onPostExecute(Integer output) {
             //mProgress.hide();
-            //if (output == null || output.size() == 0) {
+            if (output == null || output == 0) {
                 //mOutputText.setText("No results returned.");
-                //Toast.makeText(MainActivity.this, "ApiCall Failed!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Changes downloaded!", Toast.LENGTH_SHORT).show();
                 //Log.i("Api: ", "nok");
-            //} else {
+            } else if (output == null || output == 1) {
                 //output.add(0, "Data retrieved using the Google Sheets API:");
                 //mOutputText.setText(TextUtils.join("\n", output));
-               // Toast.makeText(MainActivity.this, "ApiCall successful!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Changes uploaded!", Toast.LENGTH_SHORT).show();
+            } else if (output == null || output == 2) {
+                Toast.makeText(MainActivity.this, "No pending changes!", Toast.LENGTH_SHORT).show();
+            } else   {
+                Toast.makeText(MainActivity.this, "Sync failed!", Toast.LENGTH_SHORT).show();
+            }
                 Log.i("RESULT:", String.valueOf(output));
                 if (output != null)
                 if (output == 0 && currentPosition == R.id.nav_records) {
