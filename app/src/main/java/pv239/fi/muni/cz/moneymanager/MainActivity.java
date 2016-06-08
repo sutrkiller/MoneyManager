@@ -481,6 +481,7 @@ public class MainActivity extends ALockingClass
                 Log.i("DB Modified: ", String.valueOf(dbModif));
                 long driveModif = 0;
                 String resId;
+                getDataFromApi();
                 if (mGOOSvc!= null && isDeviceOnline()) {
                     try {
                         FileList fileList = mGOOSvc.files().list().setQ("title='" + FILE_NAME + "' and trashed=false").execute();
@@ -491,8 +492,9 @@ public class MainActivity extends ALockingClass
                             if (resId != null) {
                                 SharedPreferences prefs = getPreferences(MODE_PRIVATE);
                                 prefs.edit().putString(PREF_FILE_RES,resId).commit(); //save resId for further editing
-                                result = 1;
                                 testUpdateContent(resId);
+                                result = 1;
+
                             }
                         } else {
                             Log.i("Google Drive", "File already exists");
@@ -545,9 +547,11 @@ public class MainActivity extends ALockingClass
          * @throws IOException
          */
         private List<String> getDataFromApi() throws IOException {
+
             String spreadsheetId = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms";
             String range = "Class Data!A2:E";
             List<String> results = new ArrayList<String>();
+            try {
             ValueRange response = this.mService.spreadsheets().values()
                     .get(spreadsheetId, range)
                     .execute();
@@ -557,6 +561,10 @@ public class MainActivity extends ALockingClass
                 for (List row : values) {
                     results.add(row.get(0) + ", " + row.get(4));
                 }
+            }
+            //return results;
+            } catch (UserRecoverableAuthIOException e) {
+                startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
             }
             return results;
         }
@@ -569,18 +577,6 @@ public class MainActivity extends ALockingClass
                         meta.setParents(Collections.singletonList(new ParentReference().setId("root")));
                         meta.setTitle(FILE_NAME);
                         meta.setMimeType("application/vnd.google-apps.spreadsheet");
-
-                    //MMDatabaseHelper help = MMDatabaseHelper.getInstance(context);
-                        //Cursor curCSV = help.getAllRecordsWithCategories();
-                        java.io.File fileContent = new java.io.File(Environment.getExternalStorageDirectory(), "MoneyManager.xls");
-
-
-                        //Spreadsheet testSheet = new Spreadsheet();
-
-
-                        //FileContent mediaContent = new FileContent("application/vnd.google-apps.spreadsheet", fileContent);
-
-                        //Cursor curCSV = help.getAllRecordsWithCategories();
 
                         com.google.api.services.drive.model.File gF1 = mGOOSvc.files().insert(meta).execute();
                         if (gF1 != null) {
@@ -595,6 +591,7 @@ public class MainActivity extends ALockingClass
 
 
         private void testUpdateContent(String spreadsheetId) throws IOException {
+            try {
 
             MMDatabaseHelper help = MMDatabaseHelper.getInstance(context);
             Cursor curCSV = help.getAllRecordsWithCategories();
@@ -689,7 +686,7 @@ public class MainActivity extends ALockingClass
                 rows.add(new RowData().setValues(values));
             }
 
-            List<List<Object>> list = mService.spreadsheets().values().get(spreadsheetId,"A:H").setMajorDimension("ROWS").execute().getValues();
+            List<List<Object>> list = this.mService.spreadsheets().values().get(spreadsheetId,"A:H").setMajorDimension("ROWS").execute().getValues();
             int end = list == null ? -2 : list.size();
             if (rows.size()-1 <end) {
                 Request request = new Request().setDeleteDimension(new DeleteDimensionRequest().setRange(new DimensionRange().setSheetId(0).setDimension("ROWS").setStartIndex(rows.size() - 1).setEndIndex(end)));
@@ -697,7 +694,6 @@ public class MainActivity extends ALockingClass
                 requests.add(request);
             }
 
-            //todo request na clear sheetu requests.add(new Request().setDeleteSheet(new DeleteSheetRequest()));
             requests.add(new Request()
                     .setUpdateCells(new UpdateCellsRequest()
                             .setStart(new GridCoordinate()
@@ -712,6 +708,9 @@ public class MainActivity extends ALockingClass
                     .setRequests(requests);
             this.mService.spreadsheets().batchUpdate(spreadsheetId, batchUpdateRequest)
                     .execute();
+            } catch (UserRecoverableAuthIOException e) {
+             startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+            }
         }
 
 
@@ -719,7 +718,7 @@ public class MainActivity extends ALockingClass
             try {
                 List<Record> result = new ArrayList<>();
                 String range = "A:H";
-                ValueRange response = mService.spreadsheets().values().get(resId,range).setMajorDimension("ROWS").execute();
+                ValueRange response = this.mService.spreadsheets().values().get(resId,range).setMajorDimension("ROWS").execute();
                 MMDatabaseHelper db = MMDatabaseHelper.getInstance(getApplicationContext());
                 db.deleteAllRecords();
                 List<List<Object>> values = response.getValues();
@@ -742,15 +741,18 @@ public class MainActivity extends ALockingClass
 
                 Log.i("DEBUG INFO: ", String.valueOf(values.get(0).size()));
 
-            } catch (IOException e) {
+
+        } catch (UserRecoverableAuthIOException e) {
+            startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+        }
+            catch (IOException e) {
                 Log.e("Error read drive",Log.getStackTraceString(e));
             }
         }
 
         @Override
         protected void onPreExecute() {
-            //mOutputText.setText("");
-            //mProgress.show();
+
             Toast.makeText(MainActivity.this, "Calling the Api!", Toast.LENGTH_SHORT).show();
         }
 
