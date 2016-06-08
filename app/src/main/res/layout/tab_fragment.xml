@@ -15,11 +15,16 @@
             android:layout_centerHorizontal="true"
             android:id="@+id/gridViewScreenStats">
 
+            <Space
+                android:layout_width="10dp"
+                android:layout_height="200dp"
+                android:id="@+id/space"/>
 
             <com.jjoe64.graphview.GraphView
-                android:layout_width="match_parent"
+                android:layout_width="fill_parent"
                 android:layout_height="200dp"
-                android:id="@+id/graph" />
+                android:id="@+id/graph"
+                android:layout_toRightOf="@+id/space"/>
 
             <GridLayout
                 android:id="@+id/stats"
@@ -30,7 +35,7 @@
                 android:layout_gravity="center"
                 android:background="@drawable/box"
                 android:layout_margin="10dp"
-                android:rowCount="5"
+                android:rowCount="4"
                 android:columnCount="2"
                 android:padding="5dp">
 
@@ -121,47 +126,40 @@
                     android:layout_alignParentEnd="true"
                     android:layout_row="3"
                     android:layout_column="1" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="10dp"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="+/- status:"
-                    android:id="@+id/actualStats"
-                    android:layout_row="4"
-                    android:layout_column="0" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text=""
-                    android:id="@+id/actualSumStats"
-                    android:textColor="@color/recordPositiveValue"
-                    android:textAlignment="textEnd"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentEnd="true"
-                    android:layout_row="4"
-                    android:layout_column="1" />
             </GridLayout>
             <!-- Income records -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="Incomes:"
+                android:layout_below="@+id/stats"
+                android:paddingLeft="10dp"
+                android:id="@+id/incomeList"/>
 
             <ListView
                 android:layout_width="wrap_content"
                 android:layout_height="300dp"
                 android:background="@drawable/box"
-                android:layout_below="@id/stats"
+                android:layout_below="@id/incomeList"
                 android:layout_margin="10dp"
                 android:id="@+id/listViewIncomeStats"
                 android:nestedScrollingEnabled="true"/>
 
             <!-- Expenses records -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="Expenses:"
+                android:layout_below="@+id/listViewIncomeStats"
+                android:paddingLeft="10dp"
+                android:id="@+id/expensesList"/>
             <ListView
                 android:layout_width="wrap_content"
                 android:layout_height="300dp"
                 android:background="@drawable/box"
-                android:layout_below="@+id/listViewIncomeStats"
+                android:layout_below="@+id/expensesList"
                 android:layout_margin="10dp"
                 android:id="@+id/listViewExpences"
                 android:nestedScrollingEnabled="true"/>
