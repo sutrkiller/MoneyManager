@@ -373,6 +373,8 @@ public class MainActivity extends ALockingClass
             if (grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
+                ExportDatabaseCSVTask task = new ExportDatabaseCSVTask(this);
+                task.execute();
                 // permission was granted, yay! Do the
                 // contacts-related task you need to do.
 
@@ -1040,10 +1042,11 @@ public class MainActivity extends ALockingClass
                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         MY_PERMISSIONS_REQUEST_READ_CONTACTS);
 
+        } else {
+
+            ExportDatabaseCSVTask task = new ExportDatabaseCSVTask(this);
+            task.execute();
         }
-
-        ExportDatabaseCSVTask task=new ExportDatabaseCSVTask(this); task.execute();
-
     }
 
     public void  onSyncClick(MenuItem item) {
