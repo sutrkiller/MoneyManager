@@ -8,6 +8,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -15,11 +16,14 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.storage.StorageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -134,6 +138,7 @@ public class MainActivity extends ALockingClass
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
+    static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1004;
 
     private static final long SYNC_TIME_MIN_DIF = MILLISECONDS.convert(5,SECONDS);
 
@@ -141,7 +146,7 @@ public class MainActivity extends ALockingClass
     private static final String PREF_ACCOUNT_NAME = "accountName";
     private static final String FILE_NAME = "MoneyManager";
     private static final String PREF_FILE_RES = "MoneyManagerSpreadsheet";
-    private static final String[] SCOPES = { SheetsScopes.SPREADSHEETS, DriveScopes.DRIVE_FILE };
+    private static final String[] SCOPES = { SheetsScopes.SPREADSHEETS, DriveScopes.DRIVE_FILE};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -362,9 +367,29 @@ public class MainActivity extends ALockingClass
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        EasyPermissions.onRequestPermissionsResult(
-                requestCode, permissions, grantResults, this);
+
+        if (requestCode == MY_PERMISSIONS_REQUEST_READ_CONTACTS)
+        {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                // permission was granted, yay! Do the
+                // contacts-related task you need to do.
+
+            } else {
+
+                // permission denied, boo! Disable the
+                // functionality that depends on this permission.
+            }
+            return;
+
+        }
+        else {
+
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            EasyPermissions.onRequestPermissionsResult(
+                    requestCode, permissions, grantResults, this);
+        }
     }
 
     /**
@@ -832,12 +857,12 @@ public class MainActivity extends ALockingClass
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        /*int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
-        }
+        }*/
 
         return super.onOptionsItemSelected(item);
     }
@@ -1005,13 +1030,25 @@ public class MainActivity extends ALockingClass
     }
 
     public void  onExportClick(MenuItem item) {
+
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+
+        }
+
         ExportDatabaseCSVTask task=new ExportDatabaseCSVTask(this); task.execute();
 
     }
 
     public void  onSyncClick(MenuItem item) {
 
-        //ExportDatabaseCSVTask task=new ExportDatabaseCSVTask(this); task.execute();
+        
         getResultsFromApi();
 
 
@@ -1143,6 +1180,9 @@ public class MainActivity extends ALockingClass
                 counter++;
             }
                     FileOutputStream fos = null;
+
+
+
             try {
 
                 String str_path = Environment.getExternalStorageDirectory().toString();
