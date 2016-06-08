@@ -138,7 +138,7 @@ public class MainActivity extends ALockingClass
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
-    static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1004;
+    static final int REQUEST_PERMISSION_WRITE_STORAGE = 1004;
 
     private static final long SYNC_TIME_MIN_DIF = MILLISECONDS.convert(5,SECONDS);
 
@@ -368,7 +368,7 @@ public class MainActivity extends ALockingClass
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
 
-        if (requestCode == MY_PERMISSIONS_REQUEST_READ_CONTACTS)
+        if (requestCode == REQUEST_PERMISSION_WRITE_STORAGE)
         {
             if (grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -1040,7 +1040,7 @@ public class MainActivity extends ALockingClass
 
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+                        REQUEST_PERMISSION_WRITE_STORAGE);
 
         } else {
 
