@@ -1,6 +1,7 @@
 package pv239.fi.muni.cz.moneymanager.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -154,6 +155,9 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.CustomVi
 
         graph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(mContext));
         graph.getGridLabelRenderer().setNumHorizontalLabels(2); // only 3 because of the space
+        series.setDrawDataPoints(true);
+        series.setDataPointsRadius(8);
+        series.setThickness(6);
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(series.getLowestValueX());
         graph.getViewport().setMaxX(series.getHighestValueX());
