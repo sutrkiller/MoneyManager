@@ -68,6 +68,7 @@ public class RecyclePage extends Fragment {
         MMDatabaseHelper db = MMDatabaseHelper.getInstance(getContext());
         String firstDate = db.getFirstRecordDate();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        if (firstDate == null) firstDate = format.format(Calendar.getInstance().getTime());
         Date date = format.parse(firstDate,new ParsePosition(0));
 
         Calendar lateCal = Calendar.getInstance();
