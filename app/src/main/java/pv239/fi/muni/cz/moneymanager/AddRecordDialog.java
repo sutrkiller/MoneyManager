@@ -124,7 +124,10 @@ public class AddRecordDialog extends DialogFragment  {
                             String[] parts = category.split(" ");
                             String catName = parts[0];
                             String catDet = "";
-                            if (parts.length == 2) {
+                            if (parts.length >= 2) {
+                                for (int i=2;i<parts.length;++i) {
+                                    parts[1] = parts[1].concat(" "+parts[i]);
+                                }
                                 catDet = parts[1].substring(1, parts[1].length() - 1);
                             }
 
