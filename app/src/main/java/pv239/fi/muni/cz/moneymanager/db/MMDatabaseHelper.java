@@ -234,6 +234,26 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    public BigDecimal getStartingBal(Date date)
+    {
+        String col = TABLE_RECORD+"."+KEY_REC_VAL;
+        String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_DATE+" < '"+convertDateForDb(date)+"'";
+        String query = "SELECT SUM("+col+
+                ") FROM "+TABLE_RECORD+
+                whereClause;
+        Log.i("SQL",query);
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery(query,null);
+            if (cursor.moveToFirst()) {
+                return new BigDecimal(cursor.getDouble(0));
+            }
+        } catch (SQLiteException e) {
+        } finally {
+        } return BigDecimal.ZERO;
+    }
+
     public Integer getSumRecordsInRange(String operator, int days, int months, int years)
     {
         Calendar calendar = Calendar.getInstance();
@@ -322,24 +342,22 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
         } return cursor;
     }
 
-    public Integer getStartingBal(Date date)
+    public String getFirstRecordDate()
     {
-        String col = TABLE_RECORD+"."+KEY_REC_VAL;
-        String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_DATE+" < '"+convertDateForDb(date)+"'";
-        String query = "SELECT SUM("+col+
-                ") FROM "+TABLE_RECORD+
-                whereClause;
+        String col = TABLE_RECORD+"."+KEY_REC_DATE;
+        String query = "SELECT MIN("+col+
+                ") FROM "+TABLE_RECORD;
         Log.i("SQL",query);
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = null;
         try {
             cursor = db.rawQuery(query,null);
             if (cursor.moveToFirst()) {
-                return cursor.getInt(0);
+                return cursor.getString(0);
             }
         } catch (SQLiteException e) {
         } finally {
-        } return 0;
+        } return null;
     }
 
     public Integer getEndingBal()

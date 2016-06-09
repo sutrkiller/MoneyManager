@@ -7,8 +7,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-import pv239.fi.muni.cz.moneymanager.TabFragments.PageFragment;
-
 /**
  * Created by Klasovci on 6/8/2016.
  */

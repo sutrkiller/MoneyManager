@@ -4,11 +4,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.design.widget.TabLayout;
+import android.support.v4.view.PagerAdapter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import pv239.fi.muni.cz.moneymanager.TabFragments.PageFragment;
+import pv239.fi.muni.cz.moneymanager.TabFragments.RecyclePage;
 import pv239.fi.muni.cz.moneymanager.adapter.ViewPagerAdapter;
 
 /**
@@ -26,9 +28,13 @@ public class StatsFragment extends Fragment  {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-    private PageFragment pageOne;
-    private PageFragment pageTwo;
-    private PageFragment pageThree;
+    private RecyclePage pageOne;
+    private RecyclePage pageTwo;
+    private RecyclePage pageThree;
+    LayoutInflater inflater;
+    ViewGroup container;
+    View mLayout;
+
 
 
     private OnStatsInteractionListener mListener;
@@ -67,23 +73,36 @@ public class StatsFragment extends Fragment  {
 
     }
 
+    private void onLeftSwipe() {
+        // Do something
+    }
+
+    private void onRightSwipe() {
+        // Do something
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-            // Inflate the layout for this fragment
+        this.inflater = inflater;
+        this.container = container;
+
+        // Inflate the layout for this fragment
         View layout = inflater.inflate(R.layout.fragment_stats, container, false);
+        this.mLayout =layout;
         TabLayout tabLayout = (TabLayout)layout.findViewById(R.id.tab_layout);
-        pageOne = PageFragment.newInstance(0);
-        pageTwo = PageFragment.newInstance(1);
-        pageThree = PageFragment.newInstance(2);
         tabLayout.addTab(tabLayout.newTab().setText("7 days"));
-        tabLayout.addTab(tabLayout.newTab().setText("1 month"));
+        tabLayout.addTab(tabLayout.newTab().setText("4 weeks"));
         tabLayout.addTab(tabLayout.newTab().setText("1 year"));
+
 
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
         final CustomViewPager viewPager = (CustomViewPager) layout.findViewById(R.id.pager);
-        final ViewPagerAdapter adapter = new ViewPagerAdapter(getActivity().getSupportFragmentManager());
+        final ViewPagerAdapter adapter = new ViewPagerAdapter(getChildFragmentManager());
+        /*pageOne = RecyclePage.newInstance(0,7);
+        pageTwo = RecyclePage.newInstance(1,28);
+        pageThree = RecyclePage.newInstance(2, 365);
         adapter.addFragment(pageOne,"7 days");
         adapter.addFragment(pageTwo,"1 month");
         adapter.addFragment(pageThree,"1 year");
@@ -104,55 +123,27 @@ public class StatsFragment extends Fragment  {
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
             }
-        });
+        });*/
+        update(viewPager,tabLayout,adapter);
         return layout;
     }
-        /*
-        View layout = inflater.inflate(R.layout.fragment_stats, container, false);
-        // Inflate the layout for this fragment
-        TabLayout tabLayout = (TabLayout)layout.findViewById(R.id.tab_layout);
-        tabLayout.addTab(tabLayout.newTab().setText("7 days"));
-        tabLayout.addTab(tabLayout.newTab().setText("1 month"));
-        tabLayout.addTab(tabLayout.newTab().setText("1 year"));
-        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
-        final CustomViewPager viewPager = (CustomViewPager) layout.findViewById(R.id.pager);
-        final ViewPagerAdapter adapter = new ViewPagerAdapter(getActivity().getSupportFragmentManager());
-     //   final PagerAdapter adapter = new PagerAdapter(getActivity().getSupportFragmentManager(), tabLayout.getTabCount());
-        viewPager.setAdapter(adapter);
-        viewPager.setPagingEnabled(false);
-        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-
-        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                viewPager.setCurrentItem(tab.getPosition());
-                processChanges((adapter.getItem(tab.getPosition())).getView(),tab.getPosition());
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-            }
-        });*/
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
 
         super.onActivityCreated(savedInstanceState);
-/*
-        TabLayout tabLayout = (TabLayout) getView().findViewById(R.id.tab_layout);
-        tabLayout.addTab(tabLayout.newTab().setText("7 days"));
-        tabLayout.addTab(tabLayout.newTab().setText("1 month"));
-        tabLayout.addTab(tabLayout.newTab().setText("1 year"));
-        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
+    }
 
-        final CustomViewPager viewPager = (CustomViewPager) getView().findViewById(R.id.pager);
-        final PagerAdapter adapter = new PagerAdapter(getActivity().getSupportFragmentManager(), tabLayout.getTabCount());
+    private void update(final CustomViewPager viewPager, TabLayout tabLayout, ViewPagerAdapter adapter) {
+        pageOne = RecyclePage.newInstance(0,7);
+        pageTwo = RecyclePage.newInstance(1,28);
+        pageThree = RecyclePage.newInstance(2, 365);
+        adapter.addFragment(pageOne,"7 days");
+        adapter.addFragment(pageTwo,"1 month");
+        adapter.addFragment(pageThree,"1 year");
+
         viewPager.setAdapter(adapter);
         viewPager.setPagingEnabled(false);
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
@@ -161,9 +152,8 @@ public class StatsFragment extends Fragment  {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 viewPager.setCurrentItem(tab.getPosition());
-                //   TextView txt = (TextView) (adapter.getItem(tab.getPosition())).getView().findViewById(R.id.startMonthStats);
 
-                processChanges((adapter.getItem(tab.getPosition())).getView(),tab.getPosition());
+
             }
 
             @Override
@@ -174,7 +164,17 @@ public class StatsFragment extends Fragment  {
             public void onTabReselected(TabLayout.Tab tab) {
             }
         });
-*/
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        final CustomViewPager viewPager = (CustomViewPager) mLayout.findViewById(R.id.pager);
+        TabLayout tabLayout = (TabLayout)mLayout.findViewById(R.id.tab_layout);
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getChildFragmentManager());
+        update(viewPager,tabLayout,adapter);
+
+
     }
 
     // TODO: Rename method, update argument and hook method into UI event
