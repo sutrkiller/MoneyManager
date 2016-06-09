@@ -1169,10 +1169,11 @@ public class MainActivity extends ALockingClass
             row0.createCell(0).setCellValue(headers[0]);
             row0.createCell(1).setCellValue(headers[1]);
             row0.createCell(2).setCellValue(headers[2]);
-            row0.createCell(3).setCellValue(headers[3]);
-            row0.createCell(4).setCellValue(headers[4]);
-            row0.createCell(5).setCellValue(headers[5]);
-            row0.createCell(6).setCellValue(headers[6]);
+            row0.createCell(3).setCellValue(headers[7]);
+            row0.createCell(4).setCellValue(headers[3]);
+            row0.createCell(5).setCellValue(headers[4]);
+            row0.createCell(6).setCellValue(headers[5]);
+            row0.createCell(7).setCellValue(headers[6]);
 
             int counter = 1;
 
@@ -1182,10 +1183,11 @@ public class MainActivity extends ALockingClass
                 row.createCell(0).setCellValue(curCSV.getString(0));
                 row.createCell(1).setCellValue(curCSV.getString(1));
                 row.createCell(2).setCellValue(curCSV.getString(2));
-                row.createCell(3).setCellValue(curCSV.getString(3));
-                row.createCell(4).setCellValue(curCSV.getString(4));
-                row.createCell(5).setCellValue(curCSV.getString(5));
-                row.createCell(6).setCellValue(curCSV.getString(6));
+                row.createCell(3).setCellValue(curCSV.getString(7));
+                row.createCell(4).setCellValue(curCSV.getString(3));
+                row.createCell(5).setCellValue(curCSV.getString(4));
+                row.createCell(6).setCellValue(curCSV.getString(5));
+                row.createCell(7).setCellValue(curCSV.getString(6));
                 //String arrStr[] ={curCSV.getString(0),curCSV.getString(1), curCSV.getString(2), curCSV.getString(3), curCSV.getString(4), curCSV.getString(5), curCSV.getString(6)};
                 //csvWrite.writeNext(arrStr);
                 counter++;
