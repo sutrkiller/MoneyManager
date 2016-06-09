@@ -124,12 +124,14 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.CustomVi
         }
 
 
+        Double tmpBalance = Double.valueOf(page.getStartBalance());
         for (Map.Entry<String,BigDecimal> entry : map.entrySet()) {
 
             Date date = format.parse(entry.getKey(), new ParsePosition(0));
-
             if (date!= null) {
-                DataPoint dataPoint = new DataPoint(date, Double.parseDouble(String.valueOf(entry.getValue()))+Double.valueOf(page.getStartBalance()));
+                tmpBalance += Double.parseDouble(String.valueOf(entry.getValue()));
+                DataPoint dataPoint = new DataPoint(date, tmpBalance);
+                Log.i("SSSS", String.valueOf(tmpBalance));
                 series.appendData(dataPoint,true,map.size()+2);
             }
         }

@@ -245,6 +245,14 @@ public class MainActivity extends ALockingClass
 
     }
 
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        final NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setCheckedItem(currentPosition);
+    }
+
     /**
      * Attempt to call the API, after verifying that all the preconditions are
      * satisfied. The preconditions are: Google Play Services installed, an
