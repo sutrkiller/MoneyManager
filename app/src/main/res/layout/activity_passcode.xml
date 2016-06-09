@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
 
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
@@ -12,24 +12,14 @@
     tools:context=".crypto.PasscodeActivity">
 
 
-
-    <!--<EditText-->
-        <!--android:id="@+id/pinEditText"-->
-        <!--style="@style/pinEditText"-->
-        <!--android:layout_alignParentTop="true"-->
-        <!--android:layout_marginTop="100dp"-->
-        <!--android:hint="ex. 1234"-->
-        <!--android:drawableRight="@drawable/ic_visibility_black_24dp"-->
-        <!--/>-->
-
     <com.rengwuxian.materialedittext.MaterialEditText
         android:id="@+id/pinEditText"
         style="@style/materialEditText.pin"
-        app:met_floatingLabelText="Enter your pin"
-        android:hint="Enter your pin"
-        app:met_primaryColor="@color/colorAccent"
+        android:hint="@string/enter_your_pin"
         app:met_floatingLabel="highlight"
+        app:met_floatingLabelText="Enter your pin"
         app:met_floatingLabelTextSize="14sp"
+        app:met_primaryColor="@color/colorAccent"
         />
 
     <Button
@@ -37,7 +27,7 @@
         style="@style/pinEditButton"
         android:layout_below="@+id/pinEditText"
         android:onClick="logInOnClick"
-        android:text="Log in"
+        android:text="@string/log_in"
 
         />
 </RelativeLayout>

@@ -3,20 +3,27 @@ package pv239.fi.muni.cz.moneymanager.helper;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 
 import pv239.fi.muni.cz.moneymanager.R;
 
 /**
- * Created by Tobias on 5/1/2016.
+ * Container that helps with deleting items in ListViews (works as background)
+ * @author Tobias Kamenicky <tobias.kamenicky@gmail.com>
+ * @date 5/1/2016.
  */
 public class BackgroundContainer extends FrameLayout {
 
     boolean mShowing = false;
     Drawable mShadowedBackgroundLeft;
     Drawable mShadowedBackgroundRight;
-    int mOpenAreaTop, mOpenAreaBottom, mOpenAreaHeight, mOpenAreaRight, mOpenAreaXTrans, mOpenAreaWidth;
+    int mOpenAreaTop;
+    int mOpenAreaHeight;
+    int mOpenAreaRight;
+    int mOpenAreaXTrans;
+    int mOpenAreaWidth;
     boolean mUpdateBounds = false;
 
     public BackgroundContainer(Context context) {
@@ -35,11 +42,8 @@ public class BackgroundContainer extends FrameLayout {
     }
 
     private void init() {
-        mShadowedBackgroundLeft =
-                getContext().getResources().getDrawable(R.drawable.delete_left);
-        mShadowedBackgroundRight = getContext().getResources().getDrawable(R.drawable.delete_right);
-                //getContext().getResources().getDrawable(R.drawable.ic_delete_sweep_black_24dp);
-                //getContext().getDrawable(R.drawable.shadowed_background);
+        mShadowedBackgroundLeft = ContextCompat.getDrawable(getContext(), R.drawable.delete_left);
+        mShadowedBackgroundRight = ContextCompat.getDrawable(getContext(), R.drawable.delete_right);
     }
 
     public void showBackground(int top, int bottom, int left, int right, int width) {

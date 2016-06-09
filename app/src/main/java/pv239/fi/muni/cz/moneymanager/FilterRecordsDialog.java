@@ -2,9 +2,11 @@ package pv239.fi.muni.cz.moneymanager;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.support.v4.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -12,28 +14,27 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.Spinner;
 import android.widget.Toast;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
 import pv239.fi.muni.cz.moneymanager.helper.DatePickerFragment;
 
 /**
+ * Dialog for filtering records
+ *
  * Created by Tobias on 5/15/2016.
  */
 public class FilterRecordsDialog extends DialogFragment {
-    private View v;
-    private int lastButtonClicked = -1;
-
     public static final int ORDER_AMOUNT = 0;
     public static final int ORDER_DATE = 1;
     public static final int ORDER_NAME = 2;
     public static final int ORDER_CATEGORY = 3;
     public static final int DIRECTION_ASC = 0;
     public static final int DIRECTION_DESC = 1;
+    private View v;
+    private int lastButtonClicked = -1;
 
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -76,7 +77,6 @@ public class FilterRecordsDialog extends DialogFragment {
                             if (date1.compareTo(date2) > 0) {
                                 Toast.makeText(getActivity(),"First date must be sooner.",Toast.LENGTH_LONG).show();
                             } else {
-                                //ok...continue
                                 FilterRecordsDialogFinishedListener fc = (FilterRecordsDialogFinishedListener) getActivity();
                                 fc.onFilterRecordsFinishedDialog(true,spinner.getSelectedItemPosition(),spinner1.getSelectedItemPosition(),date1,date2);
                                 dialog.dismiss();
@@ -89,7 +89,7 @@ public class FilterRecordsDialog extends DialogFragment {
                     }
                 });
                 Button resetButton = dialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-                resetButton.setTextColor(getResources().getColor(R.color.neutralColor));
+                resetButton.setTextColor(ContextCompat.getColor(getContext(), R.color.neutralColor));
                 resetButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -111,14 +111,14 @@ public class FilterRecordsDialog extends DialogFragment {
         }
         String[] attr = getResources().getStringArray(R.array.records_sort_by);
         Spinner spinner = (Spinner) v.findViewById(R.id.filterRecords_orderBy);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),R.layout.support_simple_spinner_dropdown_item,attr);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.support_simple_spinner_dropdown_item, attr);
         adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
         spinner.setSelection(orderPos,false);
 
         String[] dirs = new String[] {"Ascending","Descending"};
         Spinner spinner1 = (Spinner) v.findViewById(R.id.filterRecords_direction);
-        ArrayAdapter<String> adapter1 = new ArrayAdapter<String>(getActivity(),R.layout.support_simple_spinner_dropdown_item,dirs);
+        ArrayAdapter<String> adapter1 = new ArrayAdapter<>(getActivity(), R.layout.support_simple_spinner_dropdown_item, dirs);
         adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
         spinner1.setAdapter(adapter1);
         spinner1.setSelection(directionPos,false);

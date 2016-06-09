@@ -1,7 +1,6 @@
 package pv239.fi.muni.cz.moneymanager.adapter;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -32,6 +31,8 @@ import pv239.fi.muni.cz.moneymanager.TabFragments.StatPage;
 import pv239.fi.muni.cz.moneymanager.model.StatRecord;
 
 /**
+ * Adapter for RecycleView that holds each statistics page (swiping left and right)
+ *
  * Created by Klasovci on 6/8/2016.
  */
 
@@ -39,8 +40,7 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.CustomVi
     private Context mContext;
     private List<StatPage> statPages;
 
-    public RecycleAdapter(Context context, List<StatPage> list) {
-        //this.mContext = context;
+    public RecycleAdapter(List<StatPage> list) {
         statPages = list;
     }
 
@@ -50,8 +50,7 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.CustomVi
        View view = LayoutInflater.from(v.getContext()).inflate(R.layout.tab_fragment,v,false);
 
        mContext = v.getContext();
-       CustomViewHolder viewHolder = new CustomViewHolder(view);
-       return viewHolder;
+        return new CustomViewHolder(view);
     }
 
     @Override

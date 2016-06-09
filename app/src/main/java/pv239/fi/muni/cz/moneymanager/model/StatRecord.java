@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
+ * Simplified record model for use in statistics
+ *
  * Created by Klasovci on 6/9/2016.
  */
 public class StatRecord {
@@ -11,8 +13,6 @@ public class StatRecord {
     public long id;
     public String item;
     public Date date;
-
-    public StatRecord(){}
 
     public StatRecord(BigDecimal value, String item, long id, Date date) {
         this.item = item;
@@ -29,10 +29,12 @@ public class StatRecord {
         return item;
     }
 
-    public long getId(){return id;}
-
     public void setItem(String item) {
         this.item = item;
+    }
+
+    public long getId() {
+        return id;
     }
 
     public BigDecimal getValue() {

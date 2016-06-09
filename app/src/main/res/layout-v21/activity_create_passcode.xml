@@ -42,8 +42,9 @@
         android:layout_centerHorizontal="true"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-
         android:layout_marginTop="32dp"
+
+        android:elevation="2dp"
         android:minWidth="88dp"
         android:onClick="createPinOnClick"
         android:padding="8dp"

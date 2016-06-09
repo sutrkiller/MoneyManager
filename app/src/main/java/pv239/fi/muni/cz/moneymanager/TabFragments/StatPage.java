@@ -14,6 +14,8 @@ import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
 import pv239.fi.muni.cz.moneymanager.model.StatRecord;
 
 /**
+ * Stat page encapsulates all data needed for single RecycleView item
+ *
  * Created by Klasovci on 6/9/2016.
  */
 public class StatPage {
@@ -22,10 +24,8 @@ public class StatPage {
     private Date end;
     private List<StatRecord> incomesList;
     private List<StatRecord> expensesList;
-    private Context context;
 
     public StatPage(Context context, Date fromDate, Date toDate) {
-        this.context = context;
         incomesList = new ArrayList<>();
         expensesList = new ArrayList<>();
         start = fromDate;
@@ -33,15 +33,6 @@ public class StatPage {
         MMDatabaseHelper db = MMDatabaseHelper.getInstance(context);
         getData(db, fromDate, toDate);
     }
-/*
-    public StatPage(String startBalance, String endBalance, String incomes) {
-        this.startBalance = startBalance;
-        this.endBalance = endBalance;
-        this.incomes = incomes;
-        incomesList = new ArrayList<>();
-        expensesList = new ArrayList<>();
-    }
-*/
 
     public Date getEnd() {
         return end;
@@ -55,16 +46,8 @@ public class StatPage {
         return startBalance;
     }
 
-    public void setStartBalance(String startBalance) {
-        this.startBalance = startBalance;
-    }
-
     public String getEndBalance() {
         return endBalance;
-    }
-
-    public void setEndBalance(String endBalance) {
-        this.endBalance = endBalance;
     }
 
     public String getDate() {
@@ -75,36 +58,16 @@ public class StatPage {
         return incomes;
     }
 
-    public void setIncomes(String incomes) {
-        this.incomes = incomes;
-
-    }
-
     public String getExpenses() {
         return expenses;
-    }
-
-    public void setExpenses(String expenses) {
-        this.expenses = expenses;
-
     }
 
     public List<StatRecord> getIncomesList() {
         return incomesList;
     }
 
-    public void setIncomesList(List<StatRecord> incomesList) {
-        this.incomesList = incomesList;
-
-    }
-
     public List<StatRecord> getExpensesList() {
         return expensesList;
-    }
-
-    public void setExpensesList(List<StatRecord> expensesList) {
-        this.expensesList = expensesList;
-
     }
 
     public void getData(MMDatabaseHelper db, Date fromDate, Date toDate)

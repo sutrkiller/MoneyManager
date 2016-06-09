@@ -7,19 +7,15 @@ import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.Currency;
-import java.util.List;
 import java.util.Locale;
 
 import pv239.fi.muni.cz.moneymanager.R;
-import pv239.fi.muni.cz.moneymanager.model.Category;
 import pv239.fi.muni.cz.moneymanager.model.Record;
 
 /**
@@ -70,10 +66,11 @@ public class RecordsDbAdapter extends CursorAdapter {
 
         vicon.setImageResource(iconId);
         vdate.setText(Record.formatDateTime(context,dateTime));
-        vvalue.setText(format.format(value.abs().setScale(2).doubleValue()));
+        vvalue.setText(format.format(value.abs().setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue()));
         vvalue.setTextColor(ContextCompat.getColor(context,value.compareTo(BigDecimal.ZERO) < 0 ? R.color.recordNegativeValue : R.color.recordPositiveValue));
         vitem.setText(item);
         vitem.setTextColor(ContextCompat.getColor(context,R.color.black));
-        vcategoryName.setText(catName + ((catDet != null && !catDet.isEmpty()) ? " ("+catDet+")" : ""));
+        String name = catName + ((catDet != null && !catDet.isEmpty()) ? " (" + catDet + ")" : "");
+        vcategoryName.setText(name);
     }
 }

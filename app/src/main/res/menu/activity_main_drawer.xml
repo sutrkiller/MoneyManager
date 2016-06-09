@@ -6,33 +6,18 @@
         <item
             android:id="@+id/nav_records"
             android:icon="@drawable/ic_account_balance_black_24dp"
-            android:title="Records">
+            android:title="@string/records">
         </item>
         <item
             android:id="@+id/nav_categories"
             android:icon="@drawable/ic_local_atm_black_24dp"
-            android:title="Categories" />
+            android:title="@string/categories" />
         <item
             android:id="@+id/nav_stats"
             android:icon="@drawable/ic_show_chart_black_24dp"
-            android:title="Statistics" />
-        <!--<item-->
-            <!--android:id="@+id/nav_manage"-->
-            <!--android:icon="@drawable/ic_menu_manage"-->
-            <!--android:title="Tools" />-->
+            android:title="@string/statistics" />
+
     </group>
 
-    <!--<item android:title="Communicate">-->
-        <!--<menu>-->
-            <!--<item-->
-                <!--android:id="@+id/nav_share"-->
-                <!--android:icon="@drawable/ic_menu_share"-->
-                <!--android:title="Share" />-->
-            <!--<item-->
-                <!--android:id="@+id/nav_send"-->
-                <!--android:icon="@drawable/ic_menu_send"-->
-                <!--android:title="Send" />-->
-        <!--</menu>-->
-    <!--</item>-->
 
 </menu>

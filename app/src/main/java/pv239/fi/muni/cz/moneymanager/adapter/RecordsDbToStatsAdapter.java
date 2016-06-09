@@ -21,6 +21,8 @@ import pv239.fi.muni.cz.moneymanager.R;
 import pv239.fi.muni.cz.moneymanager.model.StatRecord;
 
 /**
+ * This class serves as adapter for each item in statistics expenses/incomes lists
+ *
  * Created by Klas on 5/31/2016.
  */
 public class RecordsDbToStatsAdapter extends BaseAdapter {
@@ -72,7 +74,7 @@ public class RecordsDbToStatsAdapter extends BaseAdapter {
 
         NumberFormat format = NumberFormat.getCurrencyInstance(Locale.GERMANY);
         format.setMaximumFractionDigits(2);
-        holder.value.setText(format.format(record.getValue().abs().setScale(2).doubleValue()));
+        holder.value.setText(format.format(record.getValue().abs().setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue()));
         holder.value.setTextColor(ContextCompat.getColor(context, record.getValue().compareTo(BigDecimal.ZERO) < 0 ? R.color.recordNegativeValue : R.color.recordPositiveValue));
 
         return convertView;

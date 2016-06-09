@@ -12,11 +12,9 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.storage.StorageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -31,12 +29,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
 import android.widget.DatePicker;
-import android.widget.GridView;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -45,62 +40,44 @@ import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
-import com.google.api.client.http.FileContent;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.DateTime;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.ParentReference;
-import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
-import com.google.api.services.sheets.v4.model.BatchGetValuesResponse;
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
 import com.google.api.services.sheets.v4.model.CellData;
 import com.google.api.services.sheets.v4.model.CellFormat;
 import com.google.api.services.sheets.v4.model.Color;
-import com.google.api.services.sheets.v4.model.CopyPasteRequest;
 import com.google.api.services.sheets.v4.model.DeleteDimensionRequest;
-import com.google.api.services.sheets.v4.model.DeleteSheetRequest;
 import com.google.api.services.sheets.v4.model.DimensionRange;
 import com.google.api.services.sheets.v4.model.ExtendedValue;
 import com.google.api.services.sheets.v4.model.GridCoordinate;
-import com.google.api.services.sheets.v4.model.GridData;
-import com.google.api.services.sheets.v4.model.GridRange;
-import com.google.api.services.sheets.v4.model.RepeatCellRequest;
 import com.google.api.services.sheets.v4.model.Request;
 import com.google.api.services.sheets.v4.model.RowData;
-import com.google.api.services.sheets.v4.model.Sheet;
-import com.google.api.services.sheets.v4.model.SheetProperties;
-import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.UpdateCellsRequest;
-import com.google.api.services.sheets.v4.model.UpdateSheetPropertiesRequest;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFRichTextString;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Currency;
 import java.util.Date;
 import java.util.List;
-import static java.util.concurrent.TimeUnit.*;
-import au.com.bytecode.opencsv.CSVWriter;
+
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 import pv239.fi.muni.cz.moneymanager.adapter.CategoriesDbAdapter;
@@ -113,6 +90,9 @@ import pv239.fi.muni.cz.moneymanager.model.FilterCategoriesArgs;
 import pv239.fi.muni.cz.moneymanager.model.FilterRecordsArgs;
 import pv239.fi.muni.cz.moneymanager.model.Record;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 
 /**
  * Main activity holding all other fragments. Contains navigation drawer.
@@ -124,29 +104,22 @@ import pv239.fi.muni.cz.moneymanager.model.Record;
 public class MainActivity extends ALockingClass
         implements EasyPermissions.PermissionCallbacks,NavigationView.OnNavigationItemSelectedListener, RecordsFragment.OnRecordsInteractionListener, CategoriesFragment.OnCategoriesInteractionListener,StatsFragment.OnStatsInteractionListener, DatePickerFragment.OnDateInteractionListener, AddRecordDialog.AddRecordDialogFinishedListener, AddCategoryDialog.AddCategoryDialogFinishedListener, FilterRecordsDialog.FilterRecordsDialogFinishedListener, FilterCategoriesDialog.FilterCategoriesDialogFinishedListener {
 
-    private int currentPosition=-1;
-    private boolean hideFilter = false;
-
-    GoogleAccountCredential mCredential;
-    private static Drive mGOOSvc;
-
-    private TextView mOutputText;
-    private Button mCallApiButton;
-    ProgressDialog mProgress;
-
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
     static final int REQUEST_PERMISSION_WRITE_STORAGE = 1004;
-
     private static final long SYNC_TIME_MIN_DIF = MILLISECONDS.convert(5,SECONDS);
-
-    private static final String BUTTON_TEXT = "Call Google Sheets API";
     private static final String PREF_ACCOUNT_NAME = "accountName";
     private static final String FILE_NAME = "MoneyManager";
     private static final String PREF_FILE_RES = "MoneyManagerSpreadsheet";
     private static final String[] SCOPES = { SheetsScopes.SPREADSHEETS, DriveScopes.DRIVE_FILE};
+    private static Drive mGOOSvc;
+    GoogleAccountCredential mCredential;
+    FilterRecordsArgs recordsArgs;
+    FilterCategoriesArgs categoriesArgs;
+    private int currentPosition = -1;
+    private boolean hideFilter = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -164,14 +137,14 @@ public class MainActivity extends ALockingClass
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        assert drawer != null;
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         final NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        assert navigationView != null;
         navigationView.setNavigationItemSelectedListener(this);
 
-        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        //getSupportActionBar().setHomeButtonEnabled(true);
         getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
             @Override
             public void onBackStackChanged() {
@@ -204,37 +177,7 @@ public class MainActivity extends ALockingClass
         Log.i("CurPos: ", String.valueOf(currentPosition));
         onNavigationItemSelected((MenuItem)findViewById(position));
 
-/*
-        ViewGroup.LayoutParams tlp = new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        mCallApiButton = new Button(this);
-        mCallApiButton.setText(BUTTON_TEXT);
-        mCallApiButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCallApiButton.setEnabled(false);
-                mOutputText.setText("");
-                getResultsFromApi();
-                mCallApiButton.setEnabled(true);
-            }
-        });
-        drawer.addView(mCallApiButton);
-
-        mOutputText = new TextView(this);
-        mOutputText.setLayoutParams(tlp);
-        mOutputText.setPadding(100, 116, 116, 116);
-        mOutputText.setVerticalScrollBarEnabled(true);
-        mOutputText.setMovementMethod(new ScrollingMovementMethod());
-        mOutputText.setText(
-                "Click the \'" + BUTTON_TEXT + "\' button to test the API.");
-        drawer.addView(mOutputText);
-
-        mProgress = new ProgressDialog(this);
-        mProgress.setMessage("Calling Google Sheets API ...");
-
-        setContentView(drawer);*/
 
         // Initialize credentials and service object.
         mCredential = GoogleAccountCredential.usingOAuth2(
@@ -245,11 +188,11 @@ public class MainActivity extends ALockingClass
 
     }
 
-
     @Override
     protected void onResume() {
         super.onResume();
         final NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        assert navigationView != null;
         navigationView.setCheckedItem(currentPosition);
     }
 
@@ -266,7 +209,8 @@ public class MainActivity extends ALockingClass
         } else if (mCredential.getSelectedAccountName() == null) {
             chooseAccount();
         } else if (! isDeviceOnline()) {
-            mOutputText.setText("No network connection available.");
+            //mOutputText.setText("No network connection available.");
+            Toast.makeText(this, "No network connection.", Toast.LENGTH_SHORT).show();
         } else {
             mGOOSvc = new Drive.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(),
                     GoogleAccountCredential.usingOAuth2(this, Collections.singletonList(DriveScopes.DRIVE_FILE))
@@ -329,9 +273,10 @@ public class MainActivity extends ALockingClass
         switch(requestCode) {
             case REQUEST_GOOGLE_PLAY_SERVICES:
                 if (resultCode != RESULT_OK) {
-                    mOutputText.setText(
-                            "This app requires Google Play Services. Please install " +
-                                    "Google Play Services on your device and relaunch this app.");
+//                    mOutputText.setText(
+//                            "This app requires Google Play Services. Please install " +
+//                                    "Google Play Services on your device and relaunch this app.");
+                    Toast.makeText(this, "The app requires Google Play Services", Toast.LENGTH_LONG).show();
                 } else {
                     getResultsFromApi();
                 }
@@ -391,7 +336,6 @@ public class MainActivity extends ALockingClass
                 // permission denied, boo! Disable the
                 // functionality that depends on this permission.
             }
-            return;
 
         }
         else {
@@ -464,7 +408,6 @@ public class MainActivity extends ALockingClass
         }
     }
 
-
     /**
      * Display an error dialog showing that Google Play Services is missing
      * or out of date.
@@ -481,8 +424,322 @@ public class MainActivity extends ALockingClass
         dialog.show();
     }
 
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer != null && drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+
+        menu.findItem(R.id.action_filter).setVisible(!hideFilter);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        /*int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }*/
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+
+        int id = R.id.nav_records;
+        if (item != null) {
+            id = item.getItemId();
+        }
+        if (id != currentPosition) {
+            switch (id) {
+                case R.id.nav_records:
+                    onMenuFragmentSelect(RecordsFragment.newInstance());
+                    currentPosition = id;
+                    break;
+                case R.id.nav_categories:
+                    onMenuFragmentSelect(CategoriesFragment.newInstance());
+                    currentPosition = id;
+                    break;
+                case R.id.nav_stats:
+                    onMenuFragmentSelect(StatsFragment.newInstance());
+                    currentPosition = id;
+                    break;
+                default:
+
+            }
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("currentPosition", currentPosition);
+    }
+
+    public void onMenuFragmentSelect(Fragment fragment) {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.fragment_container, fragment, "visible_fragment");
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0)
+            getSupportFragmentManager().popBackStackImmediate();
+        if (currentPosition != -1 && fragment instanceof RecordsFragment) {
+            getSupportFragmentManager().popBackStackImmediate();
+        } else if (currentPosition != -1) {
+            ft.addToBackStack(null);
+        } else {
+            ((NavigationView) findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_records);
+        }
+        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        ft.commit();
+    }
+
+    private void setActionBarTitle(int id) {
+        String title;
+        switch (id) {
+            case -1:
+            case R.id.nav_records:
+                title = "Records";
+                break;
+            case R.id.nav_categories:
+                title = "Categories";
+                break;
+            case R.id.nav_stats:
+                title = "Statistics";
+                break;
+            default:
+                title = "MoneyManager";
+        }
+        getSupportActionBar().setTitle(title);
+    }
+
+    @Override
+    public void onRecordsAddRecord() {
+        AddRecordDialog dialog = new AddRecordDialog();
+        dialog.show(getSupportFragmentManager(), "add_record");
 
 
+    }
+
+    @Override
+    public void onCategoriesAddCategory() {
+        AddCategoryDialog dialog = new AddCategoryDialog();
+        dialog.show(getSupportFragmentManager(), "add_category");
+    }
+
+    @Override
+    public void onDateInteraction(DatePicker datePicker, int caller) {
+        if (caller == DatePickerFragment.ADD_RECORDS) {
+            AddRecordDialog fr = (AddRecordDialog) getSupportFragmentManager().findFragmentByTag("add_record");
+            if (fr == null) return;
+            fr.setDateButtonTag(datePicker);
+        } else if (caller == DatePickerFragment.ORDER_RECORDS) {
+            FilterRecordsDialog fr = (FilterRecordsDialog) getSupportFragmentManager().findFragmentByTag("filter_records");
+            if (fr == null) return;
+            fr.setDateButtonTag(datePicker);
+        }
+
+    }
+
+    @Override
+    public void onAddRecordFinishedDialog(boolean result) {
+        if (result) {
+            ListView view = (ListView) getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.records_list_view);
+            MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
+            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
+            ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories());
+
+            File dbpath = getDatabasePath(MMDatabaseHelper.DB_NAME);
+            long dbModif = dbpath.lastModified();
+            Log.i("DB Modified: ", String.valueOf(dbModif));
+        }
+    }
+
+    public void onAddCategoryFinishedDialog(boolean result) {
+        if (result) {
+
+            ListView view = (ListView) getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.categories_list_view);
+            MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
+            //((CategoriesDbAdapter)view.getAdapter()).swapCursor(help.getAllCategories());
+            ((CategoriesDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllCategories());
+        }
+    }
+
+    public void onFilterClick(MenuItem item) {
+        switch (currentPosition) {
+            case R.id.nav_records: {
+                FilterRecordsDialog filterDialog = new FilterRecordsDialog();
+                Bundle bundle;
+                if (recordsArgs != null) {
+                    bundle = new Bundle();
+                    bundle.putInt("records_order_by", recordsArgs.getOrderBy());
+                    bundle.putInt("records_direction", recordsArgs.getOrderDir());
+                    if (recordsArgs.getDateFrom() != null)
+                        bundle.putString("records_date_from", DatePickerFragment.dateToString(recordsArgs.getDateFrom()));
+                    if (recordsArgs.getDateTo() != null)
+                        bundle.putString("records_date_to", DatePickerFragment.dateToString(recordsArgs.getDateTo()));
+                    filterDialog.setArguments(bundle);
+                }
+                filterDialog.show(getSupportFragmentManager(), "filter_records");
+                break;
+            }
+            case R.id.nav_categories: {
+                FilterCategoriesDialog filterDialog = new FilterCategoriesDialog();
+                Bundle bundle;
+                if (categoriesArgs != null) {
+                    bundle = new Bundle();
+                    bundle.putInt("categories_order_by", categoriesArgs.getOrderBy());
+                    bundle.putInt("categories_direction", categoriesArgs.getOrderDir());
+                    filterDialog.setArguments(bundle);
+                }
+                filterDialog.show(getSupportFragmentManager(), "filter_categories");
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    public void onExportClick(MenuItem item) {
+
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_PERMISSION_WRITE_STORAGE);
+
+        } else {
+
+            ExportDatabaseCSVTask task = new ExportDatabaseCSVTask(this);
+            task.execute();
+        }
+    }
+
+    public void onSyncClick(MenuItem item) {
+        getResultsFromApi();
+    }
+
+    @Override
+    public void onFilterRecordsFinishedDialog(boolean result, int orderPos, int directionPos, Date from, Date to) {
+        if (result) {
+            recordsArgs = new FilterRecordsArgs();
+            recordsArgs.setOrderBy(orderPos);
+            recordsArgs.setOrderDir(directionPos);
+            recordsArgs.setDateFrom(from);
+            recordsArgs.setDateTo(to);
+
+            String ordeyBy = null;
+            String ordeyDir = null;
+            String dateFrom = null;
+            String dateTo = null;
+
+            switch (orderPos) {
+                case FilterRecordsDialog.ORDER_AMOUNT:
+                    ordeyBy = MMDatabaseHelper.KEY_REC_VAL;
+                    break;
+                case FilterRecordsDialog.ORDER_DATE:
+                    ordeyBy = MMDatabaseHelper.KEY_REC_DATE;
+                    break;
+                case FilterRecordsDialog.ORDER_NAME:
+                    ordeyBy = MMDatabaseHelper.KEY_REC_ITEM;
+                    break;
+                case FilterRecordsDialog.ORDER_CATEGORY:
+                    ordeyBy = MMDatabaseHelper.KEY_CAT_NAME;
+                    break;
+            }
+
+            switch (directionPos) {
+                case FilterRecordsDialog.DIRECTION_ASC:
+                    ordeyDir = "ASC";
+                    break;
+                case FilterRecordsDialog.DIRECTION_DESC:
+                    ordeyDir = "DESC";
+                    break;
+            }
+
+            if (from != null) {
+                dateFrom = MMDatabaseHelper.convertDateForDb(from);
+            }
+            if (to != null) {
+                dateTo = MMDatabaseHelper.convertDateForDb(to);
+            }
+
+            ListView view = (ListView) getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.records_list_view);
+            MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
+            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
+            ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories(dateFrom, dateTo, ordeyBy, ordeyDir));
+        } else {
+            recordsArgs = null;
+            ListView view = (ListView) getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.records_list_view);
+            MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
+            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
+            ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories());
+        }
+    }
+
+    @Override
+    public void onFilterCategoriesFinishedDialog(boolean result, int orderPos, int directionPos) {
+        if (result) {
+            categoriesArgs = new FilterCategoriesArgs();
+            categoriesArgs.setOrderBy(orderPos);
+            categoriesArgs.setOrderDir(directionPos);
+
+            String ordeyBy = null;
+            String ordeyDir = null;
+
+            switch (orderPos) {
+                case FilterCategoriesDialog.ORDER_NAME:
+                    ordeyBy = MMDatabaseHelper.KEY_CAT_NAME;
+                    break;
+                case FilterCategoriesDialog.ORDER_DETAILS:
+                    ordeyBy = MMDatabaseHelper.KEY_CAT_DET;
+                    break;
+            }
+
+            switch (directionPos) {
+                case FilterCategoriesDialog.DIRECTION_ASC:
+                    ordeyDir = "ASC";
+                    break;
+                case FilterCategoriesDialog.DIRECTION_DESC:
+                    ordeyDir = "DESC";
+                    break;
+            }
+
+            ListView view = (ListView) getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.categories_list_view);
+            MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
+            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
+            ((CategoriesDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllCategories(ordeyBy, ordeyDir));
+        } else {
+            categoriesArgs = null;
+            ListView view = (ListView) getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.categories_list_view);
+            MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
+            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
+            ((CategoriesDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllCategories());
+        }
+    }
 
     /**
      * An asynchronous task that handles the Google Sheets API call.
@@ -514,7 +771,7 @@ public class MainActivity extends ALockingClass
                 File dbpath = getDatabasePath(MMDatabaseHelper.DB_NAME);
                 long dbModif = dbpath.lastModified();
                 Log.i("DB Modified: ", String.valueOf(dbModif));
-                long driveModif = 0;
+                long driveModif;
                 String resId;
                 getDataFromApi();
                 if (mGOOSvc!= null && isDeviceOnline()) {
@@ -526,7 +783,7 @@ public class MainActivity extends ALockingClass
 
                             if (resId != null) {
                                 SharedPreferences prefs = getPreferences(MODE_PRIVATE);
-                                prefs.edit().putString(PREF_FILE_RES,resId).commit(); //save resId for further editing
+                                prefs.edit().putString(PREF_FILE_RES, resId).apply(); //save resId for further editing
                                 testUpdateContent(resId);
                                 result = 1;
 
@@ -541,21 +798,16 @@ public class MainActivity extends ALockingClass
                             if (Math.abs(dbModif - driveModif) >= SYNC_TIME_MIN_DIF) {  //if changes are at least SYNC_TIME_MIN_DIF apart
                                 if (dbModif - driveModif <= SYNC_TIME_MIN_DIF) {
                                     //drive is newer -> download data
-                                    //testUpdateContent(resId);
                                     testDownloadContent(resId);
                                     result = 0;
                                     Log.i("Drive: ", "Changes downloaded");
                                 } else if (dbModif - driveModif >= SYNC_TIME_MIN_DIF) {
                                     //db is newer -> upload data
                                     testUpdateContent(resId);
-                                    //testDownloadContent(resId);
                                     result = 1;
                                     Log.i("Drive: ", "Changes updated");
                                 } else {
                                     result = 2;
-                                    //no pending changes...
-                                    //testUpdateContent(resId);
-                                    //testDownloadContent(resId);
                                     Log.i("Drive: ", "No changes");
                                 }
                             }
@@ -585,7 +837,7 @@ public class MainActivity extends ALockingClass
 
             String spreadsheetId = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms";
             String range = "Class Data!A2:E";
-            List<String> results = new ArrayList<String>();
+            List<String> results = new ArrayList<>();
             try {
             ValueRange response = this.mService.spreadsheets().values()
                     .get(spreadsheetId, range)
@@ -643,49 +895,49 @@ public class MainActivity extends ALockingClass
                             .setStringValue(headers[0]))
                     .setUserEnteredFormat(new CellFormat()
                             .setBackgroundColor(new Color()
-                                    .setGreen(Float.valueOf(1)))));
+                                    .setGreen(1f))));
             values.add(new CellData()
                     .setUserEnteredValue(new ExtendedValue()
                             .setStringValue(headers[1]))
                     .setUserEnteredFormat(new CellFormat()
                             .setBackgroundColor(new Color()
-                                    .setGreen(Float.valueOf(1)))));
+                                    .setGreen(1f))));
             values.add(new CellData()
                     .setUserEnteredValue(new ExtendedValue()
                             .setStringValue(headers[2]))
                     .setUserEnteredFormat(new CellFormat()
                             .setBackgroundColor(new Color()
-                                    .setGreen(Float.valueOf(1)))));
+                                    .setGreen(1f))));
             values.add(new CellData()
                     .setUserEnteredValue(new ExtendedValue()
                             .setStringValue(headers[7]))
                     .setUserEnteredFormat(new CellFormat()
                             .setBackgroundColor(new Color()
-                                    .setGreen(Float.valueOf(1)))));
+                                    .setGreen(1f))));
             values.add(new CellData()
                     .setUserEnteredValue(new ExtendedValue()
                             .setStringValue(headers[3]))
                     .setUserEnteredFormat(new CellFormat()
                             .setBackgroundColor(new Color()
-                                    .setGreen(Float.valueOf(1)))));
+                                    .setGreen(1f))));
             values.add(new CellData()
                     .setUserEnteredValue(new ExtendedValue()
                             .setStringValue(headers[4]))
                     .setUserEnteredFormat(new CellFormat()
                             .setBackgroundColor(new Color()
-                                    .setGreen(Float.valueOf(1)))));
+                                    .setGreen(1f))));
             values.add(new CellData()
                     .setUserEnteredValue(new ExtendedValue()
                             .setStringValue(headers[5]))
                     .setUserEnteredFormat(new CellFormat()
                             .setBackgroundColor(new Color()
-                                    .setGreen(Float.valueOf(1)))));
+                                    .setGreen(1f))));
             values.add(new CellData()
                     .setUserEnteredValue(new ExtendedValue()
                             .setStringValue(headers[6]))
                     .setUserEnteredFormat(new CellFormat()
                             .setBackgroundColor(new Color()
-                                    .setGreen(Float.valueOf(1)))));
+                                    .setGreen(1f))));
 
             rows.add(new RowData().setValues(values));
 
@@ -751,7 +1003,6 @@ public class MainActivity extends ALockingClass
 
         private void testDownloadContent(String resId) {
             try {
-                List<Record> result = new ArrayList<>();
                 String range = "A:H";
                 ValueRange response = this.mService.spreadsheets().values().get(resId,range).setMajorDimension("ROWS").execute();
                 MMDatabaseHelper db = MMDatabaseHelper.getInstance(getApplicationContext());
@@ -760,8 +1011,7 @@ public class MainActivity extends ALockingClass
                 if (values!= null && values.size()>1) {
                     values.remove(0);
                     for (List row : values) {
-                        //Log.i("INFO: ", row.get(0).toString() + row.get(1) + row.get(2) + row.get(3) + row.get(4) + row.get(5)+ (row.size()==6 ? "":row.get(6)));
-                        long id = Long.parseLong(row.get(0).toString());
+                        //long id = Long.parseLong(row.get(0).toString());
                         BigDecimal value = new BigDecimal(row.get(1).toString());
                         Currency currency = Currency.getInstance(row.get(2).toString());
                         BigDecimal valInEur = new BigDecimal(row.get(3).toString());
@@ -773,9 +1023,6 @@ public class MainActivity extends ALockingClass
                         db.addRecord(record);
                     }
                 }
-
-                Log.i("DEBUG INFO: ", String.valueOf(values.get(0).size()));
-
 
         } catch (UserRecoverableAuthIOException e) {
             startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
@@ -793,16 +1040,11 @@ public class MainActivity extends ALockingClass
 
         @Override
         protected void onPostExecute(Integer output) {
-            //mProgress.hide();
             if (output == null || output == 0) {
-                //mOutputText.setText("No results returned.");
                 Toast.makeText(MainActivity.this, "Changes downloaded!", Toast.LENGTH_SHORT).show();
-                //Log.i("Api: ", "nok");
-            } else if (output == null || output == 1) {
-                //output.add(0, "Data retrieved using the Google Sheets API:");
-                //mOutputText.setText(TextUtils.join("\n", output));
+            } else if (output == 1) {
                 Toast.makeText(MainActivity.this, "Changes uploaded!", Toast.LENGTH_SHORT).show();
-            } else if (output == null || output == 2) {
+            } else if (output == 2) {
                 Toast.makeText(MainActivity.this, "No pending changes!", Toast.LENGTH_SHORT).show();
             } else   {
                 Toast.makeText(MainActivity.this, "Sync failed!", Toast.LENGTH_SHORT).show();
@@ -812,17 +1054,12 @@ public class MainActivity extends ALockingClass
                 if (output == 0 && currentPosition == R.id.nav_records) {
                     ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.records_list_view);
                     MMDatabaseHelper help = MMDatabaseHelper.getInstance(MainActivity.this);
-                    //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
                     ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories());
                 }
-
-            //}
         }
 
-        //toDo change this
         @Override
         protected void onCancelled() {
-            //mProgress.hide();
             if (mLastError != null) {
                 if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
                     showGooglePlayServicesAvailabilityErrorDialog(
@@ -834,313 +1071,12 @@ public class MainActivity extends ALockingClass
                             MainActivity.REQUEST_AUTHORIZATION);
                 } else {
 
-                    Log.i("Error",mLastError.getMessage().toString());
+                    Log.i("Error", mLastError.getMessage());
                 }
             } else {
-                mOutputText.setText("Request cancelled.");
+                //mOutputText.setText("Request cancelled.");
+                Toast.makeText(getApplicationContext(), "Request cancelled", Toast.LENGTH_LONG).show();
             }
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-
-            menu.findItem(R.id.action_filter).setVisible(!hideFilter);
-
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        /*int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }*/
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-
-        int id = R.id.nav_records;
-        if (item != null) {
-            id = item.getItemId();
-        }
-        if (id != currentPosition) {
-            switch (id) {
-                case R.id.nav_records:
-                    onMenuFragmentSelect(RecordsFragment.newInstance(null, null));
-                    currentPosition = id;
-            break;
-            case R.id.nav_categories:
-                    onMenuFragmentSelect(CategoriesFragment.newInstance(null, null));
-                currentPosition = id;
-                break;
-            case R.id.nav_stats:
-                    onMenuFragmentSelect(StatsFragment.newInstance(null, null));
-                currentPosition = id;
-                break;
-            default:
-
-        }
-    }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt("currentPosition",currentPosition);
-    }
-
-    public void onMenuFragmentSelect(Fragment fragment) {
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.fragment_container, fragment,"visible_fragment");
-        if (getSupportFragmentManager().getBackStackEntryCount()>0) getSupportFragmentManager().popBackStackImmediate();
-        if (currentPosition!=-1 && fragment instanceof RecordsFragment) {
-            getSupportFragmentManager().popBackStackImmediate();
-        }
-        else if(currentPosition!=-1) {
-            ft.addToBackStack(null);
-        } else {
-            ((NavigationView)findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_records);
-        }
-        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        ft.commit();
-    }
-
-    private void setActionBarTitle(int id) {
-        String title;
-        switch (id) {
-            case -1:
-            case R.id.nav_records: title = "Records"; break;
-            case R.id.nav_categories: title = "Categories"; break;
-            case R.id.nav_stats: title = "Statistics"; break;
-                default: title = "MoneyManager";
-        }
-        getSupportActionBar().setTitle(title);
-    }
-
-    @Override
-    public void onRecordsAddRecord() {
-        AddRecordDialog dialog = new AddRecordDialog();
-        dialog.show(getSupportFragmentManager(),"add_record");
-
-
-    }
-
-    @Override
-    public void onCategoriesAddCategory() {
-        AddCategoryDialog dialog = new AddCategoryDialog();
-        dialog.show(getSupportFragmentManager(),"add_category");
-    }
-
-    @Override
-    public void onStatsInteraction(Uri uri) {
-        //TODO: edit this method
-    }
-
-    @Override
-    public void onDateInteraction(DatePicker datePicker, int caller) {
-        if (caller == DatePickerFragment.ADD_RECORDS) {
-            AddRecordDialog fr = (AddRecordDialog) getSupportFragmentManager().findFragmentByTag("add_record");
-            if (fr == null) return;
-            fr.setDateButtonTag(datePicker);
-        } else if (caller == DatePickerFragment.ORDER_RECORDS) {
-            FilterRecordsDialog fr = (FilterRecordsDialog) getSupportFragmentManager().findFragmentByTag("filter_records");
-            if (fr==null) return;
-            fr.setDateButtonTag(datePicker);
-        }
-
-    }
-
-    @Override
-    public void onAddRecordFinishedDialog(boolean result) {
-        if (result) {
-            ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.records_list_view);
-            MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
-            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
-            ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories());
-
-            File dbpath = getDatabasePath(MMDatabaseHelper.DB_NAME);
-            long dbModif = dbpath.lastModified();
-            Log.i("DB Modified: ", String.valueOf(dbModif));
-        }
-    }
-
-    public void onAddCategoryFinishedDialog(boolean result) {
-        if (result) {
-
-            ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.categories_list_view);
-            MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
-            //((CategoriesDbAdapter)view.getAdapter()).swapCursor(help.getAllCategories());
-            ((CategoriesDbAdapter)((HeaderViewListAdapter)view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllCategories());
-        }
-    }
-
-
-    FilterRecordsArgs recordsArgs;
-    FilterCategoriesArgs categoriesArgs;
-    public void onFilterClick(MenuItem item) {
-                switch (currentPosition) {
-                    case R.id.nav_records: {
-                        FilterRecordsDialog filterDialog = new FilterRecordsDialog();
-                        Bundle bundle;
-                        if (recordsArgs!=null) {
-                            bundle = new Bundle();
-                            bundle.putInt("records_order_by",recordsArgs.getOrderBy());
-                            bundle.putInt("records_direction",recordsArgs.getOrderDir());
-                            if (recordsArgs.getDateFrom()!=null)
-                            bundle.putString("records_date_from",DatePickerFragment.dateToString(recordsArgs.getDateFrom()));
-                            if (recordsArgs.getDateTo()!=null)
-                            bundle.putString("records_date_to",DatePickerFragment.dateToString(recordsArgs.getDateTo()));
-                            filterDialog.setArguments(bundle);
-                        }
-                        filterDialog.show(getSupportFragmentManager(),"filter_records");
-                        break;
-                    }
-                    case R.id.nav_categories: {
-                        FilterCategoriesDialog filterDialog = new FilterCategoriesDialog();
-                        Bundle bundle;
-                        if (categoriesArgs!=null) {
-                            bundle = new Bundle();
-                            bundle.putInt("categories_order_by",categoriesArgs.getOrderBy());
-                            bundle.putInt("categories_direction",categoriesArgs.getOrderDir());
-                            filterDialog.setArguments(bundle);
-                        }
-                        filterDialog.show(getSupportFragmentManager(),"filter_categories");
-                        break;
-                    }
-                    default: break;
-                }
-    }
-
-    public void  onExportClick(MenuItem item) {
-
-
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        REQUEST_PERMISSION_WRITE_STORAGE);
-
-        } else {
-
-            ExportDatabaseCSVTask task = new ExportDatabaseCSVTask(this);
-            task.execute();
-        }
-    }
-
-    public void  onSyncClick(MenuItem item) {
-
-        
-        getResultsFromApi();
-
-
-    }
-
-    @Override
-    public void onFilterRecordsFinishedDialog(boolean result, int orderPos, int directionPos, Date from, Date to) {
-        if (result) {
-            recordsArgs = new FilterRecordsArgs();
-            recordsArgs.setOrderBy(orderPos);
-            recordsArgs.setOrderDir(directionPos);
-            recordsArgs.setDateFrom(from);
-            recordsArgs.setDateTo(to);
-
-            String ordeyBy = null;
-            String ordeyDir = null;
-            String dateFrom = null;
-            String dateTo = null;
-
-            switch (orderPos) {
-                case FilterRecordsDialog.ORDER_AMOUNT: ordeyBy = MMDatabaseHelper.KEY_REC_VAL; break;
-                case FilterRecordsDialog.ORDER_DATE: ordeyBy = MMDatabaseHelper.KEY_REC_DATE; break;
-                case FilterRecordsDialog.ORDER_NAME: ordeyBy = MMDatabaseHelper.KEY_REC_ITEM; break;
-                case FilterRecordsDialog.ORDER_CATEGORY: ordeyBy = MMDatabaseHelper.KEY_CAT_NAME; break;
-            }
-
-            switch (directionPos) {
-                case FilterRecordsDialog.DIRECTION_ASC: ordeyDir = "ASC"; break;
-                case FilterRecordsDialog.DIRECTION_DESC: ordeyDir = "DESC"; break;
-            }
-
-            if (from!= null) {
-                dateFrom = MMDatabaseHelper.convertDateForDb(from);
-            }
-            if (to!= null) {
-                dateTo = MMDatabaseHelper.convertDateForDb(to);
-            }
-
-            ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.records_list_view);
-            MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
-            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
-            ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories(dateFrom,dateTo,ordeyBy,ordeyDir));
-        } else {
-            recordsArgs = null;
-            ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.records_list_view);
-            MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
-            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
-            ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories());
-        }
-    }
-
-    @Override
-    public void onFilterCategoriesFinishedDialog(boolean result, int orderPos, int directionPos) {
-        if (result) {
-            categoriesArgs = new FilterCategoriesArgs();
-            categoriesArgs.setOrderBy(orderPos);
-            categoriesArgs.setOrderDir(directionPos);
-
-            String ordeyBy = null;
-            String ordeyDir = null;
-
-            switch (orderPos) {
-                case FilterCategoriesDialog.ORDER_NAME: ordeyBy = MMDatabaseHelper.KEY_CAT_NAME; break;
-                case FilterCategoriesDialog.ORDER_DETAILS: ordeyBy = MMDatabaseHelper.KEY_CAT_DET; break;
-            }
-
-            switch (directionPos) {
-                case FilterCategoriesDialog.DIRECTION_ASC: ordeyDir = "ASC"; break;
-                case FilterCategoriesDialog.DIRECTION_DESC: ordeyDir = "DESC"; break;
-            }
-
-            ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.categories_list_view);
-            MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
-            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
-            ((CategoriesDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllCategories(ordeyBy, ordeyDir));
-        } else {
-            categoriesArgs = null;
-            ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.categories_list_view);
-            MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
-            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
-            ((CategoriesDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllCategories());
         }
     }
 
@@ -1218,61 +1154,18 @@ public class MainActivity extends ALockingClass
                         e.printStackTrace();
                     }
                 }
-               // Toast.makeText(MainActivity.this, "Excel Sheet Generated", Toast.LENGTH_SHORT).show();
-
             }
-/*
-            MMDatabaseHelper help = MMDatabaseHelper.getInstance(context);
-
-            File exportDir = new File(Environment.getExternalStorageDirectory(), "");
-            if (!exportDir.exists())
-            {
-                exportDir.mkdirs();
-            }
-
-            HSSFWorkbook workbook = new HSSFWorkbook();
-
-            File file = new File(exportDir, "csvname.csv");
-            try
-            {
-                file.createNewFile();
-                CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
-                //SQLiteDatabase db = dbhelper.getReadableDatabase();
-                Cursor curCSV = help.getAllRecordsWithCategories();//db.rawQuery("SELECT * FROM contacts",null);
-                csvWrite.writeNext(curCSV.getColumnNames());
-                //List<String[]> database = new ArrayList<String[]>();
-                while(curCSV.moveToNext())
-                {
-                    //database.add(new String[] {curCSV.getString(0),curCSV.getString(1), curCSV.getString(2), curCSV.getString(3), curCSV.getString(4), curCSV.getString(5), curCSV.getString(6)});
-                    //Which column you want to exprort
-                    String arrStr[] ={curCSV.getString(0),curCSV.getString(1), curCSV.getString(2), curCSV.getString(3), curCSV.getString(4), curCSV.getString(5), curCSV.getString(6)};
-                    csvWrite.writeNext(arrStr);
-                }
-                //csvWrite.writeAll(database);
-                csvWrite.close();
-                curCSV.close();
-                return "";
-            }
-            catch(Exception sqlEx)
-            {
-                Log.e("MainActivity", sqlEx.getMessage(), sqlEx);
-                return "b";
-            }*/
         }
 
         @Override
         protected void onPreExecute() {
-
             this.dialog.setMessage("Exporting database...");
             this.dialog.show();
-
         }
-
 
         @SuppressLint("NewApi")
         @Override
         protected void onPostExecute(final Object success) {
-
             if (this.dialog.isShowing()){
                 this.dialog.dismiss();
             }

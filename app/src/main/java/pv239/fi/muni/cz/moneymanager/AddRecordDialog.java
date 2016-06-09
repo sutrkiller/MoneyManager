@@ -2,9 +2,10 @@ package pv239.fi.muni.cz.moneymanager;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.support.v4.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,8 +16,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.math.BigDecimal;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Currency;
@@ -42,6 +41,7 @@ import pv239.fi.muni.cz.moneymanager.model.Record;
 public class AddRecordDialog extends DialogFragment  {
     private View v;
 
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -51,34 +51,6 @@ public class AddRecordDialog extends DialogFragment  {
                 .setPositiveButton("Create", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-/*
-                        String item = String.valueOf(((TextView) v.findViewById(R.id.addRecord_item)).getText());
-                        String amount = String.valueOf(((TextView) v.findViewById(R.id.addRecord_price)).getText());
-                        Currency currency = Currency.getInstance(String.valueOf(((Spinner) v.findViewById(R.id.addRecord_currencies)).getSelectedItem()));
-                        String category = String.valueOf(((Spinner) v.findViewById(R.id.addRecord_categories)).getSelectedItem());
-                        DatePicker date = ((DatePicker) v.findViewById(R.id.addRecord_date).getTag());
-                        Calendar cal = Calendar.getInstance();
-                        cal.set(date.getYear(),date.getMonth(),date.getDayOfMonth());
-                        Date d = cal.getTime();
-                        SimpleDateFormat iso8601Format = new SimpleDateFormat(
-                                "yyyy-MM-dd HH:mm:ss");
-
-                        String finalDate = iso8601Format.format(d);
-
-                        String[] parts= category.split(" ");
-                        String catName = parts[0];
-                        String catDet = "";
-                        if (parts.length == 2) {
-                            catDet = parts[1].substring(1,parts[1].length()-1);
-                        }
-//TODO: validate
-                        Record rec = new Record(0, new BigDecimal(amount),currency,item,finalDate,new Category(0,catName,catDet));
-                        MMDatabaseHelper helper = MMDatabaseHelper.getInstance(getActivity());
-                        long id = helper.addRecord(rec);
-
-                        AddRecordDialogFinishedListener ac = (AddRecordDialogFinishedListener) getActivity();
-                        ac.onAddRecordFinishedDialog(true);
-                        dialog.dismiss();*/
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -103,9 +75,7 @@ public class AddRecordDialog extends DialogFragment  {
                             vitem.setError("Item name cannot be empty");
                         } else if (vamount.getText().length()==0) {
                             vamount.setError("Amount cannot be empty");
-                        } else if (scategory.getSelectedItemPosition()==0) {
-
-                        } else {
+                        } else if (scategory.getSelectedItemPosition() != 0) {
 
                             String item = String.valueOf((vitem).getText());
                             String amount = String.valueOf((vamount).getText());
@@ -117,8 +87,6 @@ public class AddRecordDialog extends DialogFragment  {
                                 cal.set(date.getYear(), date.getMonth(), date.getDayOfMonth());
                             }
                             Date d = cal.getTime();
-//                            SimpleDateFormat iso8601Format = new SimpleDateFormat(
-//                                    "yyyy-MM-dd HH:mm:ss");
                             String finalDate = MMDatabaseHelper.convertDateForDb(d);
 
                             String[] parts = category.split(" ");
@@ -135,7 +103,7 @@ public class AddRecordDialog extends DialogFragment  {
 
                             Record rec = new Record(0, new BigDecimal(amount), currency, item, finalDate, new Category(0, catName, catDet));
                             MMDatabaseHelper helper = MMDatabaseHelper.getInstance(getActivity());
-                            long id = helper.addRecord(rec);
+                            helper.addRecord(rec);
 
                             AddRecordDialogFinishedListener ac = (AddRecordDialogFinishedListener) getActivity();
                             ac.onAddRecordFinishedDialog(true);
@@ -152,14 +120,15 @@ public class AddRecordDialog extends DialogFragment  {
         for (Locale loc : locs) {
             try {
                 toret.add(Currency.getInstance(loc).getCurrencyCode());
-            } catch (Exception ex) {}
+            } catch (Exception ignored) {
+            }
         }
         String[] arr = toret.toArray(new String[toret.size()]);
         int eurPos = Arrays.asList(arr).indexOf("EUR");
         eurPos = eurPos > 0 ? eurPos : 0;
 
         Spinner spinner = (Spinner) v.findViewById(R.id.addRecord_currencies);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),R.layout.support_simple_spinner_dropdown_item,arr);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.support_simple_spinner_dropdown_item, arr);
         adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
         spinner.setSelection(eurPos);
@@ -169,17 +138,16 @@ public class AddRecordDialog extends DialogFragment  {
 
         MMDatabaseHelper helper = MMDatabaseHelper.getInstance(getActivity());
         List<Category> cats = helper.getAllCategoriesAsList();
-
-        //List<Category> cats = Category.getTestingCategories();
         SortedSet<String> sortedCats = new TreeSet<>();
         for(Category cat : cats) {
             try {
                 sortedCats.add(cat.name + ((cat.details != null && !cat.details.isEmpty()) ? " ("+cat.details+")" : ""));
-            } catch (Exception ex){}
+            } catch (Exception ignored) {
+            }
         }
 
         Spinner categories = (Spinner)v.findViewById(R.id.addRecord_categories);
-        ArrayAdapter<String> adapter1 = new ArrayAdapter<String>(getActivity(),R.layout.support_simple_spinner_dropdown_item,sortedCats.toArray(new String[sortedCats.size()]));
+        ArrayAdapter<String> adapter1 = new ArrayAdapter<>(getActivity(), R.layout.support_simple_spinner_dropdown_item, sortedCats.toArray(new String[sortedCats.size()]));
         adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
         categories.setPrompt("Select a category!");
         categories.setAdapter(new NothingSelectedSpinnerAdapter(adapter1,R.layout.contact_spinner_row_nothing_selected,getActivity()));

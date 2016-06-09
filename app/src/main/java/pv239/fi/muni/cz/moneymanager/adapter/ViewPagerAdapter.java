@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Adapter for single pages on statistics page
+ *
  * Created by Klasovci on 6/8/2016.
  */
 public class ViewPagerAdapter extends FragmentPagerAdapter {

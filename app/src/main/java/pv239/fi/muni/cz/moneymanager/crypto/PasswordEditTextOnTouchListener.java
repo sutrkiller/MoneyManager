@@ -24,10 +24,10 @@ public class PasswordEditTextOnTouchListener implements View.OnTouchListener {
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        final int DRAWABLE_LEFT = 0;
-        final int DRAWABLE_TOP = 1;
+        //final int DRAWABLE_LEFT = 0;
+        //final int DRAWABLE_TOP = 1;
         final int DRAWABLE_RIGHT = 2;
-        final int DRAWABLE_BOTTOM = 3;
+        //final int DRAWABLE_BOTTOM = 3;
         EditText editText = (EditText)v;
 
         if(event.getAction() == MotionEvent.ACTION_UP) {

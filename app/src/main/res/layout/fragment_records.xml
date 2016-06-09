@@ -2,22 +2,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".RecordsFragment">
 
-    <!-- TODO: Update blank fragment layout -->
     <view
+        android:id="@+id/listViewBackgroundRecords"
         class="pv239.fi.muni.cz.moneymanager.helper.BackgroundContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/listViewBackgroundRecords">
+        android:layout_height="match_parent">
 
         <ListView
             android:id="@+id/records_list_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingTop="8dp"
             android:paddingBottom="8dp"
+            android:paddingTop="8dp"
             />
     </view>
 
@@ -26,10 +24,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@drawable/ic_add_white_24dp"
         android:onClick="onAddRecordClick"
+        android:src="@drawable/ic_add_white_24dp"
         />
 
 </RelativeLayout>

@@ -3,8 +3,12 @@ package pv239.fi.muni.cz.moneymanager.model;
 import java.util.Date;
 
 /**
- * Created by Tobias on 5/27/2016.
+ * Parameters to object list for FilterRecords
+ *
+ * @author Tobias Kamenicky <tobias.kamenicky@gmail.com>
+ * @date 5/27/2016.
  */
+
 public class FilterRecordsArgs {
     private int orderBy;
     private int orderDir;

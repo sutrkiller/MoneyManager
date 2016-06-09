@@ -1,6 +1,5 @@
 package pv239.fi.muni.cz.moneymanager.helper;
 
-import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -16,8 +15,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import pv239.fi.muni.cz.moneymanager.R;
-
 /**
  * Dialog for selecting date
  *
@@ -25,12 +22,47 @@ import pv239.fi.muni.cz.moneymanager.R;
  * @date 10/4/2016
  */
 public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
-    private DatePicker datePicker;
-    private OnDateInteractionListener mListener;
-    private int caller = -1;
     public static int ADD_RECORDS =1;
     public static int ORDER_RECORDS =2;
+    private OnDateInteractionListener mListener;
+    private int caller = -1;
 
+    public static void setDateButtonTag(DatePicker date, Button button) {
+        button.setTag(date);
+
+        int day = date.getDayOfMonth();
+        int month = date.getMonth();
+        int year = date.getYear();
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, day);
+
+        String dateF = formatDate(calendar);
+        button.setText(dateF);
+    }
+
+    public static Date stringToDate(String str) {
+        if (str == null) return null;
+        DateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, yyyy");
+        Date date = null;
+        try {
+            date = dateFormat.parse(str);
+        } catch (ParseException ignored) {
+        }
+        return date;
+    }
+
+    public static String dateToString(Date date) {
+        DateFormat format = new SimpleDateFormat("EEE, MMM d, yyyy");
+        return format.format(date);
+    }
+
+    public static String formatDate(Calendar calendar) {
+        DateFormat dateFormat = DateFormat.getInstance();
+        dateFormat.setCalendar(calendar);
+
+        DateFormat format = new SimpleDateFormat("EEE, MMM d, yyyy");
+        return format.format(calendar.getTime());
+    }
 
     @NonNull
     @Override
@@ -70,42 +102,5 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
 
     public interface OnDateInteractionListener {
         void onDateInteraction(DatePicker datePicker,int caller);
-    }
-
-    public static void setDateButtonTag(DatePicker date, Button button) {
-        button.setTag(date);
-
-        int day = date.getDayOfMonth();
-        int month = date.getMonth();
-        int year = date.getYear();
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(year,month,day);
-
-        String dateF = formatDate(calendar);
-        button.setText(dateF);
-    }
-
-    public static Date stringToDate(String str) {
-        if (str ==null) return null;
-        DateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, yyyy");
-        Date date = null;
-        try {
-            date = dateFormat.parse(str);
-        } catch (ParseException e) {
-        }
-        return date;
-    }
-
-    public static String dateToString(Date date) {
-        DateFormat format = new SimpleDateFormat("EEE, MMM d, yyyy");
-        return format.format(date);
-    }
-
-    public static String formatDate(Calendar calendar) {
-        DateFormat dateFormat = DateFormat.getInstance();
-        dateFormat.setCalendar(calendar);
-
-        DateFormat format = new SimpleDateFormat("EEE, MMM d, yyyy");
-        return format.format(calendar.getTime());
     }
 }

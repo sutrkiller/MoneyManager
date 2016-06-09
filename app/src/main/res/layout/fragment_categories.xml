@@ -5,17 +5,17 @@
     tools:context=".CategoriesFragment">
 
     <view
+        android:id="@+id/listViewBackgroundCategories"
         class="pv239.fi.muni.cz.moneymanager.helper.BackgroundContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/listViewBackgroundCategories">
+        android:layout_height="match_parent">
 
         <ListView
             android:id="@+id/categories_list_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingTop="8dp"
             android:paddingBottom="8dp"
+            android:paddingTop="8dp"
             />
     </view>
 
@@ -24,9 +24,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@drawable/ic_add_white_24dp"
         android:onClick="onAddCategoryClick"
+        android:src="@drawable/ic_add_white_24dp"
         />
 </RelativeLayout>

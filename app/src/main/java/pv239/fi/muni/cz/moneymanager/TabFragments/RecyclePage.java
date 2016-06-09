@@ -20,15 +20,17 @@ import pv239.fi.muni.cz.moneymanager.adapter.RecycleAdapter;
 import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
 
 /**
+ * Page containing RecycleView in statistics
+ *
  * Created by Klasovci on 6/8/2016.
  */
 public class RecyclePage extends Fragment {
     private int pageNumber;
-    private RecyclerView mRecyclerView;
-    private RecyclerView.Adapter mAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
     private List<StatPage> pages = new ArrayList<>();
     private int daysBack;
+
+    public RecyclePage() {
+    }
 
     public static RecyclePage newInstance(int page, int days) {
         Bundle args = new Bundle();
@@ -39,8 +41,6 @@ public class RecyclePage extends Fragment {
         return (fragment);
 
     }
-
-    public RecyclePage(){}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -56,12 +56,12 @@ public class RecyclePage extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View layout = inflater.inflate(R.layout.recycle_view_layout, container, false);
-        mRecyclerView = (RecyclerView) layout.findViewById(R.id.fragRecycleView);
+        RecyclerView mRecyclerView = (RecyclerView) layout.findViewById(R.id.fragRecycleView);
 
         //mRecyclerView.setHasFixedSize(true);
 
         // use a linear layout manager
-        mLayoutManager = new LinearLayoutManager(layout.getContext(), LinearLayoutManager.HORIZONTAL, true);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(layout.getContext(), LinearLayoutManager.HORIZONTAL, true);
 
         mRecyclerView.setLayoutManager(mLayoutManager);
        // mRecyclerView.setBackgroundColor(getResources().getColor(R.color.colorAccent));
@@ -80,15 +80,13 @@ public class RecyclePage extends Fragment {
         
         while(firstCal.compareTo(lateCal) < 0)
         {
-
-
             StatPage page = new StatPage(getContext(),earlyCal.getTime(),lateCal.getTime());
             pages.add(page);
             earlyCal.add(Calendar.DAY_OF_YEAR,-daysBack);
             lateCal.add(Calendar.DAY_OF_YEAR,-daysBack);
         }
 
-        mAdapter = new RecycleAdapter(layout.getContext(),pages);
+        RecyclerView.Adapter mAdapter = new RecycleAdapter(pages);
 
         mRecyclerView.setAdapter(mAdapter);
 

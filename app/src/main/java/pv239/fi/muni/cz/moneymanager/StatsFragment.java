@@ -1,11 +1,8 @@
 package pv239.fi.muni.cz.moneymanager;
 
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.design.widget.TabLayout;
-import android.support.v4.view.PagerAdapter;
-import android.util.Log;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,24 +17,13 @@ import pv239.fi.muni.cz.moneymanager.adapter.ViewPagerAdapter;
  * @date 10/4/2016
  */
 public class StatsFragment extends Fragment  {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-    private RecyclePage pageOne;
-    private RecyclePage pageTwo;
-    private RecyclePage pageThree;
     LayoutInflater inflater;
     ViewGroup container;
     View mLayout;
+    private RecyclePage pageOne;
+    private RecyclePage pageTwo;
+    private RecyclePage pageThree;
 
-
-
-    private OnStatsInteractionListener mListener;
 
     public StatsFragment() {
         // Required empty public constructor
@@ -47,16 +33,11 @@ public class StatsFragment extends Fragment  {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
      * @return A new instance of fragment StatsFragment.
      */
-    // TODO: Rename and change types and number of parameters
-    public static StatsFragment newInstance(String param1, String param2) {
+    public static StatsFragment newInstance() {
 
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         StatsFragment fragment = new StatsFragment();
         fragment.setArguments(args);
 
@@ -66,20 +47,20 @@ public class StatsFragment extends Fragment  {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+        //if (getArguments() != null) {
+        //mParam1 = getArguments().getString(ARG_PARAM1);
+        //mParam2 = getArguments().getString(ARG_PARAM2);
+        //}
 
     }
 
-    private void onLeftSwipe() {
-        // Do something
-    }
+//    private void onLeftSwipe() {
+//        // Do something
+//    }
 
-    private void onRightSwipe() {
-        // Do something
-    }
+//    private void onRightSwipe() {
+//        // Do something
+//    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -177,17 +158,9 @@ public class StatsFragment extends Fragment  {
 
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onStatsInteraction(uri);
-        }
-    }
-
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
     }
 
     /**
@@ -201,7 +174,5 @@ public class StatsFragment extends Fragment  {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnStatsInteractionListener {
-        // TODO: Update argument type and name
-        void onStatsInteraction(Uri uri);
     }
 }

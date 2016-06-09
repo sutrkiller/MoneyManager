@@ -1,27 +1,19 @@
 package pv239.fi.muni.cz.moneymanager.helper;
 
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import java.util.logging.Logger;
-
 /**
- * Created by Tobias on 5/1/2016.
+ * This class implements OnTouchListener and serves for detecting swipes on ListView to correctly delete them on swipe left or right.
+ * @author Tobias Kamenicky <tobias.kamenicky@gmail.com>
+ * @date 5/1/2016.
  */
+
 public class SwipeDetector implements View.OnTouchListener {
 
-    public enum Action {
-        LR, // Left to Right
-        RL, // Right to Left
-        TB, // Top to bottom
-        BT, // Bottom to Top
-        None // when no action was detected
-    }
-
-    private static final String logTag = "SwipeDetector";
     private static final int MIN_DISTANCE = 100;
-    private float downX, downY, upX, upY;
+    private float downX;
+    private float downY;
     private Action mSwipeDetected = Action.None;
 
     public boolean swipeDetected() {
@@ -41,8 +33,8 @@ public class SwipeDetector implements View.OnTouchListener {
                 return false; // allow other events like Click to be processed
             }
             case MotionEvent.ACTION_MOVE: {
-                upX = event.getX();
-                upY = event.getY();
+                float upX = event.getX();
+                float upY = event.getY();
 
                 float deltaX = downX - upX;
                 float deltaY = downY - upY;
@@ -80,5 +72,13 @@ public class SwipeDetector implements View.OnTouchListener {
             }
         }
         return false;
+    }
+
+    public enum Action {
+        LR, // Left to Right
+        RL, // Right to Left
+        TB, // Top to bottom
+        BT, // Bottom to Top
+        None // when no action was detected
     }
 }

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:paddingLeft="16dp"
     android:paddingRight="16dp">
 
@@ -10,15 +11,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:textSize="24sp"
-        android:text="Filter records"/>
+        android:text="@string/filter_records"
+        android:textSize="24sp" />
 
 
     <Spinner
         android:id="@+id/filterRecords_orderBy"
         android:layout_width="160dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_below="@id/filterRecords_title"
         android:layout_marginTop="0dp"
         />
@@ -27,18 +28,18 @@
         android:id="@+id/filterRecords_orderBy_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
         android:layout_below="@id/filterRecords_title"
-        android:layout_alignParentLeft="true"
-        android:textColor="@color/colorAccent"
-        android:text="Order by:"
         android:layout_marginTop="14dp"
+        android:text="@string/order_by"
+        android:textColor="@color/colorAccent"
         />
 
     <Spinner
         android:id="@+id/filterRecords_direction"
         android:layout_width="160dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_below="@+id/filterRecords_orderBy"
         android:layout_marginTop="0dp"/>
 
@@ -46,82 +47,49 @@
         android:id="@+id/filterRecords_direction_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
         android:layout_below="@id/filterRecords_orderBy"
-        android:layout_alignParentLeft="true"
-        android:textColor="@color/colorAccent"
-        android:text="Direction:"
         android:layout_marginTop="14dp"
+        android:text="@string/direction"
+        android:textColor="@color/colorAccent"
         />
-
-    <!--<Spinner-->
-        <!--android:id="@+id/filterRecords_period"-->
-        <!--android:layout_width="160dp"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_alignParentRight="true"-->
-        <!--android:layout_below="@+id/filterRecords_direction"-->
-        <!--android:layout_marginTop="16dp"/>-->
 
     <Button
         android:id="@+id/filterRecords_date_from"
         style="@style/Widget.AppCompat.Button.Borderless"
         android:layout_width="160dp"
         android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
         android:layout_below="@+id/filterRecords_direction"
-        android:layout_alignParentRight="true"
-        android:textAlignment="viewStart"
-        android:paddingLeft="6dp"
+        android:layout_marginStart="2dp"
         android:layout_marginTop="0dp"
-        android:layout_marginLeft="2dp"
-        android:text="Sun, Apr 10, 2016"/>
+        android:paddingStart="6dp"
+        android:text="@string/sun_apr_10_2016"
+        android:textAlignment="viewStart" />
 
     <TextView
         android:id="@+id/filterRecords_date_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
         android:layout_below="@id/filterRecords_direction"
-        android:layout_alignParentLeft="true"
-        android:textColor="@color/colorAccent"
-        android:text="Time period:"
         android:layout_marginTop="14dp"
+        android:text="@string/time_period"
+        android:textColor="@color/colorAccent"
         />
-
-
-
-    <!--<TextView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_below="@id/filterRecords_date_label"-->
-        <!--android:layout_centerHorizontal="true"-->
-        <!--android:layout_marginTop="14dp"-->
-        <!--android:text="–"/>-->
 
     <Button
         android:id="@+id/filterRecords_date_to"
         style="@style/Widget.AppCompat.Button.Borderless"
         android:layout_width="160dp"
         android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
         android:layout_below="@+id/filterRecords_date_label"
-        android:layout_alignParentRight="true"
-        android:textAlignment="viewStart"
-        android:paddingLeft="6dp"
+        android:layout_marginStart="2dp"
         android:layout_marginTop="0dp"
-        android:layout_marginLeft="2dp"
-        android:text="Sun, Apr 11, 2016"/>
-
-
-    <!--<Button-->
-        <!--android:id="@+id/filterRecords_resetFilter"-->
-        <!--style="@style/Widget.AppCompat.Button.Borderless"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_below="@id/filterRecords_date_to"-->
-        <!--android:layout_alignParentLeft="true"-->
-        <!--android:textAlignment="viewStart"-->
-        <!--android:layout_marginTop="14dp"-->
-        <!--android:paddingLeft="0dp"-->
-        <!--android:text="Reset filter"-->
-        <!--android:textColor="@color/neutralColor"-->
-        <!--/>-->
+        android:paddingStart="6dp"
+        android:text="@string/sun_apr_11_2016"
+        android:textAlignment="viewStart" />
 
 
 </RelativeLayout>

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
     >
@@ -13,39 +13,40 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:textSize="24sp"
-        android:text="Create record"/>
+        android:text="@string/create_record"
+        android:textSize="24sp" />
 
     <com.rengwuxian.materialedittext.MaterialEditText
         android:id="@+id/addRecord_item"
         style="@style/materialEditText.text"
         android:layout_below="@+id/addRecord_title"
+        android:hint="@string/item_name"
+        app:met_floatingLabel="highlight"
         app:met_floatingLabelText="Item name"
-        android:hint="Item name"
-        app:met_primaryColor="@color/colorAccent"
-        app:met_floatingLabel="highlight"/>
+        app:met_primaryColor="@color/colorAccent" />
 
     <Spinner
         android:id="@+id/addRecord_currencies"
         android:layout_width="80dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+
         android:layout_below="@+id/addRecord_item"
         android:layout_marginTop="16dp"/>
 
     <com.rengwuxian.materialedittext.MaterialEditText
         android:id="@+id/addRecord_price"
-        android:layout_width="match_parent"
         style="@style/materialEditText"
-        android:layout_marginTop="8dp"
-        android:layout_marginRight="80dp"
-        android:layout_alignParentLeft="true"
+        android:layout_width="match_parent"
+        android:layout_alignParentStart="true"
         android:layout_below="@+id/addRecord_item"
+        android:layout_marginEnd="80dp"
+        android:layout_marginTop="8dp"
+        android:hint="@string/amount"
         android:inputType="numberDecimal|numberSigned"
+        app:met_floatingLabel="highlight"
         app:met_floatingLabelText="Amount"
-        android:hint="Amount"
-        app:met_primaryColor="@color/colorAccent"
-        app:met_floatingLabel="highlight"/>
+        app:met_primaryColor="@color/colorAccent" />
 
 
     <Spinner
@@ -53,18 +54,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/addRecord_price"
-        android:layout_marginTop="16dp"
         android:layout_centerHorizontal="true"
-        android:paddingLeft="0dp"
-        android:layout_marginLeft="-16dp"/>
+        android:layout_marginStart="-16dp"
+        android:layout_marginTop="16dp"
+        android:paddingEnd="0dp"
+        android:paddingStart="0dp" />
 
     <ImageView
         android:id="@+id/addRecord_divider"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:layout_below="@+id/addRecord_categories"
-        android:src="@drawable/divider"/>
+        android:layout_marginTop="16dp"
+        android:contentDescription="@string/divider"
+        android:src="@drawable/divider" />
 
     <Button
         android:id="@+id/addRecord_date"
@@ -72,19 +75,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/addRecord_divider"
-        android:textAlignment="viewStart"
-        android:paddingLeft="0dp"
         android:layout_marginTop="8dp"
-        android:text="Sun, Apr 10, 2016"/>
+        android:paddingEnd="0dp"
+        android:paddingStart="0dp"
+        android:text="@string/sun_apr_10_2016"
+        android:textAlignment="viewStart" />
 
-    <!--<DatePicker-->
-        <!--android:id="@+id/addRecord_date"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_below="@id/addRecord_categories"-->
-        <!--android:layout_marginTop="16dp"-->
-        <!--android:calendarViewShown="false"-->
-        <!--android:datePickerMode="spinner"-->
-        <!--/>-->
 
 </RelativeLayout>

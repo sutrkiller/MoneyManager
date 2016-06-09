@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
     >
@@ -13,43 +13,32 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:textSize="24sp"
-        android:text="Create category"/>
+        android:text="@string/create_category"
+        android:textSize="24sp" />
 
     <com.rengwuxian.materialedittext.MaterialEditText
         android:id="@+id/addCategory_name"
         style="@style/materialEditText.text"
         android:layout_below="@+id/addCategory_title"
-        app:met_floatingLabelText="Category name"
-        android:hint="Category name"
-        app:met_primaryColor="@color/colorAccent"
+        android:hint="@string/category_name"
         app:met_floatingLabel="highlight"
+        app:met_floatingLabelText="Category name"
+        app:met_primaryColor="@color/colorAccent"
         />
 
 
     <com.rengwuxian.materialedittext.MaterialEditText
         android:id="@+id/addCategory_details"
-        android:layout_width="match_parent"
         style="@style/materialEditText"
-        android:layout_marginTop="8dp"
-        android:layout_marginRight="80dp"
-        android:layout_alignParentLeft="true"
+        android:layout_width="match_parent"
+        android:layout_alignParentStart="true"
         android:layout_below="@+id/addCategory_name"
+        android:layout_marginEnd="80dp"
+        android:layout_marginTop="8dp"
+        android:hint="@string/details"
+        app:met_floatingLabel="highlight"
         app:met_floatingLabelText="Details"
-        android:hint="Details"
-        app:met_primaryColor="@color/colorAccent"
-        app:met_floatingLabel="highlight"/>
+        app:met_primaryColor="@color/colorAccent" />
 
-
-
-    <!--<DatePicker-->
-        <!--android:id="@+id/addRecord_date"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_below="@id/addRecord_categories"-->
-        <!--android:layout_marginTop="16dp"-->
-        <!--android:calendarViewShown="false"-->
-        <!--android:datePickerMode="spinner"-->
-        <!--/>-->
 
 </RelativeLayout>

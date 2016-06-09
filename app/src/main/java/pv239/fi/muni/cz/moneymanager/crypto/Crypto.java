@@ -22,11 +22,10 @@ import javax.crypto.spec.SecretKeySpec;
 public class Crypto {
     public static final String PBKDF2_DERIVATION_ALGORITHM = "PBKDF2WithHmacSHA1";
     private static final String CIPHER_ALGORITHM = "AES/CBC/PKCS5Padding";
-    private static String DELIMITER = "]";
-    private static int KEY_LENGTH = 256;
-    private static int ITERATION_COUNT = 10000;
+    private static final int KEY_LENGTH = 256;
+    private static final int ITERATION_COUNT = 10000;
     private static final int PKCS5_SALT_LENGTH = 8;
-
+    private static String DELIMITER = "]";
     private static SecureRandom random = new SecureRandom();
 
     private Crypto() {
@@ -39,8 +38,7 @@ public class Crypto {
             SecretKeyFactory keyFactory = SecretKeyFactory
                     .getInstance(PBKDF2_DERIVATION_ALGORITHM);
             byte[] keyBytes = keyFactory.generateSecret(keySpec).getEncoded();
-            SecretKey result = new SecretKeySpec(keyBytes, "AES");
-            return result;
+            return new SecretKeySpec(keyBytes, "AES");
         } catch (GeneralSecurityException e) {
             throw new RuntimeException(e);
         }
@@ -77,9 +75,7 @@ public class Crypto {
 
             return String.format("%s%s%s", toBase64(iv), DELIMITER,
                     toBase64(cipherText));
-        } catch (GeneralSecurityException e) {
-            throw new RuntimeException(e);
-        } catch (UnsupportedEncodingException e) {
+        } catch (GeneralSecurityException | UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
     }
@@ -98,12 +94,9 @@ public class Crypto {
             IvParameterSpec ivParams = new IvParameterSpec(iv);
             cipher.init(Cipher.DECRYPT_MODE, key, ivParams);
             byte[] plaintext = cipher.doFinal(cipherBytes);
-            String plainrStr = new String(plaintext, "UTF-8");
 
-            return plainrStr;
-        } catch (GeneralSecurityException e) {
-            throw new RuntimeException(e);
-        } catch (UnsupportedEncodingException e) {
+            return new String(plaintext, "UTF-8");
+        } catch (GeneralSecurityException | UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
     }

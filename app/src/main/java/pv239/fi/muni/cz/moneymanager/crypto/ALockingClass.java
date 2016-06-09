@@ -5,12 +5,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
 import pv239.fi.muni.cz.moneymanager.R;
 
 /**
- * Parent locking activity ensuring authorization
+ * Parent locking activity ensuring authorization in every access to app
  *
  * @author Tobias Kamenicky <tobias.kamenicky@gmail.com>
  * @date 10/4/2016
@@ -27,21 +26,21 @@ public abstract class ALockingClass extends AppCompatActivity {
 
     public boolean createRunning = false;
 
-    public static boolean storePin(Context context, String password) {
-        sharedPreferences.edit().putString(KEY,password).putBoolean(LOGGED,true).commit();
+    public static boolean storePin(String password) {
+        sharedPreferences.edit().putString(KEY, password).putBoolean(LOGGED, true).apply();
         return true;
     }
 
-    public static String retrievePin(Context context) {
+    public static String retrievePin() {
         return sharedPreferences.getString(KEY,"");
     }
 
     public static boolean checkPin(Context context, String pin) {
         try {
-            String res = Crypto.decryptPbkdf2(ALockingClass.retrievePin(context), pin);
+            String res = Crypto.decryptPbkdf2(ALockingClass.retrievePin(), pin);
             if (res.equals(context.getString(R.string.encryptString))) {
 
-                sharedPreferences.edit().putBoolean(LOGGED, true).commit();
+                sharedPreferences.edit().putBoolean(LOGGED, true).apply();
                 return true;
             }
         } catch (Exception ex) {
@@ -50,11 +49,15 @@ public abstract class ALockingClass extends AppCompatActivity {
         return false;
     }
 
+    public static boolean isPinStored() {
+        return sharedPreferences.contains(KEY);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sharedPreferences = getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        sharedPreferences.edit().putBoolean(LOGGED, false).commit();
+        sharedPreferences.edit().putBoolean(LOGGED, false).apply();
 
     }
 
@@ -79,8 +82,7 @@ public abstract class ALockingClass extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == CreatePin) {
             createRunning = false;
-            if (resultCode == RESULT_OK) {
-            } else if (resultCode == RESULT_CANCELED) {
+            if (resultCode == RESULT_CANCELED) {
                 this.finish();
                 System.exit(0);
             }
@@ -91,17 +93,16 @@ public abstract class ALockingClass extends AppCompatActivity {
         return sharedPreferences.getBoolean(LOGGED,false);
     }
 
-    public static boolean isPinStored() {
-        return sharedPreferences.contains(KEY);
-    }
-
+    /*
     protected void deletePin() {
-        sharedPreferences.edit().remove(KEY).clear().commit();
+
+        sharedPreferences.edit().remove(KEY).clear().apply();
     }
+    */
 
     @Override
     protected void onStop() {
         super.onStop();
-        sharedPreferences.edit().putBoolean(LOGGED,false).commit();
+        sharedPreferences.edit().putBoolean(LOGGED, false).apply();
     }
 }

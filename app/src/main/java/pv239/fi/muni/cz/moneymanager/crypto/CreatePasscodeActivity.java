@@ -35,35 +35,36 @@ public class CreatePasscodeActivity extends AppCompatActivity {
         final EditText second = (EditText) findViewById(R.id.editTextConfirm);
 
 
-        first.setOnTouchListener(new PasswordEditTextOnTouchListener(this));
-        second.setOnTouchListener(new PasswordEditTextOnTouchListener(this));
-
-        first.addTextChangedListener(new TextValidator(first) {
-            @Override
-            public void validate(TextView textView, String text) {
-                if (text.trim().length()<4) {
-                    textView.setError(getString(R.string.msg_minLengthPin));
-                } else  {
-                    textView.setError(null);
+        if (first != null) {
+            first.setOnTouchListener(new PasswordEditTextOnTouchListener(this));
+            first.addTextChangedListener(new TextValidator(first) {
+                @Override
+                public void validate(TextView textView, String text) {
+                    if (text.trim().length() < 4) {
+                        textView.setError(getString(R.string.msg_minLengthPin));
+                    } else {
+                        textView.setError(null);
+                    }
                 }
-            }
-        });
+            });
+        }
 
 
-
-       second.addTextChangedListener(new TextValidator(second) {
-           @Override
-           public void validate(TextView textView, String text) {
-               if (text.trim().length() < 4) {
-                   textView.setError(getString(R.string.msg_minLengthPin));
-               } else if (!first.getText().toString().equals(text)) {
-                   textView.setError(getString(R.string.msg_pinMismatch));
-               } else {
-                   textView.setError(null);
-               }
-           }
-       });
-
+        if (second != null) {
+            second.setOnTouchListener(new PasswordEditTextOnTouchListener(this));
+            second.addTextChangedListener(new TextValidator(second) {
+                @Override
+                public void validate(TextView textView, String text) {
+                    if (text.trim().length() < 4) {
+                        textView.setError(getString(R.string.msg_minLengthPin));
+                    } else if (!(first != null && first.getText().toString().equals(text))) {
+                        textView.setError(getString(R.string.msg_pinMismatch));
+                    } else {
+                        textView.setError(null);
+                    }
+                }
+            });
+        }
 
     }
 
@@ -82,13 +83,16 @@ public class CreatePasscodeActivity extends AppCompatActivity {
         EditText first = (EditText) findViewById(R.id.editTextEntry);
         EditText second = (EditText) findViewById(R.id.editTextConfirm);
 
-        if (first.getText().toString().trim().isEmpty() || first.getError()!=null) return;
-        if (second.getText().toString().trim().isEmpty() || second.getError()!=null) return;
+
+        if ((first != null && first.getText().toString().trim().isEmpty()) || (first != null ? first.getError() : null) != null)
+            return;
+        if ((second != null && second.getText().toString().trim().isEmpty()) || (second != null ? second.getError() : null) != null)
+            return;
 
         byte[] salt = Crypto.generateSalt();
-        SecretKey secretKey = Crypto.deriveKeyPbkdf2(salt, first.getText().toString());
+        SecretKey secretKey = Crypto.deriveKeyPbkdf2(salt, first != null ? first.getText().toString() : null);
         String key = Crypto.encrypt(getString(R.string.encryptString),secretKey,salt);
-        ALockingClass.storePin(this,key);
+        ALockingClass.storePin(key);
 
         if (getParent()==null) {
             setResult(RESULT_OK);
