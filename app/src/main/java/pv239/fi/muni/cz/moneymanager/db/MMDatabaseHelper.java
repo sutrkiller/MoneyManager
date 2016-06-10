@@ -232,7 +232,7 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
      */
     public BigDecimal getStartingBal(Date date)
     {
-        String col = TABLE_RECORD+"."+KEY_REC_VAL;
+        String col = TABLE_RECORD + "." + KEY_REC_VALEUR;
         String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_DATE+" < '"+convertDateForDb(date)+"'";
         String query = "SELECT SUM("+col+
                 ") FROM "+TABLE_RECORD+
