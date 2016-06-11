@@ -41,12 +41,17 @@ dependencies {
     compile('com.google.apis:google-api-services-sheets:v4-rev2-1.22.0') {
         exclude group: 'org.apache.httpcomponents'
     }
-    compile 'com.google.apis:google-api-services-drive:v2-rev105-1.17.0-rc'
-    compile 'com.google.http-client:google-http-client-gson:1.20.0'
+    compile('com.google.apis:google-api-services-drive:v2-rev105-1.17.0-rc'){
+        exclude group: 'org.apache.httpcomponents'
+    }
+    compile('com.google.http-client:google-http-client-gson:1.20.0') {
+        exclude group: 'org.apache.httpcomponents'
+    }
     compile 'com.rengwuxian.materialedittext:library:2.1.4'
     compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
     compile "com.androidplot:androidplot-core:0.9.8"
     compile 'com.jjoe64:graphview:4.0.1'
+    compile 'joda-time:joda-time:2.9.2'
     compile files('libs/opencsv-2.4 (1).jar')
     compile files('libs/poi-3.14-20160307.jar')
 }

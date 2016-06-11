@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,17 +20,25 @@ import pv239.fi.muni.cz.moneymanager.model.StatRecord;
  * Created by Klasovci on 6/9/2016.
  */
 public class StatPage {
-    private String startBalance, endBalance, incomes, expenses,date;
+    private String startBalance;
+    private String endBalance;
+    private String incomes;
+    private String expenses;
+    private String date;
     private Date start;
     private Date end;
     private List<StatRecord> incomesList;
     private List<StatRecord> expensesList;
+    private int tabNum;
+    private int version;
 
-    public StatPage(Context context, Date fromDate, Date toDate) {
+    public StatPage(Context context, Date fromDate, Date toDate, int tab,int ver) {
         incomesList = new ArrayList<>();
         expensesList = new ArrayList<>();
         start = fromDate;
         end = toDate;
+        tabNum = tab;
+        version = ver;
         MMDatabaseHelper db = MMDatabaseHelper.getInstance(context);
         getData(db, fromDate, toDate);
     }
@@ -70,8 +79,23 @@ public class StatPage {
         return expensesList;
     }
 
+    public int getTabNum() {
+        return tabNum;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
     public void getData(MMDatabaseHelper db, Date fromDate, Date toDate)
     {
+        switch (version) {
+            case 0:
+            case 1: getDataForFirst(db,fromDate,toDate); break;
+        }
+    }
+
+    private void getDataForFirst(MMDatabaseHelper db, Date fromDate, Date toDate) {
         String from = MMDatabaseHelper.convertDateForDb(fromDate);
         String to = MMDatabaseHelper.convertDateForDb(toDate);
         Cursor cursor = db.getAllRecordsWithCategories(from, to, MMDatabaseHelper.KEY_REC_DATE, "ASC");
@@ -113,7 +137,11 @@ public class StatPage {
             incomes = String.valueOf(BigDecimal.ZERO);
             expenses = String.valueOf(BigDecimal.ZERO);
         }
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM");
+        DateFormat dateFormat = new SimpleDateFormat("MMM d, yyyy");
         date = dateFormat.format(fromDate)+ " - " + dateFormat.format(toDate);
+    }
+
+    private void getDataForSecond(MMDatabaseHelper db, Date fromDate, Date toDate) {
+
     }
 }

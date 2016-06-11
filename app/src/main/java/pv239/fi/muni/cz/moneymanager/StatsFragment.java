@@ -1,14 +1,31 @@
 package pv239.fi.muni.cz.moneymanager;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 
 import pv239.fi.muni.cz.moneymanager.TabFragments.RecyclePage;
 import pv239.fi.muni.cz.moneymanager.adapter.ViewPagerAdapter;
+import pv239.fi.muni.cz.moneymanager.model.AdapterParameterObject;
 
 /**
  * Fragment holding all statistics about data.
@@ -23,7 +40,11 @@ public class StatsFragment extends Fragment  {
     private RecyclePage pageOne;
     private RecyclePage pageTwo;
     private RecyclePage pageThree;
-
+    //private ViewPagerAdapter mAdapter;
+    private static int mCurrent=0;
+    private ArrayList<AdapterParameterObject> mObjectsList;
+    private ViewPagerAdapter mAdapter;
+    private CustomViewPager mViewPager;
 
     public StatsFragment() {
         // Required empty public constructor
@@ -47,6 +68,7 @@ public class StatsFragment extends Fragment  {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.i("JUST A TEST", "onCreate");
         //if (getArguments() != null) {
         //mParam1 = getArguments().getString(ARG_PARAM1);
         //mParam2 = getArguments().getString(ARG_PARAM2);
@@ -65,12 +87,15 @@ public class StatsFragment extends Fragment  {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.i("JUST A TEST", "onCreateView");
         this.inflater = inflater;
         this.container = container;
 
         // Inflate the layout for this fragment
         View layout = inflater.inflate(R.layout.fragment_stats, container, false);
         this.mLayout =layout;
+
+
         TabLayout tabLayout = (TabLayout)layout.findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText("7 days"));
         tabLayout.addTab(tabLayout.newTab().setText("4 weeks"));
@@ -79,62 +104,22 @@ public class StatsFragment extends Fragment  {
 
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
-        final CustomViewPager viewPager = (CustomViewPager) layout.findViewById(R.id.pager);
-        final ViewPagerAdapter adapter = new ViewPagerAdapter(getChildFragmentManager());
-        /*pageOne = RecyclePage.newInstance(0,7);
-        pageTwo = RecyclePage.newInstance(1,28);
-        pageThree = RecyclePage.newInstance(2, 365);
-        adapter.addFragment(pageOne,"7 days");
-        adapter.addFragment(pageTwo,"1 month");
-        adapter.addFragment(pageThree,"1 year");
-        viewPager.setAdapter(adapter);
-        viewPager.setPagingEnabled(false);
-        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+        mObjectsList = new ArrayList<>();
+        mObjectsList.add(new AdapterParameterObject(0,7,mCurrent));
+        mObjectsList.add(new AdapterParameterObject(1,28,mCurrent));
+        mObjectsList.add(new AdapterParameterObject(2,365,mCurrent));
+
+        mAdapter = new ViewPagerAdapter(getChildFragmentManager(),mObjectsList);
+        mViewPager = (CustomViewPager) layout.findViewById(R.id.pager);
+        mViewPager.setAdapter(mAdapter);
+
+        mViewPager.setPagingEnabled(false);
+        mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
 
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                viewPager.setCurrentItem(tab.getPosition());
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-            }
-        });*/
-        update(viewPager,tabLayout,adapter);
-        return layout;
-    }
-
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-
-        super.onActivityCreated(savedInstanceState);
-
-    }
-
-    private void update(final CustomViewPager viewPager, TabLayout tabLayout, ViewPagerAdapter adapter) {
-        pageOne = RecyclePage.newInstance(0,7);
-        pageTwo = RecyclePage.newInstance(1,28);
-        pageThree = RecyclePage.newInstance(2, 365);
-        adapter.addFragment(pageOne,"7 days");
-        adapter.addFragment(pageTwo,"1 month");
-        adapter.addFragment(pageThree,"1 year");
-
-        viewPager.setAdapter(adapter);
-        viewPager.setPagingEnabled(false);
-        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-
-        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                viewPager.setCurrentItem(tab.getPosition());
-
-
+                mViewPager.setCurrentItem(tab.getPosition());
             }
 
             @Override
@@ -145,15 +130,96 @@ public class StatsFragment extends Fragment  {
             public void onTabReselected(TabLayout.Tab tab) {
             }
         });
+
+        //mAdapter = new ViewPagerAdapter(getChildFragmentManager());
+        //update(viewPager,tabLayout,adapter);
+        return layout;
+    }
+
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        Log.i("JUST A TEST", "onActivityCreated");
+        ActionBar bar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        View v = null;
+        if (bar != null) {
+            v = bar.getCustomView();
+        }
+        if (v != null) {
+            Spinner spinner = ((Spinner) v.findViewById(R.id.spinner_action_title));
+            if (spinner.getOnItemSelectedListener()==null) {
+                spinner.setOnItemSelectedListener(mListener);
+            }
+        }
+
+    }
+
+    private static boolean isFirstCall = true;
+    AdapterView.OnItemSelectedListener mListener = new AdapterView.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            if (!isFirstCall) {
+                mCurrent = position;
+                //onCreate(null);
+                //onCreateView(inflater,container,null);
+                //final CustomViewPager viewPager = (CustomViewPager) mLayout.findViewById(R.id.pager);
+                //TabLayout tabLayout = (TabLayout)mLayout.findViewById(R.id.tab_layout);
+                //ViewPagerAdapter adapter = new ViewPagerAdapter(getChildFragmentManager(),);
+                //onResume();
+                update();
+
+            } else {
+                isFirstCall = false;
+            }
+
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+
+        }
+    };
+
+    private void update() {
+
+        mObjectsList.clear();
+        mObjectsList.add(new AdapterParameterObject(0,7,mCurrent));
+        mObjectsList.add(new AdapterParameterObject(1,28,mCurrent));
+        mObjectsList.add(new AdapterParameterObject(2,365,mCurrent));
+        mAdapter.notifyDataSetChanged();
+        //pageOne = null;
+//        pageOne = RecyclePage.newInstance(0,7,position);
+//        pageTwo = RecyclePage.newInstance(1,28,position);
+//        pageThree = RecyclePage.newInstance(2, 365,position);
+
+//        ArrayList<AdapterParameterObject> parameterObjects = new ArrayList<>();
+//        parameterObjects.add(new AdapterParameterObject(0,7,position));
+//        parameterObjects.add(new AdapterParameterObject(1,28,position));
+//        parameterObjects.add(new AdapterParameterObject(2,365,position));
+
+        //ViewPagerAdapter adapter = new ViewPagerAdapter(getChildFragmentManager(),parameterObjects);
+
+//        adapter.addFragment(pageOne,"7 days");
+//        adapter.addFragment(pageTwo,"4 weeks");
+//        adapter.addFragment(pageThree,"1 year");
+
+//        viewPager.setAdapter(adapter);
+//        adapter.notifyDataSetChanged();
+
+
+       // Log.i("JUST A TEST", String.valueOf(position));
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        final CustomViewPager viewPager = (CustomViewPager) mLayout.findViewById(R.id.pager);
-        TabLayout tabLayout = (TabLayout)mLayout.findViewById(R.id.tab_layout);
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getChildFragmentManager());
-        update(viewPager,tabLayout,adapter);
+        Log.i("JUST A TEST", "onResume");
+        //final CustomViewPager viewPager = (CustomViewPager) mLayout.findViewById(R.id.pager);
+        //TabLayout tabLayout = (TabLayout)mLayout.findViewById(R.id.tab_layout);
+        //ViewPagerAdapter adapter = new ViewPagerAdapter(getChildFragmentManager());
+        update();
 
 
     }
@@ -161,7 +227,25 @@ public class StatsFragment extends Fragment  {
     @Override
     public void onDetach() {
         super.onDetach();
+//        Log.i("JUST A TEST", "onDetach");
+//        try {
+//            Field childFragmentManager = Fragment.class.getDeclaredField("mChildFragmentManager");
+//            childFragmentManager.setAccessible(true);
+//            childFragmentManager.set(this, null);
+//
+//        } catch (NoSuchFieldException e) {
+//            throw new RuntimeException(e);
+//        } catch (IllegalAccessException e) {
+//            throw new RuntimeException(e);
+//        }
     }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        //super.onSaveInstanceState(outState);
+
+    }
+
 
     /**
      * This interface must be implemented by activities that contain this

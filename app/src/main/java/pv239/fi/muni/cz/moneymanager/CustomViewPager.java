@@ -1,8 +1,11 @@
 package pv239.fi.muni.cz.moneymanager;
 
 import android.content.Context;
+import android.support.v4.app.Fragment;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+
+import java.lang.reflect.Field;
 
 /**
  * Serves as custom xml holder
@@ -34,5 +37,7 @@ public class CustomViewPager extends android.support.v4.view.ViewPager{
     public void setPagingEnabled(boolean enabled) {
         this.enabled = enabled;
     }
+
+
 
 }

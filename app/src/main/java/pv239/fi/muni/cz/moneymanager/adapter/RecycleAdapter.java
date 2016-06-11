@@ -1,23 +1,35 @@
 package pv239.fi.muni.cz.moneymanager.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.provider.ContactsContract;
+import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.jjoe64.graphview.DefaultLabelFormatter;
 import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
+import com.jjoe64.graphview.LabelFormatter;
+import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
+
+import org.joda.time.Days;
+import org.joda.time.DurationFieldType;
+import org.joda.time.LocalDate;
+import org.joda.time.ReadableInstant;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -73,10 +85,83 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.CustomVi
         RecordsDbToStatsAdapter adapter2 = new RecordsDbToStatsAdapter(mContext,page.getExpensesList());
         customViewHolder.expensesListView.setAdapter(adapter2);
 
-        LineGraphSeries<DataPoint> series = new LineGraphSeries<>();
+        if (page.getVersion()==0) {
+            LineGraphSeries<DataPoint> series = getDataPointLineGraphSeries(page);
+            createLinerGraph(customViewHolder.graphView, series, page.getTabNum());
+        } else  if (page.getVersion()==1) {
+            BarGraphSeries<DataPoint> series1 = getDataPointBarGraphSeries(page,page.getIncomesList());
+            BarGraphSeries<DataPoint> series2 = getDataPointBarGraphSeries(page,page.getExpensesList());
+            series1.setColor(ContextCompat.getColor(mContext,R.color.recordPositiveValue));
+            series2.setColor(ContextCompat.getColor(mContext,R.color.recordNegativeValue));
+            List<BarGraphSeries<DataPoint>> list = new ArrayList<>();
+            list.add(series1);
+            list.add(series2);
+            createBarGraph(customViewHolder.graphView,list,page.getTabNum());
+        }
+    }
 
+    @NonNull
+    private BarGraphSeries<DataPoint> getDataPointBarGraphSeries(StatPage page, List<StatRecord> list) {
+        BarGraphSeries<DataPoint> series = new BarGraphSeries<>();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        if (page.getTabNum()==2) {
+            format = new SimpleDateFormat("yyyy-MM");
+        }
+        List<List<StatRecord>> lists = new ArrayList<>();
+        lists.add(list);
+        SortedMap<String,BigDecimal> map = prepareData(page,lists,format);
+
+        Calendar tmpCal = Calendar.getInstance();
+        for (Map.Entry<String,BigDecimal> entry : map.entrySet()) {
+
+            Date date = format.parse(entry.getKey(), new ParsePosition(0));
+            tmpCal.setTime(date);
+            tmpCal.add(Calendar.HOUR_OF_DAY,12);
+            if (date!= null) {
+                Double tmpBalance = Double.parseDouble(String.valueOf(entry.getValue()));
+                DataPoint dataPoint = new DataPoint( tmpCal.getTime(), tmpBalance);
+                series.appendData(dataPoint,true,map.size());
+            }
+        }
+        return series;
+    }
+
+    @NonNull
+    private LineGraphSeries<DataPoint> getDataPointLineGraphSeries(StatPage page) {
+        LineGraphSeries<DataPoint> series = new LineGraphSeries<>();
         List<StatRecord> inc = page.getIncomesList();
         List<StatRecord> exp = page.getExpensesList();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        if (page.getTabNum()==2) {
+            format = new SimpleDateFormat("yyyy-MM");
+        }
+
+        List<List<StatRecord>> lists = new ArrayList<>();
+        lists.add(inc);
+        lists.add(exp);
+        SortedMap<String, BigDecimal> map = prepareData(page,lists, format);
+
+        Calendar tmpCal = Calendar.getInstance();
+        Double tmpBalance = Double.valueOf(page.getStartBalance());
+        for (Map.Entry<String,BigDecimal> entry : map.entrySet()) {
+
+            Date date = format.parse(entry.getKey(), new ParsePosition(0));
+            tmpCal.setTime(date);
+            tmpCal.add(Calendar.HOUR_OF_DAY,12);
+            if (date!= null) {
+
+                tmpBalance += Double.parseDouble(String.valueOf(entry.getValue()));
+                DataPoint dataPoint = new DataPoint( tmpCal.getTime(), tmpBalance);
+                series.appendData(dataPoint,true,map.size());
+            }
+        }
+        return series;
+    }
+
+    @NonNull
+    private SortedMap<String, BigDecimal> prepareData(StatPage page,List<List<StatRecord>> lists, SimpleDateFormat format) {
+//        List<StatRecord> inc = page.getIncomesList();
+//        List<StatRecord> exp = page.getExpensesList();
         SortedMap<String,BigDecimal> map = new TreeMap<>(new Comparator<String>() {
             @Override
             public int compare(String lhs, String rhs) {
@@ -84,78 +169,73 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.CustomVi
             }
         });
 
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        if (page.getVersion()==1) {
+            Date st = page.getStart();
+            Date en = page.getEnd();
+            LocalDate sD = LocalDate.fromDateFields(st);
+            LocalDate sE = LocalDate.fromDateFields(en);
+            int days = Days.daysBetween(sD, sE).getDays();
 
-        for (int k = 0;k<inc.size();++k) {
-
-            String a = format.format(inc.get(k).getDate());
-            Log.i("Date: ", String.valueOf(a));
-            if (map.containsKey(a)) {
-                BigDecimal tmp = map.get(a);
-                tmp = tmp.add(inc.get(k).getValue());
-                map.put(a,tmp);
-            } else {
-                map.put(a,inc.get(k).getValue());
+            for (int i = 0; i <= days; ++i) {
+                LocalDate d = sD.withFieldAdded(DurationFieldType.days(), i);
+                map.put(format.format(d.toDate()), BigDecimal.ZERO);
             }
-        }
-        for (int k = 0;k<exp.size();++k) {
-
-            String a = format.format(exp.get(k).getDate());
-            Log.i("Date: ", String.valueOf(a));
-            if (map.containsKey(a)) {
-                BigDecimal tmp = map.get(a);
-                tmp = tmp.add(exp.get(k).getValue());
-                map.put(a,tmp);
-            } else {
-                map.put(a,exp.get(k).getValue());
-            }
+        } else if (page.getVersion()==0) {
+            String s = format.format(page.getStart());
+            map.put(s, BigDecimal.ZERO);
+            String e = format.format(page.getEnd());
+            map.put(e, BigDecimal.ZERO);
         }
 
 
-        String s = format.format(page.getStart());
-        if (!map.containsKey(s)) {
-            Date date = page.getStart();
+        for(List<StatRecord> list : lists) {
+            for (int k = 0;k<list.size();++k) {
 
-            if (date!= null) {
-                DataPoint dataPoint = new DataPoint(date, Double.parseDouble(page.getStartBalance()));
-                series.appendData(dataPoint,true,map.size()+2);
+                String a = format.format(list.get(k).getDate());
+                if (map.containsKey(a)) {
+                    BigDecimal tmp = map.get(a);
+                    tmp = tmp.add(list.get(k).getValue());
+                    map.put(a,tmp);
+                } else {
+                    map.put(a,list.get(k).getValue());
+                }
             }
         }
 
 
-        Double tmpBalance = Double.valueOf(page.getStartBalance());
-        for (Map.Entry<String,BigDecimal> entry : map.entrySet()) {
-
-            Date date = format.parse(entry.getKey(), new ParsePosition(0));
-            if (date!= null) {
-                tmpBalance += Double.parseDouble(String.valueOf(entry.getValue()));
-                DataPoint dataPoint = new DataPoint(date, tmpBalance);
-                Log.i("SSSS", String.valueOf(tmpBalance));
-                series.appendData(dataPoint,true,map.size()+2);
-            }
-        }
-
-        String e = format.format(page.getEnd());
-        if (!map.containsKey(e)) {
-            Date date = page.getEnd();
-
-            if (date!= null) {
-                DataPoint dataPoint = new DataPoint(date, Double.parseDouble(page.getEndBalance()));
-                series.appendData(dataPoint,true,map.size()+2);
-            }
-        }
-
-        createGraph(customViewHolder.graphView,series);
-
-
-
+        return map;
     }
 
-    private void createGraph(GraphView graph, LineGraphSeries<DataPoint> series) {
+    private void createLinerGraph(GraphView graph, final LineGraphSeries<DataPoint> series, final int tab) {
+        LabelFormatter formatter = new DefaultLabelFormatter() {
+            @Override
+            public String formatLabel(double value, boolean isValueX) {
+                if (isValueX) {
+                    SimpleDateFormat format = new SimpleDateFormat("MM/dd",Locale.getDefault());
+                    if (tab==2) {
+                        format = new SimpleDateFormat("MM/yy",Locale.getDefault());
+                    }
+                    String strVal = format.format(new Date((long) value));
+                    String strFir = format.format(new Date((long) series.getLowestValueX()));
+                    String strLas = format.format(new Date((long) series.getHighestValueX()));
+                    if (!strVal.equals(strFir) && !strVal.equals(strLas)) return "";
+                    return strVal;
+                } else {
+                    return super.formatLabel(value, false) + " €";
+                }
+            }
+        };
 
+        graph.getGridLabelRenderer().setLabelFormatter(formatter);
 
-        graph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(mContext));
-        graph.getGridLabelRenderer().setNumHorizontalLabels(2); // only 3 because of the space
+        int horizontalLabels =2;
+        switch (tab) {
+            case  0: horizontalLabels = 7; break;
+            case 1: horizontalLabels = 4; break;
+            case 2: horizontalLabels = 1; break;
+        }
+        graph.getGridLabelRenderer().setNumHorizontalLabels(horizontalLabels+1); // only 3 because of the space
+
         series.setDrawDataPoints(true);
         series.setDataPointsRadius(8);
         series.setThickness(6);
@@ -163,6 +243,50 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.CustomVi
         graph.getViewport().setMinX(series.getLowestValueX());
         graph.getViewport().setMaxX(series.getHighestValueX());
         graph.addSeries(series);
+    }
+
+    private void createBarGraph(GraphView graph, final List<BarGraphSeries<DataPoint>> series, final int tab) {
+        //for(final BarGraphSeries<DataPoint> serie : series) {
+        int horizontalLabels =7;
+        switch (tab) {
+            case  0: horizontalLabels = 7; break;
+            case 1: horizontalLabels = 4; break;
+            case 2: horizontalLabels = 12; break;
+        }
+
+            LabelFormatter formatter = new DefaultLabelFormatter() {
+                @Override
+                public String formatLabel(double value, boolean isValueX) {
+                    if (isValueX) {
+                        SimpleDateFormat format = new SimpleDateFormat("MM/dd",Locale.getDefault());
+                        if (tab==2) {
+                            format = new SimpleDateFormat("MM/yy",Locale.getDefault());
+                        }
+                        String strVal = format.format(new Date((long) value));
+                        String strFir = format.format(new Date((long) series.get(0).getLowestValueX()));
+                        String strLas = format.format(new Date((long) series.get(0).getHighestValueX()));
+                        if (!strVal.equals(strFir) && !strVal.equals(strLas)) return "";
+                        return strVal;
+                    } else {
+                        return super.formatLabel(value, false) + " €";
+                    }
+                }
+            };
+
+            graph.getGridLabelRenderer().setLabelFormatter(formatter);
+
+        graph.getGridLabelRenderer().setNumHorizontalLabels(horizontalLabels+1); // only 3 because of the space
+
+        graph.getViewport().setXAxisBoundsManual(true);
+        graph.getViewport().setMinX(series.get(0).getLowestValueX());
+        graph.getViewport().setMaxX(series.get(0).getHighestValueX());
+        for (BarGraphSeries<DataPoint> serie : series) {
+            graph.addSeries(serie);
+        }
+
+        //}
+
+
     }
 
     @Override

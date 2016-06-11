@@ -104,7 +104,7 @@ public class FilterRecordsDialog extends DialogFragment {
 
         Bundle args = getArguments();
         int orderPos=1;
-        int directionPos = 0;
+        int directionPos = 1;
         if (args!=null) {
             orderPos = args.getInt("records_order_by",ORDER_DATE);
             directionPos = args.getInt("records_direction",DIRECTION_DESC);
@@ -193,19 +193,6 @@ public class FilterRecordsDialog extends DialogFragment {
         Button button = (Button)v.findViewById(buttonId);
         DatePickerFragment.setDateButtonTag(date,button);
 
-        /*button.setTag(date);
-
-        int day = date.getDayOfMonth();
-        int month = date.getMonth();
-        int year = date.getYear();
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(year,month,day);
-        DateFormat dateFormat = DateFormat.getInstance();
-        dateFormat.setCalendar(calendar);
-
-        DateFormat format = new SimpleDateFormat("EEE, MMM d,yyyy");
-        String dateF = format.format(calendar.getTime());
-        button.setText(dateF);*/
     }
 
     private void resetFilter() {

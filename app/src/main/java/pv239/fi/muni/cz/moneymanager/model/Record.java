@@ -9,6 +9,7 @@ import java.util.Currency;
 import java.util.Date;
 import java.util.TimeZone;
 
+import pv239.fi.muni.cz.moneymanager.MainActivity;
 import pv239.fi.muni.cz.moneymanager.helper.ExchangeRateCalculator;
 
 /**
@@ -27,9 +28,10 @@ public class Record {
     public String item;
     public BigDecimal valueInEur;
 
-    public Record(long id, BigDecimal value, Currency currency, String item,  String dateTime, Category category) {
-        this(id,value,ExchangeRateCalculator.TransferRate(currency, Currency.getInstance("EUR"),value),currency,item,dateTime,category);
-    }
+//    public Record(long id, BigDecimal value, Currency currency, String item,  String dateTime, Category category) {
+//
+//        this(id,value,ExchangeRateCalculator.transferRate(currency, Currency.getInstance("EUR"),value),currency,item,dateTime,category);
+//    }
 
     public Record(long id, BigDecimal value, BigDecimal valueInEur, Currency currency, String item,  String dateTime, Category category) {
         this.category = category;
@@ -39,7 +41,7 @@ public class Record {
         this.value = value;
         this.item = item;
 
-        this.valueInEur =  valueInEur == null ? BigDecimal.ZERO : valueInEur;
+        this.valueInEur =  valueInEur;
     }
 
 

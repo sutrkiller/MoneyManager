@@ -40,7 +40,7 @@
     <string name="records">Records</string>
     <string name="categories">Categories</string>
     <string name="statistics">Statistics</string>
-    <string name="sync">Sync</string>
+    <string name="sync">Sync...</string>
     <string name="export">Export...</string>
     <string name="filter">Filter</string>
 
@@ -61,4 +61,10 @@
         <item>Name</item>
         <item>Details</item>
     </string-array>
+
+
+    <array name="item_array">
+        <item>Balance</item>
+        <item>Activity</item>
+    </array>
 </resources>

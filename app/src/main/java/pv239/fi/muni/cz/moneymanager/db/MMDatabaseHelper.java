@@ -237,7 +237,7 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
         String query = "SELECT SUM("+col+
                 ") FROM "+TABLE_RECORD+
                 whereClause;
-        Log.i("SQL",query);
+        //Log.i("SQL",query);
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor;
         try {
@@ -260,7 +260,7 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
         String col = TABLE_RECORD+"."+KEY_REC_DATE;
         String query = "SELECT MIN("+col+
                 ") FROM "+TABLE_RECORD;
-        Log.i("SQL",query);
+        //Log.i("SQL",query);
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor;
         try {
@@ -297,7 +297,7 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
         String query = "SELECT "+cols+
                         " FROM "+TABLE_RECORD+", "+TABLE_CATEGORY +
                         whereClause + orderByClause;
-        Log.i("SQL",query);
+        //Log.i("SQL",query);
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = null;
         try {

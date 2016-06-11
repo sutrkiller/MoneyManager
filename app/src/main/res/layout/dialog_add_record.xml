@@ -16,70 +16,90 @@
         android:text="@string/create_record"
         android:textSize="24sp" />
 
-    <com.rengwuxian.materialedittext.MaterialEditText
-        android:id="@+id/addRecord_item"
-        style="@style/materialEditText.text"
-        android:layout_below="@+id/addRecord_title"
-        android:hint="@string/item_name"
-        app:met_floatingLabel="highlight"
-        app:met_floatingLabelText="Item name"
-        app:met_primaryColor="@color/colorAccent" />
-
-    <Spinner
-        android:id="@+id/addRecord_currencies"
-        android:layout_width="80dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-
-        android:layout_below="@+id/addRecord_item"
-        android:layout_marginTop="16dp"/>
-
-    <com.rengwuxian.materialedittext.MaterialEditText
-        android:id="@+id/addRecord_price"
-        style="@style/materialEditText"
-        android:layout_width="match_parent"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/addRecord_item"
-        android:layout_marginEnd="80dp"
-        android:layout_marginTop="8dp"
-        android:hint="@string/amount"
-        android:inputType="numberDecimal|numberSigned"
-        app:met_floatingLabel="highlight"
-        app:met_floatingLabelText="Amount"
-        app:met_primaryColor="@color/colorAccent" />
-
-
-    <Spinner
-        android:id="@+id/addRecord_categories"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/addRecord_price"
-        android:layout_centerHorizontal="true"
-        android:layout_marginStart="-16dp"
-        android:layout_marginTop="16dp"
-        android:paddingEnd="0dp"
-        android:paddingStart="0dp" />
+        android:layout_below="@+id/addRecord_title">
 
-    <ImageView
-        android:id="@+id/addRecord_divider"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/addRecord_categories"
-        android:layout_marginTop="16dp"
-        android:contentDescription="@string/divider"
-        android:src="@drawable/divider" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-    <Button
-        android:id="@+id/addRecord_date"
-        style="@style/Widget.AppCompat.Button.Borderless"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/addRecord_divider"
-        android:layout_marginTop="8dp"
-        android:paddingEnd="0dp"
-        android:paddingStart="0dp"
-        android:text="@string/sun_apr_10_2016"
-        android:textAlignment="viewStart" />
+            <com.rengwuxian.materialedittext.MaterialEditText
+                android:id="@+id/addRecord_item"
+                style="@style/materialEditText.text"
+
+                android:hint="@string/item_name"
+                app:met_floatingLabel="highlight"
+                app:met_floatingLabelText="Item name"
+                app:met_primaryColor="@color/colorAccent" />
+
+            <Spinner
+                android:id="@+id/addRecord_currencies"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+
+                android:layout_below="@+id/addRecord_item"
+                android:layout_marginTop="16dp"/>
+
+            <com.rengwuxian.materialedittext.MaterialEditText
+                android:id="@+id/addRecord_price"
+                style="@style/materialEditText"
+                android:layout_width="match_parent"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/addRecord_item"
+                android:layout_marginEnd="80dp"
+                android:layout_marginTop="8dp"
+                android:hint="@string/amount"
+                android:inputType="numberDecimal|numberSigned"
+                app:met_floatingLabel="highlight"
+                app:met_floatingLabelText="Amount"
+                app:met_primaryColor="@color/colorAccent" />
+
+
+            <Spinner
+                android:id="@+id/addRecord_categories"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/addRecord_price"
+                android:layout_centerHorizontal="true"
+                android:layout_marginStart="-16dp"
+                android:layout_marginTop="16dp"
+                android:paddingEnd="0dp"
+                android:paddingStart="0dp" />
+
+            <ImageView
+                android:id="@+id/addRecord_divider"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/addRecord_categories"
+                android:layout_marginTop="16dp"
+                android:contentDescription="@string/divider"
+                android:src="@drawable/divider" />
+
+            <Button
+                android:id="@+id/addRecord_date"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/addRecord_divider"
+                android:layout_marginTop="8dp"
+                android:paddingEnd="0dp"
+                android:paddingStart="0dp"
+                android:text="@string/sun_apr_10_2016"
+                android:textAlignment="viewStart" />
+
+
+
+        </RelativeLayout>
+
+
+
+
+
+    </ScrollView>
+
 
 
 </RelativeLayout>

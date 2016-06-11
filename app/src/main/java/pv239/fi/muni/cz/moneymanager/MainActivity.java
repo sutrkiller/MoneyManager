@@ -23,15 +23,23 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Adapter;
+import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -73,6 +81,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Currency;
 import java.util.Date;
@@ -120,6 +129,7 @@ public class MainActivity extends ALockingClass
     FilterCategoriesArgs categoriesArgs;
     private int currentPosition = -1;
     private boolean hideFilter = false;
+//    private boolean hideStats = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -154,27 +164,36 @@ public class MainActivity extends ALockingClass
                 if (fragment instanceof RecordsFragment){
                     currentPosition = R.id.nav_records;
                     hideFilter = false;
+ //                   hideStats = true;
                 }
                 if (fragment instanceof CategoriesFragment){
                     currentPosition = R.id.nav_categories;
                     hideFilter = false;
+ //                   hideStats = true;
                 }
                 if (fragment instanceof StatsFragment){
                     currentPosition = R.id.nav_stats;
                     hideFilter=true;
+//                    hideStats=false;
                 }
                 setActionBarTitle(currentPosition);
                 navigationView.setCheckedItem(currentPosition);
             }
         });
 
+        //initialize custom view on title
+        getSupportActionBar().setCustomView(R.layout.spinner_title);
+        View v = getSupportActionBar().getCustomView();
+        Spinner spinner = (Spinner) v.findViewById(R.id.spinner_action_title);
+        ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(this, R.array.item_array, R.layout.spinner_layout);
+        arrayAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
+        spinner.setAdapter(arrayAdapter);
+
         setActionBarTitle(-1);
         int position=-1;
         if (savedInstanceState != null) {
             position = savedInstanceState.getInt("currentPosition");
         }
-        Log.i("Pos: ", String.valueOf(position));
-        Log.i("CurPos: ", String.valueOf(currentPosition));
         onNavigationItemSelected((MenuItem)findViewById(position));
 
 
@@ -187,6 +206,8 @@ public class MainActivity extends ALockingClass
 
 
     }
+
+
 
     @Override
     protected void onResume() {
@@ -441,6 +462,23 @@ public class MainActivity extends ALockingClass
 
         menu.findItem(R.id.action_filter).setVisible(!hideFilter);
 
+//        MenuItem item =  menu.findItem(R.id.action_spinner);
+//        item.setVisible(!hideStats).setTitle("");
+//        Spinner spinner = (Spinner) item.getActionView();
+//        List<String> items = new ArrayList<>();
+//        items.add("Balance");
+//        items.add("Activity");
+//        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item,items);
+//        adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
+
+//        ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(this,R.array.item_array,R.layout.spinner_layout);
+//        arrayAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
+//
+//        spinner.setAdapter(arrayAdapter);
+//        Spinner.LayoutParams params = new DrawerLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
+//        spinner.setLayoutParams(params);
+
+
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -520,17 +558,39 @@ public class MainActivity extends ALockingClass
             case -1:
             case R.id.nav_records:
                 title = "Records";
+                setUpActionBarForStatistics(true);
                 break;
             case R.id.nav_categories:
                 title = "Categories";
+                setUpActionBarForStatistics(true);
                 break;
             case R.id.nav_stats:
                 title = "Statistics";
+                setUpActionBarForStatistics(false);
                 break;
             default:
                 title = "MoneyManager";
         }
         getSupportActionBar().setTitle(title);
+    }
+
+    private void setUpActionBarForStatistics(boolean reverse) {
+        Log.i("PROGRESS", "setUpActionBArStatistivs "+reverse);
+        if (!reverse) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+            getSupportActionBar().setDisplayShowCustomEnabled(true);
+//            getSupportActionBar().setCustomView(R.layout.spinner_title);
+//            View v = getSupportActionBar().getCustomView();
+//            Spinner spinner = (Spinner) v.findViewById(R.id.spinner_action_title);
+//
+//            ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(this, R.array.item_array, R.layout.spinner_layout);
+//            arrayAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
+//
+//            spinner.setAdapter(arrayAdapter);
+        } else if (getSupportActionBar().getCustomView()!=null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(true);
+            getSupportActionBar().setDisplayShowCustomEnabled(false);
+        }
     }
 
     @Override
@@ -681,10 +741,24 @@ public class MainActivity extends ALockingClass
             }
 
             if (from != null) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(from);
+                cal.set(Calendar.HOUR_OF_DAY,cal.getMinimum(Calendar.HOUR_OF_DAY));
+                cal.set(Calendar.MINUTE,cal.getMinimum(Calendar.MINUTE));
+                cal.set(Calendar.SECOND,cal.getMinimum(Calendar.SECOND));
+                from = cal.getTime();
                 dateFrom = MMDatabaseHelper.convertDateForDb(from);
+                Log.i("DateFrom> ",dateFrom);
             }
             if (to != null) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(to);
+                cal.set(Calendar.HOUR_OF_DAY,cal.getMaximum(Calendar.HOUR_OF_DAY));
+                cal.set(Calendar.MINUTE,cal.getMaximum(Calendar.MINUTE));
+                cal.set(Calendar.SECOND,cal.getMaximum(Calendar.SECOND));
+                to = cal.getTime();
                 dateTo = MMDatabaseHelper.convertDateForDb(to);
+                Log.i("DateTo> ",dateTo);
             }
 
             ListView view = (ListView) getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.records_list_view);

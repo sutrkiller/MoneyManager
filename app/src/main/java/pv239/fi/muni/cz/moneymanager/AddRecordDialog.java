@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -40,6 +41,7 @@ import pv239.fi.muni.cz.moneymanager.model.Record;
  */
 public class AddRecordDialog extends DialogFragment  {
     private View v;
+    private BigDecimal resultInEur;
 
     @NonNull
     @Override
@@ -77,37 +79,81 @@ public class AddRecordDialog extends DialogFragment  {
                             vamount.setError("Amount cannot be empty");
                         } else if (scategory.getSelectedItemPosition() != 0) {
 
-                            String item = String.valueOf((vitem).getText());
-                            String amount = String.valueOf((vamount).getText());
-                            Currency currency = Currency.getInstance(String.valueOf(((Spinner) v.findViewById(R.id.addRecord_currencies)).getSelectedItem()));
+                            final String item = String.valueOf((vitem).getText());
+                            final String amount = String.valueOf((vamount).getText());
+
+                            final Currency currency = Currency.getInstance(String.valueOf(((Spinner) v.findViewById(R.id.addRecord_currencies)).getSelectedItem()));
+
                             String category = String.valueOf((scategory).getSelectedItem());
                             DatePicker date = ((DatePicker) v.findViewById(R.id.addRecord_date).getTag());
                             Calendar cal = Calendar.getInstance();
-                            if (date!=null) {
+                            if (date != null) {
                                 cal.set(date.getYear(), date.getMonth(), date.getDayOfMonth());
                             }
                             Date d = cal.getTime();
-                            String finalDate = MMDatabaseHelper.convertDateForDb(d);
+                            final String finalDate = MMDatabaseHelper.convertDateForDb(d);
 
                             String[] parts = category.split(" ");
-                            String catName = parts[0];
+                            final String catName = parts[0];
                             String catDet = "";
                             if (parts.length >= 2) {
-                                for (int i=2;i<parts.length;++i) {
-                                    parts[1] = parts[1].concat(" "+parts[i]);
+                                for (int i = 2; i < parts.length; ++i) {
+                                    parts[1] = parts[1].concat(" " + parts[i]);
                                 }
                                 catDet = parts[1].substring(1, parts[1].length() - 1);
                             }
+                            final String catDetFinal = catDet;
 
-                            Log.i("EXCHANGERATE: ", String.valueOf(ExchangeRateCalculator.TransferRate(currency, Currency.getInstance("EUR"),new BigDecimal(amount))));
 
-                            Record rec = new Record(0, new BigDecimal(amount), currency, item, finalDate, new Category(0, catName, catDet));
-                            MMDatabaseHelper helper = MMDatabaseHelper.getInstance(getActivity());
-                            helper.addRecord(rec);
 
-                            AddRecordDialogFinishedListener ac = (AddRecordDialogFinishedListener) getActivity();
-                            ac.onAddRecordFinishedDialog(true);
-                            dialog.dismiss();
+                            //get amount in EUR
+                            final ExchangeRateCalculator erc = new ExchangeRateCalculator(v.getContext());
+                            BigDecimal eurs = erc.transferRate(currency, Currency.getInstance("EUR"),new BigDecimal(amount));
+                            if (eurs == null) {
+                                if (erc.checkOlderRateDownloaded(currency,Currency.getInstance("EUR"))) {
+                                    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface d, int which) {
+                                            switch (which) {
+                                                case DialogInterface.BUTTON_POSITIVE:
+                                                    resultInEur = erc.getOlderRateDownloaded(currency, Currency.getInstance("EUR")).multiply(new BigDecimal(amount));
+                                                    Record rec = new Record(0, new BigDecimal(amount), resultInEur, currency, item, finalDate, new Category(0, catName, catDetFinal));
+                                                    MMDatabaseHelper helper = MMDatabaseHelper.getInstance(getActivity());
+                                                    helper.addRecord(rec);
+
+                                                    AddRecordDialogFinishedListener ac = (AddRecordDialogFinishedListener) getActivity();
+                                                    ac.onAddRecordFinishedDialog(true);
+                                                    dialog.dismiss();
+                                                    break;
+                                                case DialogInterface.BUTTON_NEGATIVE:
+                                                    Toast.makeText(v.getContext(),"Failed to download exchange rate, please use EUR as currency instead",Toast.LENGTH_LONG).show();
+                                            }
+                                        }
+                                    };
+                                    Date dt = erc.getOlderDateDownloaded(currency, Currency.getInstance("EUR"));
+                                    Calendar cl = Calendar.getInstance();
+                                    cl.setTime(dt);
+                                    String oldDate = DatePickerFragment.formatDate(cl);
+                                    AlertDialog.Builder builder1 = new AlertDialog.Builder(v.getContext());
+                                    builder1.setMessage("Unfortunately, downloading of current exchange rate failed.\nDo you want to use rate from "+oldDate+"?")
+                                            .setPositiveButton("Yes",dialogClickListener)
+                                            .setNegativeButton("No",dialogClickListener).show();
+                                } else {
+                                    Toast.makeText(v.getContext(),"Failed to download exchange rate, please use EUR as currency instead",Toast.LENGTH_LONG).show();
+                                }
+
+
+                            } else {
+                                Log.i("EUR: ", String.valueOf(eurs));
+
+                                Record rec = new Record(0, new BigDecimal(amount), eurs, currency, item, finalDate, new Category(0, catName, catDet));
+                                MMDatabaseHelper helper = MMDatabaseHelper.getInstance(getActivity());
+                                helper.addRecord(rec);
+
+                                AddRecordDialogFinishedListener ac = (AddRecordDialogFinishedListener) getActivity();
+                                ac.onAddRecordFinishedDialog(true);
+                                dialog.dismiss();
+                            }
                         }
                     }
                 });
@@ -180,19 +226,7 @@ public class AddRecordDialog extends DialogFragment  {
     public void setDateButtonTag(DatePicker date) {
         Button button = (Button)v.findViewById(R.id.addRecord_date);
         DatePickerFragment.setDateButtonTag(date,button);
-        /*button.setTag(date);
 
-        int day = date.getDayOfMonth();
-        int month = date.getMonth();
-        int year = date.getYear();
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(year,month,day);
-        DateFormat dateFormat = DateFormat.getInstance();
-        dateFormat.setCalendar(calendar);
-
-        DateFormat format = new SimpleDateFormat("EEE, MMM d,yyyy");
-        String dateF = format.format(calendar.getTime());
-        button.setText(dateF);*/
     }
 
     public interface AddRecordDialogFinishedListener {
