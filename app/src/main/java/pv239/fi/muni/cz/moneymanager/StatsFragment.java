@@ -37,26 +37,12 @@ public class StatsFragment extends Fragment  {
     LayoutInflater inflater;
     ViewGroup container;
     View mLayout;
-    private RecyclePage pageOne;
-    private RecyclePage pageTwo;
-    private RecyclePage pageThree;
-    //private ViewPagerAdapter mAdapter;
     private static int mCurrent=0;
     private ArrayList<AdapterParameterObject> mObjectsList;
     private ViewPagerAdapter mAdapter;
     private CustomViewPager mViewPager;
+    private boolean viewLoaded = false;
 
-//    private static Field sChildFragmentManagerField;
-//    static {
-//        Field f = null;
-//        try {
-//            f= Fragment.class.getDeclaredField("mChildFragmentManager");
-//            f.setAccessible(true);
-//        } catch (NoSuchFieldException e) {
-//            e.printStackTrace();
-//        }
-//        sChildFragmentManagerField = f;
-//    }
 
     public StatsFragment() {
         // Required empty public constructor
@@ -80,26 +66,11 @@ public class StatsFragment extends Fragment  {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i("JUST A TEST", "onCreate");
-        //if (getArguments() != null) {
-        //mParam1 = getArguments().getString(ARG_PARAM1);
-        //mParam2 = getArguments().getString(ARG_PARAM2);
-        //}
-
     }
-
-//    private void onLeftSwipe() {
-//        // Do something
-//    }
-
-//    private void onRightSwipe() {
-//        // Do something
-//    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.i("JUST A TEST", "onCreateView");
         this.inflater = inflater;
         this.container = container;
 
@@ -143,8 +114,7 @@ public class StatsFragment extends Fragment  {
             }
         });
 
-        //mAdapter = new ViewPagerAdapter(getChildFragmentManager());
-        //update(viewPager,tabLayout,adapter);
+        viewLoaded = true;
         return layout;
     }
 
@@ -152,7 +122,6 @@ public class StatsFragment extends Fragment  {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Log.i("JUST A TEST", "onActivityCreated");
         ActionBar bar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         View v = null;
         if (bar != null) {
@@ -173,12 +142,6 @@ public class StatsFragment extends Fragment  {
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
             if (!isFirstCall) {
                 mCurrent = position;
-                //onCreate(null);
-                //onCreateView(inflater,container,null);
-                //final CustomViewPager viewPager = (CustomViewPager) mLayout.findViewById(R.id.pager);
-                //TabLayout tabLayout = (TabLayout)mLayout.findViewById(R.id.tab_layout);
-                //ViewPagerAdapter adapter = new ViewPagerAdapter(getChildFragmentManager(),);
-                //onResume();
                 update();
 
             } else {
@@ -194,55 +157,17 @@ public class StatsFragment extends Fragment  {
     };
 
     private void update() {
-        Log.i("UPDATE", "UPDATE");
-        /*try {
-            Field childFragmentManager = Fragment.class.getDeclaredField("mChildFragmentManager");
-            childFragmentManager.setAccessible(true);
-            childFragmentManager.set(this, null);
-
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }*/
+        if (!viewLoaded) return;
         mObjectsList.clear();
-        //mAdapter.notifyDataSetChanged();
         mObjectsList.add(new AdapterParameterObject(0,7,mCurrent));
         mObjectsList.add(new AdapterParameterObject(1,28,mCurrent));
         mObjectsList.add(new AdapterParameterObject(2,365,mCurrent));
-
         mAdapter.notifyDataSetChanged();
-        //pageOne = null;
-//        pageOne = RecyclePage.newInstance(0,7,position);
-//        pageTwo = RecyclePage.newInstance(1,28,position);
-//        pageThree = RecyclePage.newInstance(2, 365,position);
-
-//        ArrayList<AdapterParameterObject> parameterObjects = new ArrayList<>();
-//        parameterObjects.add(new AdapterParameterObject(0,7,position));
-//        parameterObjects.add(new AdapterParameterObject(1,28,position));
-//        parameterObjects.add(new AdapterParameterObject(2,365,position));
-
-        //ViewPagerAdapter adapter = new ViewPagerAdapter(getChildFragmentManager(),parameterObjects);
-
-//        adapter.addFragment(pageOne,"7 days");
-//        adapter.addFragment(pageTwo,"4 weeks");
-//        adapter.addFragment(pageThree,"1 year");
-
-//        viewPager.setAdapter(adapter);
-//        adapter.notifyDataSetChanged();
-
-
-       // Log.i("JUST A TEST", String.valueOf(position));
-
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        Log.i("JUST A TEST", "onResume");
-        //final CustomViewPager viewPager = (CustomViewPager) mLayout.findViewById(R.id.pager);
-        //TabLayout tabLayout = (TabLayout)mLayout.findViewById(R.id.tab_layout);
-        //ViewPagerAdapter adapter = new ViewPagerAdapter(getChildFragmentManager());
         update();
 
 
@@ -251,31 +176,10 @@ public class StatsFragment extends Fragment  {
     @Override
     public void onDetach() {
         super.onDetach();
-//        Log.i("JUST A TEST", "onDetach");
-//        try {
-//            Field childFragmentManager = Fragment.class.getDeclaredField("mChildFragmentManager");
-//            childFragmentManager.setAccessible(true);
-//            childFragmentManager.set(this, null);
-//
-//        } catch (NoSuchFieldException e) {
-//            throw new RuntimeException(e);
-//        } catch (IllegalAccessException e) {
-//            throw new RuntimeException(e);
-//        }
-//        if (sChildFragmentManagerField!= null) {
-//            try {
-//                sChildFragmentManagerField.set(this,null);
-//            } catch (IllegalAccessException e) {
-//                e.printStackTrace();
-//            }
-//        }
-
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        //super.onSaveInstanceState(outState);
-
     }
 
 

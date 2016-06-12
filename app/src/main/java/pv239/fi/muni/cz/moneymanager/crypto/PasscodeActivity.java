@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import pv239.fi.muni.cz.moneymanager.R;
@@ -21,6 +22,11 @@ public class PasscodeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Log in");
+            getSupportActionBar().setCustomView(R.layout.password_title);
+            TextView v = (TextView) getSupportActionBar().getCustomView().findViewById(R.id.passwaord_title);
+            v.setText("Log in");
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+            getSupportActionBar().setDisplayShowCustomEnabled(true);
         }
 
 

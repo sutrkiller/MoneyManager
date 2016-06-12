@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -539,6 +540,19 @@ public class MainActivity extends ALockingClass
         return true;
     }
 
+//    Configuration oldConfig = null;
+//    @Override
+//    public void onConfigurationChanged(Configuration newConfig) {
+//        super.onConfigurationChanged(newConfig);
+//        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+//            setContentView(R.layout.fragment_records);
+//        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
+//            setContentView(R.layout.fragment_records);
+//        }
+//        Log.i("CONFID", "CHANGES");
+//
+//    }
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -598,7 +612,9 @@ public class MainActivity extends ALockingClass
         invalidateOptionsMenu();
         setActionBarTitle(currentPosition);
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setCheckedItem(currentPosition);
+        if (navigationView != null) {
+            navigationView.setCheckedItem(currentPosition);
+        }
     }
 
 
@@ -622,23 +638,25 @@ public class MainActivity extends ALockingClass
 
     private void setActionBarTitle(int id) {
         String title;
+        boolean stats=true;
         switch (id) {
             case -1:
             case R.id.nav_records:
                 title = "Records";
-                setUpActionBarForStatistics(true);
+                //stats = true;
                 break;
             case R.id.nav_categories:
                 title = "Categories";
-                setUpActionBarForStatistics(true);
+                //stats = true;
                 break;
             case R.id.nav_stats:
                 title = "Statistics";
-                setUpActionBarForStatistics(false);
+                stats = false;
                 break;
             default:
                 title = "MoneyManager";
         }
+        setUpActionBarForStatistics(stats);
         getSupportActionBar().setTitle(title);
     }
 
@@ -881,6 +899,21 @@ public class MainActivity extends ALockingClass
             //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
             ((CategoriesDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllCategories());
         }
+    }
+
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        for (Fragment fr : fragments) {
+            fr = null;
+        }
+        Log.i("onpause","ssssssssssss");
     }
 
     /**

@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.WindowManager;
 
 import pv239.fi.muni.cz.moneymanager.R;
@@ -109,6 +110,7 @@ public abstract class ALockingClass extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
+        Log.i("ALockingClass","onStop()");
         sharedPreferences.edit().putBoolean(LOGGED, false).apply();
     }
 }

@@ -8,11 +8,13 @@ import java.text.DateFormat;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 
 import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
-import pv239.fi.muni.cz.moneymanager.model.StatRecord;
+import pv239.fi.muni.cz.moneymanager.model.Category;
+import pv239.fi.muni.cz.moneymanager.model.Record;
 
 /**
  * Stat page encapsulates all data needed for single RecycleView item
@@ -27,8 +29,10 @@ public class StatPage {
     private String date;
     private Date start;
     private Date end;
-    private List<StatRecord> incomesList;
-    private List<StatRecord> expensesList;
+//    private List<StatRecord> incomesList;
+    private List<Record> incomesList;
+//    private List<StatRecord> expensesList
+    private List<Record> expensesList;
     private int tabNum;
     private int version;
 
@@ -71,11 +75,17 @@ public class StatPage {
         return expenses;
     }
 
-    public List<StatRecord> getIncomesList() {
+//    public List<StatRecord> getIncomesList() {
+//        return incomesList;
+//    }
+    public List<Record> getIncomesList() {
         return incomesList;
     }
 
-    public List<StatRecord> getExpensesList() {
+//    public List<StatRecord> getExpensesList() {
+//        return expensesList;
+//    }
+    public List<Record> getExpensesList() {
         return expensesList;
     }
 
@@ -111,18 +121,29 @@ public class StatPage {
                 String stringDate = cursor.getString(3);
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 Date date = format.parse(stringDate,new ParsePosition(0));
-                StatRecord record = new StatRecord(new BigDecimal(cursor.getDouble(7)), cursor.getString(4),cursor.getLong(0),date);
+                //StatRecord record = new StatRecord(new BigDecimal(cursor.getDouble(7)), cursor.getString(4),cursor.getLong(0),date);
+                Long id = cursor.getLong(0);
+                BigDecimal value = new BigDecimal(cursor.getDouble(1));
+                BigDecimal valueInEur = new BigDecimal(cursor.getDouble(7));
+                Currency currency = Currency.getInstance(cursor.getString(2));
+                String dateTime = cursor.getString(3);
+                String item = cursor.getString(4);
+                String catName = cursor.getString(5);
+                String catDet = cursor.getString(6);
+                Record record = new Record(id, value,valueInEur,currency,item,dateTime,new Category(0, catName,catDet));
+
+
                 if (record.getValue().compareTo(BigDecimal.ZERO) <0)
                 {
                     expensesList.add(record);
-                    tmpExpValue = tmpExpValue.add(record.getValue());
+                    tmpExpValue = tmpExpValue.add(record.getValueInEur());
                 } else
                 {
                     incomesList.add(record);
-                    tmpIncValue = tmpIncValue.add(record.getValue());
+                    tmpIncValue = tmpIncValue.add(record.getValueInEur());
                 }
 
-                tmpEndValue = tmpEndValue.add(record.getValue());
+                tmpEndValue = tmpEndValue.add(record.getValueInEur());
 
             }while(cursor.moveToNext());
 

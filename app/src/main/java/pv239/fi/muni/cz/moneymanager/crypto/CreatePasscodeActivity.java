@@ -28,6 +28,13 @@ public class CreatePasscodeActivity extends AppCompatActivity {
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Create pin");
+            getSupportActionBar().setCustomView(R.layout.password_title);
+            TextView v = (TextView) getSupportActionBar().getCustomView().findViewById(R.id.passwaord_title);
+            v.setText("Create pin");
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+            getSupportActionBar().setDisplayShowCustomEnabled(true);
+
+
         }
         setContentView(R.layout.activity_create_passcode);
 

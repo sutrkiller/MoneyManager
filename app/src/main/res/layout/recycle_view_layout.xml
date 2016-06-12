@@ -8,7 +8,7 @@
      <com.lsjwzh.widget.recyclerviewpager.RecyclerViewPager
          android:layout_width="match_parent"
          android:layout_height="match_parent"
-            app:rvp_triggerOffset="0.4"
+            app:rvp_triggerOffset="0.6"
          app:rvp_singlePageFling="true"
          android:clipToPadding="false"
          android:id="@+id/fragRecycleView">

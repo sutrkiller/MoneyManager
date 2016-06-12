@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Locale;
 
 import pv239.fi.muni.cz.moneymanager.R;
-import pv239.fi.muni.cz.moneymanager.model.StatRecord;
+import pv239.fi.muni.cz.moneymanager.model.Record;
 
 /**
  * This class serves as adapter for each item in statistics expenses/incomes lists
@@ -28,10 +28,11 @@ import pv239.fi.muni.cz.moneymanager.model.StatRecord;
 public class RecordsDbToStatsAdapter extends BaseAdapter {
 
     private LayoutInflater inflater;
-    private List<StatRecord> recordsList;
+    //private List<StatRecord> recordsList;
+    private List<Record> recordsList;
     private Context context;
 
-    public RecordsDbToStatsAdapter(Context context, List<StatRecord> recordsList) {
+    public RecordsDbToStatsAdapter(Context context, List<Record> recordsList) {
         this.context = context;
         this.recordsList = recordsList;
         inflater = LayoutInflater.from(context);
@@ -43,7 +44,7 @@ public class RecordsDbToStatsAdapter extends BaseAdapter {
     }
 
     @Override
-    public StatRecord getItem(int position) {
+    public Record getItem(int position) {
         return recordsList.get(position);
     }
 
@@ -60,7 +61,8 @@ public class RecordsDbToStatsAdapter extends BaseAdapter {
             convertView.setTag(new ViewHolder(convertView));
         }
         ViewHolder holder = (ViewHolder) convertView.getTag();
-        StatRecord record = getItem(position);
+        //StatRecord record = getItem(position);
+        Record record = getItem(position);
 
 
         ColorGenerator generator = ColorGenerator.MATERIAL; // or use DEFAULT
@@ -74,8 +76,8 @@ public class RecordsDbToStatsAdapter extends BaseAdapter {
 
         NumberFormat format = NumberFormat.getCurrencyInstance(Locale.GERMANY);
         format.setMaximumFractionDigits(2);
-        holder.value.setText(format.format(record.getValue().abs().setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue()));
-        holder.value.setTextColor(ContextCompat.getColor(context, record.getValue().compareTo(BigDecimal.ZERO) < 0 ? R.color.recordNegativeValue : R.color.recordPositiveValue));
+        holder.value.setText(format.format(record.getValueInEur().abs().setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue()));
+        holder.value.setTextColor(ContextCompat.getColor(context, record.getValueInEur().compareTo(BigDecimal.ZERO) < 0 ? R.color.recordNegativeValue : R.color.recordPositiveValue));
 
         return convertView;
     }

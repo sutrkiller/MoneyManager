@@ -40,10 +40,60 @@ public class Record {
         this.id = id;
         this.value = value;
         this.item = item;
-
         this.valueInEur =  valueInEur;
     }
 
+    public long getId() {
+        return id;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public Currency getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(Currency currency) {
+        this.currency = currency;
+    }
+
+    public String getDateTime() {
+        return dateTime;
+    }
+
+    public void setDateTime(String dateTime) {
+        this.dateTime = dateTime;
+    }
+
+    public String getItem() {
+        return item;
+    }
+
+    public void setItem(String item) {
+        this.item = item;
+    }
+
+    public BigDecimal getValue() {
+        return value;
+    }
+
+    public void setValue(BigDecimal value) {
+        this.value = value;
+    }
+
+    public BigDecimal getValueInEur() {
+        return valueInEur;
+    }
+
+    public void setValueInEur(BigDecimal valueInEur) {
+        this.valueInEur = valueInEur;
+    }
 
     public static String formatDateTime(Context context, String timeToFormat) {
 
