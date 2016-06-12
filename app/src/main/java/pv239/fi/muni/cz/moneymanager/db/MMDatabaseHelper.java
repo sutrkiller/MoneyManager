@@ -41,7 +41,7 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
     public static final String KEY_REC_DATE = "date";
     public static final String KEY_REC_ITEM = "item";
     public static final String DB_NAME = "money_manager";
-    private static final int DB_VERSION = 1;
+    public static final int DB_VERSION = 2;
     private static MMDatabaseHelper sInstance;
 
     public MMDatabaseHelper(Context context) {
@@ -146,7 +146,14 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
     }
 
     private void updateMyDb(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion < 1) {
+        if (oldVersion == 1 && newVersion ==2) {
+            String DROP_TABLE_RECORD = "DROP TABLE IF EXISTS "+TABLE_RECORD;
+            String DROP_TABLE_CAT = "DROP TABLE IF EXISTS "+TABLE_CATEGORY;
+
+            db.execSQL(DROP_TABLE_RECORD);
+            db.execSQL(DROP_TABLE_CAT);
+        }
+        if (oldVersion < 2) {
             String CREATE_CATEGORY_TABLE = "CREATE TABLE " + TABLE_CATEGORY + " (" +
                     KEY_CAT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                     KEY_CAT_NAME + " TEXT," +

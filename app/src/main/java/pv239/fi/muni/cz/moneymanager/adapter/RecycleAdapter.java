@@ -6,6 +6,7 @@ import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,6 +53,8 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.CustomVi
     private Context mContext;
     private List<StatPage> statPages;
 
+
+
     public RecycleAdapter(List<StatPage> list) {
         statPages = list;
     }
@@ -72,8 +75,11 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.CustomVi
         NumberFormat curFor = NumberFormat.getCurrencyInstance(Locale.GERMANY);
         curFor.setMaximumFractionDigits(2);
 
+        Log.i("Graph> ", String.valueOf(i));
 
         customViewHolder.date.setText(page.getDate());
+
+
         customViewHolder.endBalanceView.setText(curFor.format(Double.valueOf(page.getEndBalance())));
         customViewHolder.startBalanceView.setText(curFor.format(Double.valueOf(page.getStartBalance())));
         customViewHolder.incomesView.setText(curFor.format(Double.valueOf(page.getIncomes())));
@@ -280,6 +286,7 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.CustomVi
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(series.get(0).getLowestValueX());
         graph.getViewport().setMaxX(series.get(0).getHighestValueX());
+        graph.removeAllSeries();
         for (BarGraphSeries<DataPoint> serie : series) {
             graph.addSeries(serie);
         }

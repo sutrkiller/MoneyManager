@@ -46,6 +46,18 @@ public class StatsFragment extends Fragment  {
     private ViewPagerAdapter mAdapter;
     private CustomViewPager mViewPager;
 
+//    private static Field sChildFragmentManagerField;
+//    static {
+//        Field f = null;
+//        try {
+//            f= Fragment.class.getDeclaredField("mChildFragmentManager");
+//            f.setAccessible(true);
+//        } catch (NoSuchFieldException e) {
+//            e.printStackTrace();
+//        }
+//        sChildFragmentManagerField = f;
+//    }
+
     public StatsFragment() {
         // Required empty public constructor
     }
@@ -155,7 +167,7 @@ public class StatsFragment extends Fragment  {
 
     }
 
-    private static boolean isFirstCall = true;
+    private static boolean isFirstCall = false;
     AdapterView.OnItemSelectedListener mListener = new AdapterView.OnItemSelectedListener() {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -182,11 +194,23 @@ public class StatsFragment extends Fragment  {
     };
 
     private void update() {
+        Log.i("UPDATE", "UPDATE");
+        /*try {
+            Field childFragmentManager = Fragment.class.getDeclaredField("mChildFragmentManager");
+            childFragmentManager.setAccessible(true);
+            childFragmentManager.set(this, null);
 
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }*/
         mObjectsList.clear();
+        //mAdapter.notifyDataSetChanged();
         mObjectsList.add(new AdapterParameterObject(0,7,mCurrent));
         mObjectsList.add(new AdapterParameterObject(1,28,mCurrent));
         mObjectsList.add(new AdapterParameterObject(2,365,mCurrent));
+
         mAdapter.notifyDataSetChanged();
         //pageOne = null;
 //        pageOne = RecyclePage.newInstance(0,7,position);
@@ -238,6 +262,14 @@ public class StatsFragment extends Fragment  {
 //        } catch (IllegalAccessException e) {
 //            throw new RuntimeException(e);
 //        }
+//        if (sChildFragmentManagerField!= null) {
+//            try {
+//                sChildFragmentManagerField.set(this,null);
+//            } catch (IllegalAccessException e) {
+//                e.printStackTrace();
+//            }
+//        }
+
     }
 
     @Override

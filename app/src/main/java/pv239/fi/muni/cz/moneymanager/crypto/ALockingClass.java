@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.WindowManager;
 
 import pv239.fi.muni.cz.moneymanager.R;
+import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
 
 /**
  * Parent locking activity ensuring authorization in every access to app
@@ -63,6 +64,8 @@ public abstract class ALockingClass extends AppCompatActivity {
         sharedPreferences.edit().putBoolean(LOGGED, false).apply();
 
     }
+
+
 
     @Override
     protected void onResume() {

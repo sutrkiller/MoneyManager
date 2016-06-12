@@ -25,6 +25,7 @@ repositories{
     maven {
         url 'http://dl.bintray.com/amulyakhare/maven'
     }
+    maven { url "https://jitpack.io" }
 }
 
 dependencies {
@@ -52,6 +53,7 @@ dependencies {
     compile "com.androidplot:androidplot-core:0.9.8"
     compile 'com.jjoe64:graphview:4.0.1'
     compile 'joda-time:joda-time:2.9.2'
+    compile 'com.github.lsjwzh.RecyclerViewPager:lib:v1.1.0'
     compile files('libs/opencsv-2.4 (1).jar')
     compile files('libs/poi-3.14-20160307.jar')
 }

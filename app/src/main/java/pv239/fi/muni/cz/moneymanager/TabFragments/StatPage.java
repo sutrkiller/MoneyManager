@@ -101,7 +101,7 @@ public class StatPage {
         Cursor cursor = db.getAllRecordsWithCategories(from, to, MMDatabaseHelper.KEY_REC_DATE, "ASC");
         BigDecimal currentBal = db.getStartingBal(fromDate);
 
-        if (cursor.moveToFirst())
+        if (cursor != null && cursor.moveToFirst())
         {
             BigDecimal tmpEndValue = BigDecimal.ZERO;
             BigDecimal tmpIncValue = BigDecimal.ZERO;

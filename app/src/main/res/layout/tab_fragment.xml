@@ -10,13 +10,24 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="8dp"
         android:background="@drawable/black_box"
-        android:paddingBottom="8dp"
-        android:paddingTop="8dp"
+        android:paddingBottom="12dp"
+        android:paddingTop="12dp"
         android:textAlignment="center"
-        android:textColor="@color/colorAccent"
-        />
+        android:textColor="@color/colorPrimary">
+
+        </TextView>
+    <ImageView
+        android:id="@+id/tab_divider_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/date"
+        android:layout_marginTop="-8dp"
+
+        android:paddingEnd="80dp"
+        android:paddingStart="80dp"
+        android:contentDescription="@string/divider"
+        android:src="@drawable/divider_pink" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -175,7 +186,8 @@
                 android:layout_height="300dp"
                 android:layout_below="@id/incomeList"
                 android:layout_margin="10dp"
-                android:background="@drawable/box" />
+                android:background="@drawable/box"
+                android:nestedScrollingEnabled="true"/>
 
             <!-- Expenses records -->
             <TextView
@@ -193,7 +205,8 @@
                 android:layout_height="300dp"
                 android:layout_below="@+id/expensesList"
                 android:layout_margin="10dp"
-                android:background="@drawable/box" />
+                android:background="@drawable/box"
+                android:nestedScrollingEnabled="true"/>
 
         </RelativeLayout>
     </ScrollView>

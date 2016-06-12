@@ -155,9 +155,11 @@ public class MainActivity extends ALockingClass
         assert navigationView != null;
         navigationView.setNavigationItemSelectedListener(this);
 
-        getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+        /*getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
             @Override
             public void onBackStackChanged() {
+                //Log.i("BACK_STACK", "CHAAANGE");
+
                 FragmentManager fragMan = getSupportFragmentManager();
                 Fragment fragment = fragMan.findFragmentByTag("visible_fragment");
                 invalidateOptionsMenu();
@@ -179,7 +181,7 @@ public class MainActivity extends ALockingClass
                 setActionBarTitle(currentPosition);
                 navigationView.setCheckedItem(currentPosition);
             }
-        });
+        });*/
 
         //initialize custom view on title
         getSupportActionBar().setCustomView(R.layout.spinner_title);
@@ -202,9 +204,6 @@ public class MainActivity extends ALockingClass
         mCredential = GoogleAccountCredential.usingOAuth2(
                 getApplicationContext(), Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff());
-
-
-
     }
 
 
@@ -451,7 +450,12 @@ public class MainActivity extends ALockingClass
         if (drawer != null && drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            if (currentPosition==R.id.nav_records) {
+                super.onBackPressed();
+            } else {
+                switchFragments(0);
+                //currentPosition = R.id.nav_records;
+            }
         }
     }
 
@@ -509,16 +513,21 @@ public class MainActivity extends ALockingClass
         if (id != currentPosition) {
             switch (id) {
                 case R.id.nav_records:
-                    onMenuFragmentSelect(RecordsFragment.newInstance());
-                    currentPosition = id;
+                    //onMenuFragmentSelect(RecordsFragment.newInstance());
+                    switchFragments(0);
+                    //currentPosition = id;
                     break;
                 case R.id.nav_categories:
-                    onMenuFragmentSelect(CategoriesFragment.newInstance());
-                    currentPosition = id;
+                    //onMenuFragmentSelect(CategoriesFragment.newInstance());
+                    switchFragments(1);
+                    //currentPosition = id;
                     break;
                 case R.id.nav_stats:
-                    onMenuFragmentSelect(StatsFragment.newInstance());
-                    currentPosition = id;
+                    //onMenuFragmentSelect(StatsFragment.newInstance());
+                    switchFragments(2);
+                    //if (currentFragment.getView()!= null) onResume();
+                    //currentFragment.onResume();
+                    //currentPosition = id;
                     break;
                 default:
 
@@ -536,7 +545,65 @@ public class MainActivity extends ALockingClass
         outState.putInt("currentPosition", currentPosition);
     }
 
+
+    Fragment fragments[] = new Fragment[3];
+    Fragment currentFragment = null;
+
+    void switchFragments(int id) {
+        FragmentManager fm = getSupportFragmentManager();
+
+        if(currentFragment!=null){
+            fm.beginTransaction().detach(currentFragment).commit();
+        }
+        if(fragments[id]==null){
+            Fragment fr=null;
+            switch (id) {
+                case 0: fr = RecordsFragment.newInstance(); break;
+                case 1: fr = CategoriesFragment.newInstance(); break;
+                case 2: fr = StatsFragment.newInstance(); break;
+            }
+            fragments[id]=fr;
+
+            //If your fragment has not been added yet then first add it.
+            fm.beginTransaction().add(R.id.fragment_container,   fragments[id],"visible_fragment").commit();
+
+            //Now attach the new fragment
+            fm.beginTransaction().attach(fragments[id]).commit();
+
+            //Update the current fragment reference
+            currentFragment=fragments[id];
+        }
+        else{
+            fm.beginTransaction().attach(fragments[id]).commit();
+            currentFragment=fragments[id];
+        }
+        switch (id) {
+            case 0: {
+                currentPosition = R.id.nav_records;
+                hideFilter = false;
+                break;
+            }
+            case 1: {
+                currentPosition = R.id.nav_categories;
+                hideFilter = false;
+                break;
+            }
+            case 2: {
+                currentPosition = R.id.nav_stats;
+                hideFilter = true;
+                break;
+            }
+        }
+
+        invalidateOptionsMenu();
+        setActionBarTitle(currentPosition);
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setCheckedItem(currentPosition);
+    }
+
+
     public void onMenuFragmentSelect(Fragment fragment) {
+
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.fragment_container, fragment, "visible_fragment");
         if (getSupportFragmentManager().getBackStackEntryCount() > 0)
@@ -550,6 +617,7 @@ public class MainActivity extends ALockingClass
         }
         ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         ft.commit();
+
     }
 
     private void setActionBarTitle(int id) {

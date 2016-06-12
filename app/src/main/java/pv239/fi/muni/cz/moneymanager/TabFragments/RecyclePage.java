@@ -3,13 +3,17 @@ package pv239.fi.muni.cz.moneymanager.TabFragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.jjoe64.graphview.series.LineGraphSeries;
+import com.lsjwzh.widget.recyclerviewpager.RecyclerViewPager;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -81,8 +85,73 @@ public class RecyclePage extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View layout = inflater.inflate(R.layout.recycle_view_layout, container, false);
-        RecyclerView mRecyclerView = (RecyclerView) layout.findViewById(R.id.fragRecycleView);
 
+
+        final RecyclerViewPager mRecyclerView = (RecyclerViewPager) layout.findViewById(R.id.fragRecycleView);
+
+        DisplayMetrics displaymetrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+        final int mScreenWidth = displaymetrics.widthPixels;
+        final int[] lastPosition = {0};
+
+        Log.i("Screen width", String.valueOf(mScreenWidth));
+        final int[] overallXScroll = {0};
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                overallXScroll[0] = overallXScroll[0] + dx;
+                int position = mRecyclerView.getCurrentPosition();
+                int scroll = (overallXScroll[0] + (lastPosition[0])*mScreenWidth) % mScreenWidth;
+                if (scroll==0) lastPosition[0] = position;
+                int fromPos = lastPosition[0];
+                int toPos = scroll<0 ? lastPosition[0]+1 : ( scroll>0 ? lastPosition[0]-1 : lastPosition[0]);
+                int scrollTo = (int) (scroll +(-Math.signum(scroll))* mScreenWidth);
+                //if (fromPos!=toPos) {
+//                    Log.i("check","overall X  = " + scroll);
+//                    Log.i("check","position  = " + position);
+//                    Log.i("check","lastPosition  = " + lastPosition[0]);
+//                    Log.i("check","fromPos  = " + fromPos);
+//                    Log.i("check","toPos  = " + toPos);
+//                    Log.i("check","scrollTo  = "+  scrollTo);
+                    //Log.i("check","testScroll  = " );
+                    float minAlpha = 1F;
+                    float aTrans = minAlpha/(float)mScreenWidth * Math.abs(scroll);
+                    float bTrans = (1-minAlpha) + aTrans;
+
+
+
+                RecyclerView.LayoutManager manager = recyclerView.getLayoutManager();
+                View a =  manager.findViewByPosition(fromPos);
+                View b =  manager.findViewByPosition(toPos);
+                View aD = a.findViewById(R.id.tab_divider_bottom);
+                View bD = b.findViewById(R.id.tab_divider_bottom);
+
+                if (fromPos!=toPos) {
+                    if (aD != null) {
+                        aD.setAlpha(1 - aTrans);
+                        //Log.i("check","alphaSetA  = "+ (1-aTrans));
+                    }
+                    if (bD != null)  {
+                        bD.setAlpha(bTrans);
+                        //Log.i("check","alphaSetB  = "+ (bTrans));
+                    }
+
+                } else {
+                    if (aD!=null) {
+                        aD.setAlpha(1);
+                        //Log.i("check","alphaSetAOne  = "+ (1));
+                    }
+                }
+                    //Log.i("check","position  = " + mRecyclerView.getCurrentPosition());
+                //}
+
+                //Log.i("check","current scroll  = " + ((-mRecyclerView.getCurrentPosition()+1)*mScreenWidth - mScreenWidth/2));
+
+                //Log.i("Translation", String.valueOf(a.getTranslationX()));
+            }
+        });
+    if (mObject==null) return layout;
         int version = mObject.getVersion();
         int daysBack = mObject.getDaysBack();
         int tabNumber = mObject.getPageNumber();
@@ -111,6 +180,7 @@ public class RecyclePage extends Fragment {
             earlyCal.add(Calendar.DAY_OF_YEAR, -daysBack);
             firstCal.setTime(date);
 
+            pages.clear();
             while (firstCal.compareTo(lateCal) < 0) {
                 StatPage page = new StatPage(getContext(), earlyCal.getTime(), lateCal.getTime(),tabNumber,version);
                 pages.add(page);
@@ -121,6 +191,7 @@ public class RecyclePage extends Fragment {
             RecyclerView.Adapter mAdapter = new RecycleAdapter(pages);
 
             mRecyclerView.setAdapter(mAdapter);
+
 
 
         return (layout);
