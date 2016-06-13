@@ -29,6 +29,7 @@ public abstract class ALockingClass extends AppCompatActivity {
     protected static SharedPreferences sharedPreferences;
 
     public boolean createRunning = false;
+    public boolean checkRunning = false;
 
     public static boolean storePin(String password) {
         sharedPreferences.edit().putString(KEY, password).putBoolean(LOGGED, true).apply();
@@ -61,11 +62,10 @@ public abstract class ALockingClass extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
-        sharedPreferences = getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        sharedPreferences = getPreferences(Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(LOGGED, false).apply();
 
     }
-
 
 
     @Override
@@ -73,8 +73,12 @@ public abstract class ALockingClass extends AppCompatActivity {
         super.onResume();
         if (!isLogged()) {
             if (isPinStored()) {
-                Intent pass = new Intent(getApplicationContext(), PasscodeActivity.class);
-                startActivityForResult(pass, CheckPin, null);
+                if (!checkRunning) {
+                    Intent pass = new Intent(getApplicationContext(), PasscodeActivity.class);
+                    startActivityForResult(pass, CheckPin, null);
+                    checkRunning = true;
+                }
+
             } else {
                 if (!createRunning) {
                     Intent createPass = new Intent(getApplicationContext(), CreatePasscodeActivity.class);
@@ -89,6 +93,12 @@ public abstract class ALockingClass extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == CreatePin) {
             createRunning = false;
+            if (resultCode == RESULT_CANCELED) {
+                this.finish();
+                System.exit(0);
+            }
+        } else if (requestCode == CheckPin) {
+            checkRunning = false;
             if (resultCode == RESULT_CANCELED) {
                 this.finish();
                 System.exit(0);

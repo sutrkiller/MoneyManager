@@ -34,7 +34,7 @@ import pv239.fi.muni.cz.moneymanager.crypto.ALockingClass;
 public class ExchangeRateCalculator {
     SharedPreferences prefs;
     public ExchangeRateCalculator(Context context) {
-        prefs = context.getSharedPreferences(ALockingClass.PREFS,Context.MODE_PRIVATE);
+        prefs = context.getSharedPreferences( context.getPackageName(),Context.MODE_PRIVATE);
     }
 
     private Map<String,BigDecimal> cache = new HashMap<>();

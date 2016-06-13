@@ -34,6 +34,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Adapter;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
@@ -79,6 +80,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -130,6 +132,8 @@ public class MainActivity extends ALockingClass
     FilterCategoriesArgs categoriesArgs;
     private int currentPosition = -1;
     private boolean hideFilter = false;
+    private Fragment fragments[] = new Fragment[3];
+    private Fragment currentFragment = null;
 //    private boolean hideStats = true;
 
     @Override
@@ -488,17 +492,29 @@ public class MainActivity extends ALockingClass
     }
 
     @Override
+    public boolean onMenuOpened(int featureId, Menu menu) {
+        Log.i("MainActivity", "onMenuOpened " + featureId);
+        if((featureId & Window.FEATURE_ACTION_BAR) ==  Window.FEATURE_ACTION_BAR && menu != null){
+            if(menu.getClass().getSimpleName().equals("MenuBuilder")){
+                try{
+                    Method m = menu.getClass().getDeclaredMethod(
+                            "setOptionalIconsVisible", Boolean.TYPE);
+                    m.setAccessible(true);
+                    m.invoke(menu, true);
+                }
+                catch(NoSuchMethodException e){
+                    Log.e("MainActivity", "onMenuOpened " + featureId);
+                }
+                catch(Exception e){
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return super.onMenuOpened(featureId, menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        /*int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }*/
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -514,21 +530,13 @@ public class MainActivity extends ALockingClass
         if (id != currentPosition) {
             switch (id) {
                 case R.id.nav_records:
-                    //onMenuFragmentSelect(RecordsFragment.newInstance());
                     switchFragments(0);
-                    //currentPosition = id;
                     break;
                 case R.id.nav_categories:
-                    //onMenuFragmentSelect(CategoriesFragment.newInstance());
                     switchFragments(1);
-                    //currentPosition = id;
                     break;
                 case R.id.nav_stats:
-                    //onMenuFragmentSelect(StatsFragment.newInstance());
                     switchFragments(2);
-                    //if (currentFragment.getView()!= null) onResume();
-                    //currentFragment.onResume();
-                    //currentPosition = id;
                     break;
                 default:
 
@@ -540,19 +548,6 @@ public class MainActivity extends ALockingClass
         return true;
     }
 
-//    Configuration oldConfig = null;
-//    @Override
-//    public void onConfigurationChanged(Configuration newConfig) {
-//        super.onConfigurationChanged(newConfig);
-//        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-//            setContentView(R.layout.fragment_records);
-//        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
-//            setContentView(R.layout.fragment_records);
-//        }
-//        Log.i("CONFID", "CHANGES");
-//
-//    }
-
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -560,8 +555,6 @@ public class MainActivity extends ALockingClass
     }
 
 
-    Fragment fragments[] = new Fragment[3];
-    Fragment currentFragment = null;
 
     void switchFragments(int id) {
         FragmentManager fm = getSupportFragmentManager();
@@ -577,14 +570,8 @@ public class MainActivity extends ALockingClass
                 case 2: fr = StatsFragment.newInstance(); break;
             }
             fragments[id]=fr;
-
-            //If your fragment has not been added yet then first add it.
             fm.beginTransaction().add(R.id.fragment_container,   fragments[id],"visible_fragment").commit();
-
-            //Now attach the new fragment
             fm.beginTransaction().attach(fragments[id]).commit();
-
-            //Update the current fragment reference
             currentFragment=fragments[id];
         }
         else{
@@ -608,7 +595,6 @@ public class MainActivity extends ALockingClass
                 break;
             }
         }
-
         invalidateOptionsMenu();
         setActionBarTitle(currentPosition);
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -643,11 +629,9 @@ public class MainActivity extends ALockingClass
             case -1:
             case R.id.nav_records:
                 title = "Records";
-                //stats = true;
                 break;
             case R.id.nav_categories:
                 title = "Categories";
-                //stats = true;
                 break;
             case R.id.nav_stats:
                 title = "Statistics";
@@ -665,14 +649,6 @@ public class MainActivity extends ALockingClass
         if (!reverse) {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
             getSupportActionBar().setDisplayShowCustomEnabled(true);
-//            getSupportActionBar().setCustomView(R.layout.spinner_title);
-//            View v = getSupportActionBar().getCustomView();
-//            Spinner spinner = (Spinner) v.findViewById(R.id.spinner_action_title);
-//
-//            ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(this, R.array.item_array, R.layout.spinner_layout);
-//            arrayAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
-//
-//            spinner.setAdapter(arrayAdapter);
         } else if (getSupportActionBar().getCustomView()!=null) {
             getSupportActionBar().setDisplayShowTitleEnabled(true);
             getSupportActionBar().setDisplayShowCustomEnabled(false);
@@ -683,8 +659,6 @@ public class MainActivity extends ALockingClass
     public void onRecordsAddRecord() {
         AddRecordDialog dialog = new AddRecordDialog();
         dialog.show(getSupportFragmentManager(), "add_record");
-
-
     }
 
     @Override
@@ -704,7 +678,6 @@ public class MainActivity extends ALockingClass
             if (fr == null) return;
             fr.setDateButtonTag(datePicker);
         }
-
     }
 
     @Override
@@ -712,9 +685,7 @@ public class MainActivity extends ALockingClass
         if (result) {
             ListView view = (ListView) getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.records_list_view);
             MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
-            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
             ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories());
-
             File dbpath = getDatabasePath(MMDatabaseHelper.DB_NAME);
             long dbModif = dbpath.lastModified();
             Log.i("DB Modified: ", String.valueOf(dbModif));
@@ -726,7 +697,6 @@ public class MainActivity extends ALockingClass
 
             ListView view = (ListView) getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.categories_list_view);
             MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
-            //((CategoriesDbAdapter)view.getAdapter()).swapCursor(help.getAllCategories());
             ((CategoriesDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllCategories());
         }
     }
@@ -767,18 +737,13 @@ public class MainActivity extends ALockingClass
     }
 
     public void onExportClick(MenuItem item) {
-
-
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
-
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     REQUEST_PERMISSION_WRITE_STORAGE);
-
         } else {
-
             ExportDatabaseCSVTask task = new ExportDatabaseCSVTask(this);
             task.execute();
         }
@@ -797,32 +762,32 @@ public class MainActivity extends ALockingClass
             recordsArgs.setDateFrom(from);
             recordsArgs.setDateTo(to);
 
-            String ordeyBy = null;
-            String ordeyDir = null;
+            String orderBy = null;
+            String orderDir = null;
             String dateFrom = null;
             String dateTo = null;
 
             switch (orderPos) {
                 case FilterRecordsDialog.ORDER_AMOUNT:
-                    ordeyBy = MMDatabaseHelper.KEY_REC_VAL;
+                    orderBy = MMDatabaseHelper.KEY_REC_VAL;
                     break;
                 case FilterRecordsDialog.ORDER_DATE:
-                    ordeyBy = MMDatabaseHelper.KEY_REC_DATE;
+                    orderBy = MMDatabaseHelper.KEY_REC_DATE;
                     break;
                 case FilterRecordsDialog.ORDER_NAME:
-                    ordeyBy = MMDatabaseHelper.KEY_REC_ITEM;
+                    orderBy = MMDatabaseHelper.KEY_REC_ITEM;
                     break;
                 case FilterRecordsDialog.ORDER_CATEGORY:
-                    ordeyBy = MMDatabaseHelper.KEY_CAT_NAME;
+                    orderBy = MMDatabaseHelper.KEY_CAT_NAME;
                     break;
             }
 
             switch (directionPos) {
                 case FilterRecordsDialog.DIRECTION_ASC:
-                    ordeyDir = "ASC";
+                    orderDir = "ASC";
                     break;
                 case FilterRecordsDialog.DIRECTION_DESC:
-                    ordeyDir = "DESC";
+                    orderDir = "DESC";
                     break;
             }
 
@@ -849,13 +814,11 @@ public class MainActivity extends ALockingClass
 
             ListView view = (ListView) getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.records_list_view);
             MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
-            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
-            ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories(dateFrom, dateTo, ordeyBy, ordeyDir));
+            ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories(dateFrom, dateTo, orderBy, orderDir));
         } else {
             recordsArgs = null;
             ListView view = (ListView) getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.records_list_view);
             MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
-            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
             ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories());
         }
     }
@@ -866,7 +829,6 @@ public class MainActivity extends ALockingClass
             categoriesArgs = new FilterCategoriesArgs();
             categoriesArgs.setOrderBy(orderPos);
             categoriesArgs.setOrderDir(directionPos);
-
             String ordeyBy = null;
             String ordeyDir = null;
 
@@ -890,13 +852,11 @@ public class MainActivity extends ALockingClass
 
             ListView view = (ListView) getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.categories_list_view);
             MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
-            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
             ((CategoriesDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllCategories(ordeyBy, ordeyDir));
         } else {
             categoriesArgs = null;
             ListView view = (ListView) getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.categories_list_view);
             MMDatabaseHelper help = MMDatabaseHelper.getInstance(this);
-            //((RecordsDbAdapter) view.getAdapter()).swapCursor(help.getAllRecordsWithCategories());
             ((CategoriesDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllCategories());
         }
     }

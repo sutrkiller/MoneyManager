@@ -16,12 +16,15 @@
         android:onClick="onExportClick"
         android:orderInCategory="100"
         android:title="@string/export"
-        app:showAsAction="never" />
+        android:icon="@mipmap/ms_excel"
+        app:showAsAction="never"
+        />
     <item
         android:id="@+id/action_sync"
         android:onClick="onSyncClick"
         android:orderInCategory="100"
         android:title="@string/sync"
+        android:icon="@mipmap/drive_logo"
         app:showAsAction="never" />
 
 </menu>

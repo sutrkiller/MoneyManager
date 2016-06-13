@@ -44,6 +44,7 @@ public class PasscodeActivity extends AppCompatActivity {
         }
         if ((pinBox != null ? pinBox.getError() : null) == null) {
             if (ALockingClass.checkPin(this, pinBox != null ? pinBox.getText().toString() : null)) {
+                setResult(RESULT_OK);
                 finish();
                 return;
             } else {
@@ -55,6 +56,17 @@ public class PasscodeActivity extends AppCompatActivity {
         if (pinBox != null) {
             pinBox.setText("");
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (getParent()==null) {
+            setResult(RESULT_CANCELED);
+        } else {
+            getParent().setResult(RESULT_CANCELED);
+        }
+        finish();
     }
 
 }
