@@ -1,5 +1,6 @@
 package pv239.fi.muni.cz.moneymanager;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -34,6 +35,7 @@ public class FilterRecordsDialog extends DialogFragment {
     private View v;
     private int lastButtonClicked = -1;
 
+    @SuppressLint("InflateParams")
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -71,8 +73,8 @@ public class FilterRecordsDialog extends DialogFragment {
                         Spinner spinner = (Spinner) v.findViewById(R.id.filterRecords_orderBy);
                         Spinner spinner1 = (Spinner) v.findViewById(R.id.filterRecords_direction);
 
-                        Date date1=DatePickerFragment.stringToDate((String) dateFrom.getText());
-                        Date date2= DatePickerFragment.stringToDate((String) dateTo.getText());
+                        Date date1=DatePickerFragment.stringToDate( getActivity(),(String) dateFrom.getText());
+                        Date date2= DatePickerFragment.stringToDate(getActivity(),(String) dateTo.getText());
                         if (date1!= null && date2!=null) {
                             if (date1.compareTo(date2) > 0) {
                                 Toast.makeText(getActivity(),"First date must be sooner.",Toast.LENGTH_LONG).show();
@@ -128,13 +130,13 @@ public class FilterRecordsDialog extends DialogFragment {
         calendar.add(Calendar.MONTH,-1);
         DatePicker picker = new DatePicker(getActivity());
         if (args!= null) {
-            Date date = DatePickerFragment.stringToDate(args.getString("records_date_from",null));
+            Date date = DatePickerFragment.stringToDate( getActivity(),args.getString("records_date_from",null));
             if (date!= null) {
                 calendar.setTime(date);
             }
         }
         picker.updateDate(calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH));
-        dateFrom.setText(DatePickerFragment.formatDate(calendar));
+        dateFrom.setText(DatePickerFragment.formatDate(getActivity(),calendar));
         dateFrom.setTag(picker);
         dateFrom.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -159,14 +161,14 @@ public class FilterRecordsDialog extends DialogFragment {
         Calendar calendar1 = Calendar.getInstance();
         DatePicker picker1 = new DatePicker(getActivity());
         if (args!= null) {
-            Date date = DatePickerFragment.stringToDate(args.getString("records_date_to",null));
+            Date date = DatePickerFragment.stringToDate(getActivity(),args.getString("records_date_to",null));
             if (date!= null) {
                 calendar1.setTime(date);
             }
         }
         picker1.updateDate(calendar1.get(Calendar.YEAR),calendar1.get(Calendar.MONTH),calendar1.get(Calendar.DAY_OF_MONTH));
         dateTo.setTag(picker1);
-        dateTo.setText(DatePickerFragment.formatDate(Calendar.getInstance()));
+        dateTo.setText(DatePickerFragment.formatDate(getActivity(),Calendar.getInstance()));
         dateTo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -191,7 +193,7 @@ public class FilterRecordsDialog extends DialogFragment {
     public void setDateButtonTag(DatePicker date) {
         int buttonId = lastButtonClicked == 1 ? R.id.filterRecords_date_from : R.id.filterRecords_date_to;
         Button button = (Button)v.findViewById(buttonId);
-        DatePickerFragment.setDateButtonTag(date,button);
+        DatePickerFragment.setDateButtonTag(getActivity(),date,button);
 
     }
 
@@ -207,12 +209,12 @@ public class FilterRecordsDialog extends DialogFragment {
         calendar.add(Calendar.MONTH,-1);
         DatePicker picker = new DatePicker(getActivity());
         picker.updateDate(calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH));
-        dateFrom.setText(DatePickerFragment.formatDate(calendar));
+        dateFrom.setText(DatePickerFragment.formatDate(getActivity(),calendar));
         dateFrom.setTag(picker);
         Calendar calendar1 = Calendar.getInstance();
         DatePicker picker1 = new DatePicker(getActivity());
         picker.updateDate(calendar1.get(Calendar.YEAR),calendar1.get(Calendar.MONTH),calendar1.get(Calendar.DAY_OF_MONTH));
-        dateTo.setText(DatePickerFragment.formatDate(calendar1));
+        dateTo.setText(DatePickerFragment.formatDate(getActivity(),calendar1));
         dateTo.setTag(picker1);
     }
 

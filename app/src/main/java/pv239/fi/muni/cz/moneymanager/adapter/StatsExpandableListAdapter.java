@@ -75,7 +75,6 @@ public class StatsExpandableListAdapter extends BaseExpandableListAdapter {
             subHeaders.add("Incomes");
             subHeaders.add("Expenses");
             mSubHeaders.put(header,subHeaders);
-            Log.i("StatsExpListAdapter","Header: "+header);
 
             intervalLimits.add(cal.getTime());
             Map<String, List<Record>> innerMap = new HashMap<>();
@@ -217,7 +216,7 @@ public class StatsExpandableListAdapter extends BaseExpandableListAdapter {
             GraphView graph = (GraphView) convertView.findViewById(R.id.graph_main);
             TextView start = (TextView) convertView.findViewById(R.id.graph_start);
             TextView end = (TextView) convertView.findViewById(R.id.graph_end);
-            GraphCreator.createGraph(mContext,graph,mPage);
+            //GraphCreator.createGraph(mContext,graph,mPage);
             NumberFormat curFor = NumberFormat.getCurrencyInstance(Locale.GERMANY);
             curFor.setMaximumFractionDigits(2);
             end.setText(curFor.format(Double.valueOf(mPage.getEndBalance())));

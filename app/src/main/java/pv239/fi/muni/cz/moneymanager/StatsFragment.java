@@ -1,29 +1,18 @@
 package pv239.fi.muni.cz.moneymanager;
 
-import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 
-import pv239.fi.muni.cz.moneymanager.TabFragments.RecyclePage;
 import pv239.fi.muni.cz.moneymanager.adapter.ViewPagerAdapter;
 import pv239.fi.muni.cz.moneymanager.model.AdapterParameterObject;
 
@@ -88,9 +77,9 @@ public class StatsFragment extends Fragment  {
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
         mObjectsList = new ArrayList<>();
-        mObjectsList.add(new AdapterParameterObject(0,7,mCurrent));
-        mObjectsList.add(new AdapterParameterObject(1,28,mCurrent));
-        mObjectsList.add(new AdapterParameterObject(2,365,mCurrent));
+        mObjectsList.add(new AdapterParameterObject(0, mCurrent));
+        mObjectsList.add(new AdapterParameterObject(1, mCurrent));
+        mObjectsList.add(new AdapterParameterObject(2, mCurrent));
 
         mAdapter = new ViewPagerAdapter(getChildFragmentManager(),mObjectsList);
         mViewPager = (CustomViewPager) layout.findViewById(R.id.pager);
@@ -159,9 +148,9 @@ public class StatsFragment extends Fragment  {
     private void update() {
         if (!viewLoaded) return;
         mObjectsList.clear();
-        mObjectsList.add(new AdapterParameterObject(0,7,mCurrent));
-        mObjectsList.add(new AdapterParameterObject(1,28,mCurrent));
-        mObjectsList.add(new AdapterParameterObject(2,365,mCurrent));
+        mObjectsList.add(new AdapterParameterObject(0, mCurrent));
+        mObjectsList.add(new AdapterParameterObject(1, mCurrent));
+        mObjectsList.add(new AdapterParameterObject(2, mCurrent));
         mAdapter.notifyDataSetChanged();
     }
 

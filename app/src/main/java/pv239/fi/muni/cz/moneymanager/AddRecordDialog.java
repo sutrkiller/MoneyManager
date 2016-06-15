@@ -1,5 +1,6 @@
 package pv239.fi.muni.cz.moneymanager;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -43,6 +44,7 @@ public class AddRecordDialog extends DialogFragment  {
     private View v;
     private BigDecimal resultInEur;
 
+    @SuppressLint("InflateParams")
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -133,7 +135,7 @@ public class AddRecordDialog extends DialogFragment  {
                                     Date dt = erc.getOlderDateDownloaded(currency, Currency.getInstance("EUR"));
                                     Calendar cl = Calendar.getInstance();
                                     cl.setTime(dt);
-                                    String oldDate = DatePickerFragment.formatDate(cl);
+                                    String oldDate = DatePickerFragment.formatDate(v.getContext(), cl);
                                     AlertDialog.Builder builder1 = new AlertDialog.Builder(v.getContext());
                                     builder1.setMessage("Unfortunately, downloading of current exchange rate failed.\nDo you want to use rate from "+oldDate+"?")
                                             .setPositiveButton("Yes",dialogClickListener)
@@ -144,8 +146,6 @@ public class AddRecordDialog extends DialogFragment  {
 
 
                             } else {
-                                Log.i("EUR: ", String.valueOf(eurs));
-
                                 Record rec = new Record(0, new BigDecimal(amount), eurs, currency, item, finalDate, new Category(0, catName, catDet));
                                 MMDatabaseHelper helper = MMDatabaseHelper.getInstance(getActivity());
                                 helper.addRecord(rec);
@@ -199,7 +199,7 @@ public class AddRecordDialog extends DialogFragment  {
         categories.setAdapter(new NothingSelectedSpinnerAdapter(adapter1,R.layout.contact_spinner_row_nothing_selected,getActivity()));
 
         final Button dateButton = (Button)v.findViewById(R.id.addRecord_date);
-        dateButton.setText(DatePickerFragment.formatDate(Calendar.getInstance()));
+        dateButton.setText(DatePickerFragment.formatDate(getActivity(), Calendar.getInstance()));
         dateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -225,7 +225,7 @@ public class AddRecordDialog extends DialogFragment  {
 
     public void setDateButtonTag(DatePicker date) {
         Button button = (Button)v.findViewById(R.id.addRecord_date);
-        DatePickerFragment.setDateButtonTag(date,button);
+        DatePickerFragment.setDateButtonTag(getActivity(), date,button);
 
     }
 

@@ -4,13 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.WindowManager;
 
 import pv239.fi.muni.cz.moneymanager.R;
-import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
 
 /**
  * Parent locking activity ensuring authorization in every access to app
@@ -19,15 +17,11 @@ import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
  * @date 10/4/2016
  */
 public abstract class ALockingClass extends AppCompatActivity {
-
-  public static final String PREFS = "MoneyManagerPreferences";
-   public static final String KEY = "MoneyManagerKey";
-   public static final String LOGGED = "Logged";
-
+    public static final String KEY = "MoneyManagerKey";
+    public static final String LOGGED = "Logged";
     public static final int CheckPin = 1;
     public static final int CreatePin = 2;
     protected static SharedPreferences sharedPreferences;
-
     public boolean createRunning = false;
     public boolean checkRunning = false;
 
@@ -44,7 +38,6 @@ public abstract class ALockingClass extends AppCompatActivity {
         try {
             String res = Crypto.decryptPbkdf2(ALockingClass.retrievePin(), pin);
             if (res.equals(context.getString(R.string.encryptString))) {
-
                 sharedPreferences.edit().putBoolean(LOGGED, true).apply();
                 return true;
             }
@@ -64,9 +57,7 @@ public abstract class ALockingClass extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         sharedPreferences = getPreferences(Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(LOGGED, false).apply();
-
     }
-
 
     @Override
     protected void onResume() {
@@ -78,7 +69,6 @@ public abstract class ALockingClass extends AppCompatActivity {
                     startActivityForResult(pass, CheckPin, null);
                     checkRunning = true;
                 }
-
             } else {
                 if (!createRunning) {
                     Intent createPass = new Intent(getApplicationContext(), CreatePasscodeActivity.class);
@@ -110,17 +100,9 @@ public abstract class ALockingClass extends AppCompatActivity {
         return sharedPreferences.getBoolean(LOGGED,false);
     }
 
-    /*
-    protected void deletePin() {
-
-        sharedPreferences.edit().remove(KEY).clear().apply();
-    }
-    */
-
     @Override
     protected void onStop() {
         super.onStop();
-        Log.i("ALockingClass","onStop()");
         sharedPreferences.edit().putBoolean(LOGGED, false).apply();
     }
 }

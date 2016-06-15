@@ -24,23 +24,18 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.Adapter;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -160,41 +155,17 @@ public class MainActivity extends ALockingClass
         assert navigationView != null;
         navigationView.setNavigationItemSelectedListener(this);
 
-        /*getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
-            @Override
-            public void onBackStackChanged() {
-                //Log.i("BACK_STACK", "CHAAANGE");
-
-                FragmentManager fragMan = getSupportFragmentManager();
-                Fragment fragment = fragMan.findFragmentByTag("visible_fragment");
-                invalidateOptionsMenu();
-                if (fragment instanceof RecordsFragment){
-                    currentPosition = R.id.nav_records;
-                    hideFilter = false;
- //                   hideStats = true;
-                }
-                if (fragment instanceof CategoriesFragment){
-                    currentPosition = R.id.nav_categories;
-                    hideFilter = false;
- //                   hideStats = true;
-                }
-                if (fragment instanceof StatsFragment){
-                    currentPosition = R.id.nav_stats;
-                    hideFilter=true;
-//                    hideStats=false;
-                }
-                setActionBarTitle(currentPosition);
-                navigationView.setCheckedItem(currentPosition);
-            }
-        });*/
-
         //initialize custom view on title
-        getSupportActionBar().setCustomView(R.layout.spinner_title);
-        View v = getSupportActionBar().getCustomView();
-        Spinner spinner = (Spinner) v.findViewById(R.id.spinner_action_title);
-        ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(this, R.array.item_array, R.layout.spinner_layout);
-        arrayAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
-        spinner.setAdapter(arrayAdapter);
+        try {
+            //noinspection ConstantConditions
+            getSupportActionBar().setCustomView(R.layout.spinner_title);
+            View v = getSupportActionBar().getCustomView();
+            Spinner spinner = (Spinner) v.findViewById(R.id.spinner_action_title);
+            ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(this, R.array.item_array, R.layout.spinner_layout);
+            arrayAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
+            spinner.setAdapter(arrayAdapter);
+
+        } catch (NullPointerException ignored) {}
 
         setActionBarTitle(-1);
         int position=-1;
@@ -356,11 +327,11 @@ public class MainActivity extends ALockingClass
                 // permission was granted, yay! Do the
                 // contacts-related task you need to do.
 
-            } else {
+            } //else {
 
                 // permission denied, boo! Disable the
                 // functionality that depends on this permission.
-            }
+            //}
 
         }
         else {
@@ -493,7 +464,6 @@ public class MainActivity extends ALockingClass
 
     @Override
     public boolean onMenuOpened(int featureId, Menu menu) {
-        Log.i("MainActivity", "onMenuOpened " + featureId);
         if((featureId & Window.FEATURE_ACTION_BAR) ==  Window.FEATURE_ACTION_BAR && menu != null){
             if(menu.getClass().getSimpleName().equals("MenuBuilder")){
                 try{
@@ -503,7 +473,6 @@ public class MainActivity extends ALockingClass
                     m.invoke(menu, true);
                 }
                 catch(NoSuchMethodException e){
-                    Log.e("MainActivity", "onMenuOpened " + featureId);
                 }
                 catch(Exception e){
                     throw new RuntimeException(e);
@@ -645,7 +614,6 @@ public class MainActivity extends ALockingClass
     }
 
     private void setUpActionBarForStatistics(boolean reverse) {
-        Log.i("PROGRESS", "setUpActionBArStatistivs "+reverse);
         if (!reverse) {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
             getSupportActionBar().setDisplayShowCustomEnabled(true);
@@ -688,7 +656,6 @@ public class MainActivity extends ALockingClass
             ((RecordsDbAdapter) ((HeaderViewListAdapter) view.getAdapter()).getWrappedAdapter()).swapCursor(help.getAllRecordsWithCategories());
             File dbpath = getDatabasePath(MMDatabaseHelper.DB_NAME);
             long dbModif = dbpath.lastModified();
-            Log.i("DB Modified: ", String.valueOf(dbModif));
         }
     }
 
@@ -711,9 +678,9 @@ public class MainActivity extends ALockingClass
                     bundle.putInt("records_order_by", recordsArgs.getOrderBy());
                     bundle.putInt("records_direction", recordsArgs.getOrderDir());
                     if (recordsArgs.getDateFrom() != null)
-                        bundle.putString("records_date_from", DatePickerFragment.dateToString(recordsArgs.getDateFrom()));
+                        bundle.putString("records_date_from", DatePickerFragment.dateToString(this, recordsArgs.getDateFrom()));
                     if (recordsArgs.getDateTo() != null)
-                        bundle.putString("records_date_to", DatePickerFragment.dateToString(recordsArgs.getDateTo()));
+                        bundle.putString("records_date_to", DatePickerFragment.dateToString(this, recordsArgs.getDateTo()));
                     filterDialog.setArguments(bundle);
                 }
                 filterDialog.show(getSupportFragmentManager(), "filter_records");
@@ -751,6 +718,7 @@ public class MainActivity extends ALockingClass
 
     public void onSyncClick(MenuItem item) {
         getResultsFromApi();
+
     }
 
     @Override
@@ -799,7 +767,6 @@ public class MainActivity extends ALockingClass
                 cal.set(Calendar.SECOND,cal.getMinimum(Calendar.SECOND));
                 from = cal.getTime();
                 dateFrom = MMDatabaseHelper.convertDateForDb(from);
-                Log.i("DateFrom> ",dateFrom);
             }
             if (to != null) {
                 Calendar cal = Calendar.getInstance();
@@ -809,7 +776,6 @@ public class MainActivity extends ALockingClass
                 cal.set(Calendar.SECOND,cal.getMaximum(Calendar.SECOND));
                 to = cal.getTime();
                 dateTo = MMDatabaseHelper.convertDateForDb(to);
-                Log.i("DateTo> ",dateTo);
             }
 
             ListView view = (ListView) getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.records_list_view);
@@ -873,7 +839,6 @@ public class MainActivity extends ALockingClass
         for (Fragment fr : fragments) {
             fr = null;
         }
-        Log.i("onpause","ssssssssssss");
     }
 
     /**
@@ -905,45 +870,38 @@ public class MainActivity extends ALockingClass
             try {
                 File dbpath = getDatabasePath(MMDatabaseHelper.DB_NAME);
                 long dbModif = dbpath.lastModified();
-                Log.i("DB Modified: ", String.valueOf(dbModif));
                 long driveModif;
                 String resId;
-                getDataFromApi();
+                //getDataFromApi();
+                SharedPreferences prefs = getPreferences(MODE_PRIVATE);
                 if (mGOOSvc!= null && isDeviceOnline()) {
                     try {
                         FileList fileList = mGOOSvc.files().list().setQ("title='" + FILE_NAME + "' and trashed=false").execute();
                         if (fileList.getItems().isEmpty()) {
-                            Log.i("Google Drive", "Creating file");
                             resId = testCreateSheet();
 
                             if (resId != null) {
-                                SharedPreferences prefs = getPreferences(MODE_PRIVATE);
+
                                 prefs.edit().putString(PREF_FILE_RES, resId).apply(); //save resId for further editing
                                 testUpdateContent(resId);
                                 result = 1;
 
                             }
                         } else {
-                            Log.i("Google Drive", "File already exists");
                             driveModif = fileList.getItems().get(0).getModifiedDate().getValue();
                             resId = fileList.getItems().get(0).getId();
-                            Log.i("Drive Modified: ", String.valueOf(driveModif));
-
 
                             if (Math.abs(dbModif - driveModif) >= SYNC_TIME_MIN_DIF) {  //if changes are at least SYNC_TIME_MIN_DIF apart
                                 if (dbModif - driveModif <= SYNC_TIME_MIN_DIF) {
                                     //drive is newer -> download data
                                     testDownloadContent(resId);
                                     result = 0;
-                                    Log.i("Drive: ", "Changes downloaded");
                                 } else if (dbModif - driveModif >= SYNC_TIME_MIN_DIF) {
                                     //db is newer -> upload data
                                     testUpdateContent(resId);
                                     result = 1;
-                                    Log.i("Drive: ", "Changes updated");
                                 } else {
                                     result = 2;
-                                    Log.i("Drive: ", "No changes");
                                 }
                             }
                         }
@@ -960,35 +918,6 @@ public class MainActivity extends ALockingClass
                 result = -1;
                 return null;
             }
-        }
-
-        /**
-         * Fetch a list of names and majors of students in a sample spreadsheet:
-         * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-         * @return List of names and majors
-         * @throws IOException
-         */
-        private List<String> getDataFromApi() throws IOException {
-
-            String spreadsheetId = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms";
-            String range = "Class Data!A2:E";
-            List<String> results = new ArrayList<>();
-            try {
-            ValueRange response = this.mService.spreadsheets().values()
-                    .get(spreadsheetId, range)
-                    .execute();
-            List<List<Object>> values = response.getValues();
-            if (values != null) {
-                results.add("Name, Major");
-                for (List row : values) {
-                    results.add(row.get(0) + ", " + row.get(4));
-                }
-            }
-            //return results;
-            } catch (UserRecoverableAuthIOException e) {
-                startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
-            }
-            return results;
         }
 
         private String testCreateSheet() throws IOException {
@@ -1112,7 +1041,6 @@ public class MainActivity extends ALockingClass
             int end = list == null ? -2 : list.size();
             if (rows.size()-1 <end) {
                 Request request = new Request().setDeleteDimension(new DeleteDimensionRequest().setRange(new DimensionRange().setSheetId(0).setDimension("ROWS").setStartIndex(rows.size() - 1).setEndIndex(end)));
-                Log.i("REQUEST: ",rows.size()-1+"  " +end);
                 requests.add(request);
             }
 
@@ -1167,14 +1095,18 @@ public class MainActivity extends ALockingClass
             }
         }
 
+        ProgressDialog progressDialog;
         @Override
         protected void onPreExecute() {
-
-            Toast.makeText(MainActivity.this, "Sync in progress!", Toast.LENGTH_SHORT).show();
+            progressDialog = ProgressDialog.show(context,"Synchonize","Synchronizing data with Google Drive...");
+            //Toast.makeText(MainActivity.this, "Sync in progress!", Toast.LENGTH_SHORT).show();
         }
 
         @Override
         protected void onPostExecute(Integer output) {
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
             if (output == null || output == 0) {
                 Toast.makeText(MainActivity.this, "Changes downloaded!", Toast.LENGTH_SHORT).show();
             } else if (output == 1) {
@@ -1184,7 +1116,6 @@ public class MainActivity extends ALockingClass
             } else   {
                 Toast.makeText(MainActivity.this, "Sync failed!", Toast.LENGTH_SHORT).show();
             }
-                Log.i("RESULT:", String.valueOf(output));
                 if (output != null)
                 if (output == 0 && currentPosition == R.id.nav_records) {
                     ListView view = (ListView)getSupportFragmentManager().findFragmentByTag("visible_fragment").getActivity().findViewById(R.id.records_list_view);
@@ -1205,8 +1136,6 @@ public class MainActivity extends ALockingClass
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             MainActivity.REQUEST_AUTHORIZATION);
                 } else {
-
-                    Log.i("Error", mLastError.getMessage());
                 }
             } else {
                 //mOutputText.setText("Request cancelled.");
@@ -1215,8 +1144,8 @@ public class MainActivity extends ALockingClass
         }
     }
 
-    private class ExportDatabaseCSVTask extends AsyncTask { private final ProgressDialog dialog = new ProgressDialog(MainActivity.this);
-
+    private class ExportDatabaseCSVTask extends AsyncTask {
+        ProgressDialog dialog;
         Context context;
 
         private ExportDatabaseCSVTask(Context context)
@@ -1226,25 +1155,27 @@ public class MainActivity extends ALockingClass
 
         @Override
         protected Object doInBackground(Object[] params) {
-
             MMDatabaseHelper help = MMDatabaseHelper.getInstance(context);
             Cursor curCSV = help.getAllRecordsWithCategories();
 
             HSSFWorkbook workbook = new HSSFWorkbook();
 
-            HSSFSheet sheet = workbook.createSheet("Test");
+            HSSFSheet sheet = workbook.createSheet("Data");
 
             String headers[] = curCSV.getColumnNames();
 
             HSSFRow row0 = sheet.createRow((short) 0);
-            row0.createCell(0).setCellValue(headers[0]);
-            row0.createCell(1).setCellValue(headers[1]);
-            row0.createCell(2).setCellValue(headers[2]);
-            row0.createCell(3).setCellValue(headers[7]);
-            row0.createCell(4).setCellValue(headers[3]);
-            row0.createCell(5).setCellValue(headers[4]);
-            row0.createCell(6).setCellValue(headers[5]);
-            row0.createCell(7).setCellValue(headers[6]);
+            for (int i=0;i<=7;++i) {
+                row0.createCell(i).setCellValue(headers[i]);
+            }
+//            row0.createCell(0).setCellValue(headers[0]);
+//            row0.createCell(1).setCellValue(headers[1]);
+//            row0.createCell(2).setCellValue(headers[2]);
+//            row0.createCell(3).setCellValue(headers[7]);
+//            row0.createCell(4).setCellValue(headers[3]);
+//            row0.createCell(5).setCellValue(headers[4]);
+//            row0.createCell(6).setCellValue(headers[5]);
+//            row0.createCell(7).setCellValue(headers[6]);
 
             int counter = 1;
 
@@ -1263,18 +1194,12 @@ public class MainActivity extends ALockingClass
                 //csvWrite.writeNext(arrStr);
                 counter++;
             }
-                    FileOutputStream fos = null;
 
-
-
+            FileOutputStream fos = null;
             try {
-
-                String str_path = Environment.getExternalStorageDirectory().toString();
-                File file ;
-                file = new File(str_path, getString(R.string.app_name) + ".xls");
+                String str_path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
+                File file = new File(str_path, getString(R.string.app_name) + ".xls");
                 fos = new FileOutputStream(file);
-
-
                 workbook.write(fos);
                 return "";
             } catch (IOException e) {
@@ -1294,15 +1219,14 @@ public class MainActivity extends ALockingClass
 
         @Override
         protected void onPreExecute() {
-            this.dialog.setMessage("Exporting database...");
-            this.dialog.show();
+            dialog = ProgressDialog.show(context,"Export","Exporting to xls...");
         }
 
         @SuppressLint("NewApi")
         @Override
         protected void onPostExecute(final Object success) {
             if (this.dialog.isShowing()){
-                this.dialog.dismiss();
+                dialog.dismiss();
             }
             if (success.toString().isEmpty()){
                 Toast.makeText(MainActivity.this, "Export successful!", Toast.LENGTH_SHORT).show();

@@ -43,6 +43,12 @@
     <string name="sync">Sync...</string>
     <string name="export">Export...</string>
     <string name="filter">Filter</string>
+    <string name="db_date_format">yyyy-MM-dd HH:mm:ss</string>
+    <string name="datepicker_date_format">EEE, MMM d, yyyy</string>
+    <string name="yyyy_MM_dd">yyyy-MM-dd</string>
+    <string name="yyyy_MM">yyyy-MM</string>
+    <string name="MM_dd">MM/dd</string>
+    <string name="MM_yy">MM/yy</string>
 
     <!--<array name="currencies">-->
         <!--<item>czk</item>-->

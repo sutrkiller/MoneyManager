@@ -82,9 +82,6 @@ public class RecordsFragment extends Fragment {
                     }
                     if (mSwiping) {
                         v.setTranslationX((x - mDownX));
-                        //  Log.i("x: ", String.valueOf(x));
-                        //  Log.i("mDownX: ", String.valueOf(mDownX));
-                        //  Log.i("translationX: ", String.valueOf((int)v.getTranslationX()));
                         mBackgroundContainer.showBackground(v.getTop(), v.getHeight(), (int) (v.getTranslationX()), v.getWidth(), v.getWidth());
                         mBackgroundContainer.invalidate();
                         v.setAlpha(1 - deltaXAbs / v.getWidth());
@@ -236,7 +233,6 @@ public class RecordsFragment extends Fragment {
 //                Toast.makeText(getActivity(), value + " clicked!", Toast.LENGTH_SHORT).show();
                 if (swipeDetector.swipeDetected()) {
                     if(swipeDetector.getAction()== SwipeDetector.Action.RL) {
-                        Log.i("SWIIIIPE","OH YEEEAH");
                     }
                 }
 
@@ -298,8 +294,6 @@ public class RecordsFragment extends Fragment {
         }
         // Delete the item from the adapter
         int position = listView.getPositionForView(viewToRemove);
-        //mAdapter.remove(mAdapter.getItem(position));
-        //Log.i(String.valueOf(adapter.getItemId(position)),"blsbal");
         final MMDatabaseHelper helper = MMDatabaseHelper.getInstance(getActivity());
         long id = adapter.getItemId(position);
         final Record record = helper.getRecordById(id);

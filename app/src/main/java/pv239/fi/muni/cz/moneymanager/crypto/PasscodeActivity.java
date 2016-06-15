@@ -21,14 +21,13 @@ public class PasscodeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Log in");
+            getSupportActionBar().setTitle(R.string.log_in);
             getSupportActionBar().setCustomView(R.layout.password_title);
             TextView v = (TextView) getSupportActionBar().getCustomView().findViewById(R.id.passwaord_title);
-            v.setText("Log in");
+            v.setText(R.string.log_in);
             getSupportActionBar().setDisplayShowTitleEnabled(false);
             getSupportActionBar().setDisplayShowCustomEnabled(true);
         }
-
 
         setContentView(R.layout.activity_passcode);
         EditText et = (EditText) findViewById(R.id.pinEditText);
@@ -68,5 +67,4 @@ public class PasscodeActivity extends AppCompatActivity {
         }
         finish();
     }
-
 }

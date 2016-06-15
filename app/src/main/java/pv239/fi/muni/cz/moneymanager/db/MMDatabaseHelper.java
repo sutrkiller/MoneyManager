@@ -1,5 +1,6 @@
 package pv239.fi.muni.cz.moneymanager.db;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -12,12 +13,12 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import pv239.fi.muni.cz.moneymanager.R;
 import pv239.fi.muni.cz.moneymanager.model.Category;
 import pv239.fi.muni.cz.moneymanager.model.Record;
 
@@ -43,18 +44,32 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
     public static final String DB_NAME = "money_manager";
     public static final int DB_VERSION = 2;
     private static MMDatabaseHelper sInstance;
+    private static Context mContext;
 
-    public MMDatabaseHelper(Context context) {
+    public static final String ALL_COLUMNS =
+            TABLE_RECORD + "." + KEY_REC_ID + ", "
+            + TABLE_RECORD + "." + KEY_REC_VAL + ", "
+            + TABLE_RECORD + "." + KEY_REC_CURR + ", "
+            + TABLE_RECORD + "." + KEY_REC_DATE + ", "
+            + TABLE_RECORD + "." + KEY_REC_ITEM + ", "
+            + TABLE_CATEGORY + "." + KEY_CAT_ID + ", "
+            + TABLE_CATEGORY + "." + KEY_CAT_NAME + ", "
+            + TABLE_CATEGORY + "." + KEY_CAT_DET + ", "
+            + TABLE_RECORD + "." + KEY_REC_VALEUR;
+
+
+    private MMDatabaseHelper(Context context) {
         this(context, null);
     }
 
-    public MMDatabaseHelper(Context context, SQLiteDatabase.CursorFactory factory) {
+    private MMDatabaseHelper(Context context, SQLiteDatabase.CursorFactory factory) {
         super(context, DB_NAME, factory, DB_VERSION);
     }
 
     public static synchronized MMDatabaseHelper getInstance(Context context) {
         if (sInstance == null) {
             sInstance = new MMDatabaseHelper(context.getApplicationContext());
+            mContext = context;
         }
         return sInstance;
     }
@@ -66,68 +81,6 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
         db.insert(TABLE_CATEGORY, null, catValues);
     }
 
-    public static boolean isValidDateForDb(String date) {
-        if (date == null) return false;
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        dateFormat.setLenient(false);
-        try {
-            dateFormat.parse(date.trim());
-        } catch (ParseException pe) {
-            return false;
-        }
-        return true;
-    }
-
-    public static String isValidOrderForDb(String orderBy, String defaultOrder) {
-        if (orderBy == null) {
-            return defaultOrder;
-        }
-        switch (orderBy) {
-            case KEY_REC_VAL:
-            case KEY_REC_DATE:
-            case KEY_REC_ITEM:
-                return TABLE_RECORD + "." + orderBy;
-            case KEY_CAT_NAME:
-                return TABLE_CATEGORY + "." + orderBy;
-            case KEY_CAT_DET:
-                return TABLE_CATEGORY + "." + orderBy;
-            default:
-                return defaultOrder;
-        }
-    }
-
-    public static String isValidDirectionForDb(String direction, String defaultDir) {
-        if (direction == null) {
-            return defaultDir;
-        }
-        switch (direction) {
-            case "ASC":
-            case "DESC":
-                return " " + direction;
-            default:
-                return defaultDir;
-        }
-    }
-
-    public static String convertDateForDb(Date date) {
-        SimpleDateFormat iso8601Format = new SimpleDateFormat(
-                "yyyy-MM-dd HH:mm:ss");
-        return iso8601Format.format(date);
-    }
-
-   /*
-    private static void insertRecord(SQLiteDatabase db, Record record) {
-        ContentValues recValues = new ContentValues();
-        recValues.put(KEY_REC_VAL, String.valueOf(record.value));
-        recValues.put(KEY_REC_CURR, record.currency.getCurrencyCode());
-        recValues.put(KEY_REC_CAT_ID_FK, record.category.id);
-        recValues.put(KEY_REC_DATE, record.dateTime);
-        recValues.put(KEY_REC_ITEM, record.item);
-        recValues.put(KEY_REC_VALEUR, String.valueOf(record.valueInEur));
-        db.insert(TABLE_RECORD, null, recValues);
-    }
-*/
-
     @Override
     public void onConfigure(SQLiteDatabase db) {
         super.onConfigure(db);
@@ -137,7 +90,6 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         updateMyDb(db, 0, DB_VERSION);
-
     }
 
     @Override
@@ -175,18 +127,6 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
             insertCategory(db, new Category(1, "Card", "KB"));
             insertCategory(db, new Category(2, "Card", "CSOB"));
             insertCategory(db, new Category(3, "Card", "Ceska Sporitelna"));
-
-//            Category cardKb = new Category(1, "Card", "KB");
-//            Category cardCSOB = new Category(2, "Card", "CSOB");
-//            Category cash = new Category(3, "Cash", "");
-//            Category cardCS = new Category(4, "Card", "Ceska Sporitelna");
-
-//            insertRecord(db, new Record(0,BigDecimal.valueOf(-500.5F),Currency.getInstance(Locale.US),"Shoes", "2016-05-17 12:12:12", cardKb));
-//            insertRecord(db, new Record(1,BigDecimal.valueOf(-50.5F),Currency.getInstance(Locale.GERMANY),"Baker", "2016-05-18 12:12:12", cardCSOB));
-//            insertRecord(db, new Record(2,BigDecimal.valueOf(-5000.5F),Currency.getInstance(Locale.UK),"Smartphone", "2016-05-20 12:12:12", cash));
-//            insertRecord(db, new Record(3,BigDecimal.valueOf(500.5F),Currency.getInstance(Locale.US),"Salary", "2016-06-17 12:12:12", cardCS));
-//            insertRecord(db, new Record(4,BigDecimal.valueOf(1000.5F),Currency.getInstance(Locale.UK),"Bonus", "2016-10-17 12:12:12", cardKb));
-//            insertRecord(db, new Record(5,BigDecimal.valueOf(-49256.5F),Currency.getInstance(Locale.FRANCE),"New car", "2017-05-17 12:12:12", cardCSOB));
         }
     }
 
@@ -196,17 +136,13 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
         Category category;
         db.beginTransaction();
         try {
-            String cols =MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ID+", "
-                    +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_VAL+", "
-                    +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_CURR+", "
-                    +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_DATE+", "
-                    +MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ITEM+", "
-                    +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_ID+", "
-                    +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_NAME+", "
-                    +MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_DET+", "
-                    +TABLE_RECORD+"."+KEY_REC_VALEUR; //changed
+            String cols =  ALL_COLUMNS;
+            String from = TABLE_RECORD+", "+TABLE_CATEGORY;
+            String where = TABLE_RECORD+"."+KEY_REC_ID;
+            String firstId = TABLE_RECORD+"."+KEY_REC_CAT_ID_FK;
+            String secondId = TABLE_CATEGORY+"."+KEY_CAT_ID;
 
-            String recSelect = String.format("SELECT %s FROM %s WHERE %s = ? AND %s = %s", cols, TABLE_RECORD+", "+TABLE_CATEGORY, MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_ID,MMDatabaseHelper.TABLE_RECORD+"."+MMDatabaseHelper.KEY_REC_CAT_ID_FK,MMDatabaseHelper.TABLE_CATEGORY+"."+MMDatabaseHelper.KEY_CAT_ID);
+            String recSelect = String.format("SELECT %s FROM %s WHERE %s = ? AND %s = %s", cols, from, where,firstId, secondId);
             Cursor cursor = db.rawQuery(recSelect,new String[] {String.valueOf(id)});
             try {
                 if (cursor.moveToFirst()) {
@@ -220,7 +156,6 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
                 }
             }
         } catch (Exception ignored) {
-
         } finally {
             db.endTransaction();
         }
@@ -237,14 +172,12 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
      * @param date date of balance
      * @return sum of all records from previous dates
      */
+    @SuppressLint("Recycle")
     public BigDecimal getStartingBal(Date date)
     {
         String col = TABLE_RECORD + "." + KEY_REC_VALEUR;
         String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_DATE+" < '"+convertDateForDb(date)+"'";
-        String query = "SELECT SUM("+col+
-                ") FROM "+TABLE_RECORD+
-                whereClause;
-        //Log.i("SQL",query);
+        String query = "SELECT SUM(" + col + ") FROM " + TABLE_RECORD+ whereClause;
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor;
         try {
@@ -262,12 +195,11 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
      *
      * @return date of first record in format "yyyy-MM-dd HH:mm:ss"
      */
+    @SuppressLint("Recycle")
     public String getFirstRecordDate()
     {
         String col = TABLE_RECORD+"."+KEY_REC_DATE;
-        String query = "SELECT MIN("+col+
-                ") FROM "+TABLE_RECORD;
-        //Log.i("SQL",query);
+        String query = "SELECT MIN(" + col + ") FROM "+TABLE_RECORD;
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor;
         try {
@@ -301,19 +233,14 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
         String dateClause = dateFromClause.isEmpty() ? dateToClause : dateFromClause+ (dateToClause.isEmpty() ? "" : " AND "+dateToClause);
         String whereClause = " WHERE " +TABLE_RECORD+"."+KEY_REC_CAT_ID_FK+"="+TABLE_CATEGORY+"."+KEY_CAT_ID+ (dateClause.isEmpty() ? "" : " AND "+dateClause);
         String orderByClause = " ORDER BY "+isValidOrderForDb(orderBy,TABLE_RECORD+"."+KEY_REC_DATE) + isValidDirectionForDb(orderDir," DESC");
-        String query = "SELECT "+cols+
-                        " FROM "+TABLE_RECORD+", "+TABLE_CATEGORY +
-                        whereClause + orderByClause;
-        //Log.i("SQL",query);
+        String query = "SELECT "+cols+" FROM "+TABLE_RECORD+", "+TABLE_CATEGORY + whereClause + orderByClause;
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = null;
         try {
             cursor = db.rawQuery(query, null);
         } catch (SQLiteException ignored) {
-
         }
         return cursor;
-
     }
 
     public long addRecord(Record record) {
@@ -346,17 +273,14 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
         long ret = 0;
         db.beginTransaction();
         try {
-           // String deleteRec = String.format("DELETE FROM %s WHERE %s = ?",TABLE_RECORD,KEY_REC_ID);
             ret = db.delete(TABLE_RECORD,KEY_REC_ID +" = ?",new String[]{String.valueOf(id)});
             if (ret>0) {
                 db.setTransactionSuccessful();
             }
         } catch (Exception ignored) {
-
         } finally {
             db.endTransaction();
         }
-
         return ret;
     }
 
@@ -370,7 +294,6 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
             }
         } catch (Exception ignored) {
-
         } finally {
             db.endTransaction();
         }
@@ -465,12 +388,10 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
                 +TABLE_CATEGORY+"."+KEY_CAT_NAME+", "
                 +TABLE_CATEGORY+"."+KEY_CAT_DET;
 
-        Log.i("PARAMS",orderBy + "/"+orderDir);
         String orderByClause = " ORDER BY "+isValidOrderForDb(orderBy,TABLE_CATEGORY+"."+KEY_CAT_NAME) + isValidDirectionForDb(orderDir," ASC");
         String query = "SELECT "+cols+
                 " FROM "+TABLE_CATEGORY +
                 orderByClause;
-        Log.i("SQL",query);
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = null;
         try {
@@ -508,5 +429,52 @@ public class MMDatabaseHelper extends SQLiteOpenHelper {
         return categories;
     }
 
+    private static boolean isValidDateForDb(String date) {
+        if (date == null) return false;
+        SimpleDateFormat dateFormat = new SimpleDateFormat(mContext.getString(R.string.db_date_format), Locale.getDefault());
+        dateFormat.setLenient(false);
+        try {
+            dateFormat.parse(date.trim());
+        } catch (ParseException pe) {
+            return false;
+        }
+        return true;
+    }
+
+    private static String isValidOrderForDb(String orderBy, String defaultOrder) {
+        if (orderBy == null) {
+            return defaultOrder;
+        }
+        switch (orderBy) {
+            case KEY_REC_VAL:
+            case KEY_REC_DATE:
+            case KEY_REC_ITEM:
+                return TABLE_RECORD + "." + orderBy;
+            case KEY_CAT_NAME:
+                return TABLE_CATEGORY + "." + orderBy;
+            case KEY_CAT_DET:
+                return TABLE_CATEGORY + "." + orderBy;
+            default:
+                return defaultOrder;
+        }
+    }
+
+    private static String isValidDirectionForDb(String direction, String defaultDir) {
+        if (direction == null) {
+            return defaultDir;
+        }
+        switch (direction) {
+            case "ASC":
+            case "DESC":
+                return " " + direction;
+            default:
+                return defaultDir;
+        }
+    }
+
+    public static String convertDateForDb(Date date) {
+        SimpleDateFormat iso8601Format = new SimpleDateFormat(mContext.getString(R.string.db_date_format),Locale.getDefault());
+        return iso8601Format.format(date);
+    }
 
 }

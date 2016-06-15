@@ -8,7 +8,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -81,9 +80,6 @@ public class CategoriesFragment extends Fragment {
                     }
                     if (mSwiping) {
                         v.setTranslationX(x-mDownX);
-//                        Log.i("x: ", String.valueOf(x));
-//                        Log.i("mDownX: ", String.valueOf(mDownX));
-//                        Log.i("translationX: ", String.valueOf((int)v.getTranslationX()));
                         mBackgroundContainer.showBackground(v.getTop(),v.getHeight(),(int)(v.getTranslationX()), v.getWidth(), v.getWidth());
                         mBackgroundContainer.invalidate();
                         v.setAlpha(1-deltaXAbs/v.getWidth());
@@ -197,7 +193,6 @@ public class CategoriesFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (swipeDetector.swipeDetected()) {
                     if (swipeDetector.getAction() == SwipeDetector.Action.RL) {
-                        Log.i("Swipe", "left-right");
                     }
                 }
             }
@@ -246,8 +241,6 @@ public class CategoriesFragment extends Fragment {
         }
         // Delete the item from the adapter
         int position = listView.getPositionForView(viewToRemove);
-        //mAdapter.remove(mAdapter.getItem(position));
-        //Log.i(String.valueOf(adapter.getItemId(position)),"blsbal");
         final MMDatabaseHelper helper = MMDatabaseHelper.getInstance(getActivity());
         long id = adapter.getItemId(position);
 
@@ -255,8 +248,10 @@ public class CategoriesFragment extends Fragment {
         long result = helper.deleteCategory(id);
         adapter.swapCursor(helper.getAllCategories());
 
-
-        if (result > 0)  {
+        View view = getView();
+        if (view != null)
+        {
+            if (result > 0)  {
             Snackbar.make(getView(),"Category deleted",Snackbar.LENGTH_LONG)
                     .setAction("Undo", new View.OnClickListener() {
                         @Override
@@ -265,8 +260,9 @@ public class CategoriesFragment extends Fragment {
                             adapter.swapCursor(helper.getAllCategories());
                         }
                     }).show();
-        } else {
-            Snackbar.make(getView(),"Category in use, delete the records first, please.",Snackbar.LENGTH_LONG).show();
+            } else {
+                Snackbar.make(getView(),"Category in use, delete the records first, please.",Snackbar.LENGTH_LONG).show();
+            }
         }
 
         final ViewTreeObserver observer = listview.getViewTreeObserver();
@@ -336,7 +332,6 @@ public class CategoriesFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnCategoriesInteractionListener {
-        // TODO: Update argument type and name
         void onCategoriesAddCategory();
     }
 }

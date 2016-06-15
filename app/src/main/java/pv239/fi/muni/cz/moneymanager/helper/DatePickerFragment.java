@@ -14,6 +14,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
+
+import pv239.fi.muni.cz.moneymanager.R;
 
 /**
  * Dialog for selecting date
@@ -27,7 +30,7 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
     private OnDateInteractionListener mListener;
     private int caller = -1;
 
-    public static void setDateButtonTag(DatePicker date, Button button) {
+    public static void setDateButtonTag(Context context, DatePicker date, Button button) {
         button.setTag(date);
 
         int day = date.getDayOfMonth();
@@ -36,13 +39,13 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, day);
 
-        String dateF = formatDate(calendar);
+        String dateF = formatDate(context,calendar);
         button.setText(dateF);
     }
 
-    public static Date stringToDate(String str) {
+    public static Date stringToDate(Context context, String str) {
         if (str == null) return null;
-        DateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, yyyy");
+        DateFormat dateFormat = new SimpleDateFormat( context.getString(R.string.datepicker_date_format), Locale.getDefault());
         Date date = null;
         try {
             date = dateFormat.parse(str);
@@ -51,16 +54,16 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
         return date;
     }
 
-    public static String dateToString(Date date) {
-        DateFormat format = new SimpleDateFormat("EEE, MMM d, yyyy");
+    public static String dateToString(Context context, Date date) {
+        DateFormat format = new SimpleDateFormat( context.getString(R.string.datepicker_date_format), Locale.getDefault());
         return format.format(date);
     }
 
-    public static String formatDate(Calendar calendar) {
+    public static String formatDate(Context context, Calendar calendar) {
         DateFormat dateFormat = DateFormat.getInstance();
         dateFormat.setCalendar(calendar);
 
-        DateFormat format = new SimpleDateFormat("EEE, MMM d, yyyy");
+        DateFormat format = new SimpleDateFormat( context.getString(R.string.datepicker_date_format), Locale.getDefault());
         return format.format(calendar.getTime());
     }
 

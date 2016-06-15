@@ -1,5 +1,6 @@
 package pv239.fi.muni.cz.moneymanager;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -23,6 +24,7 @@ import pv239.fi.muni.cz.moneymanager.model.Category;
 public class AddCategoryDialog extends DialogFragment  {
     private View v;
 
+    @SuppressLint("InflateParams")
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -69,10 +71,6 @@ public class AddCategoryDialog extends DialogFragment  {
                     });
                 }
             });
-
-
-
-
         return dialog;
     }
 

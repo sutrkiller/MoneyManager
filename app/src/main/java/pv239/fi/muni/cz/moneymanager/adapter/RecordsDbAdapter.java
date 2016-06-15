@@ -59,17 +59,19 @@ public class RecordsDbAdapter extends CursorAdapter {
         TextView vcategoryName = (TextView) view.findViewById(R.id.record_item_category_name);
 
         int iconId = value.compareTo(BigDecimal.ZERO) < 0 ? R.drawable.ic_remove_circle_outline_black_24dp : R.drawable.ic_add_circle_outline_black_24dp;
+        vicon.setImageResource(iconId);
 
         NumberFormat format = NumberFormat.getCurrencyInstance(Locale.getDefault());
         format.setMaximumFractionDigits(2);
         format.setCurrency(currency);
-
-        vicon.setImageResource(iconId);
-        vdate.setText(Record.formatDateTime(context,dateTime));
         vvalue.setText(format.format(value.abs().setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue()));
         vvalue.setTextColor(ContextCompat.getColor(context,value.compareTo(BigDecimal.ZERO) < 0 ? R.color.recordNegativeValue : R.color.recordPositiveValue));
+
+        vdate.setText(Record.formatDateTime(context,dateTime));
+
         vitem.setText(item);
         vitem.setTextColor(ContextCompat.getColor(context,R.color.black));
+
         String name = catName + ((catDet != null && !catDet.isEmpty()) ? " (" + catDet + ")" : "");
         vcategoryName.setText(name);
     }

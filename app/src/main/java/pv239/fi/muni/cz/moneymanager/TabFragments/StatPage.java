@@ -5,12 +5,12 @@ import android.database.Cursor;
 
 import java.math.BigDecimal;
 import java.text.DateFormat;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import pv239.fi.muni.cz.moneymanager.db.MMDatabaseHelper;
 import pv239.fi.muni.cz.moneymanager.model.Category;
@@ -19,7 +19,8 @@ import pv239.fi.muni.cz.moneymanager.model.Record;
 /**
  * Stat page encapsulates all data needed for single RecycleView item
  *
- * Created by Klasovci on 6/9/2016.
+ * @author Tobias Kamenicky
+ * @date 6/9/2016.
  */
 public class StatPage {
     private String startBalance;
@@ -110,9 +111,6 @@ public class StatPage {
             BigDecimal tmpExpValue = BigDecimal.ZERO;
             do
             {
-                String stringDate = cursor.getString(3);
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                Date date = format.parse(stringDate,new ParsePosition(0));
                 Long id = cursor.getLong(0);
                 BigDecimal value = new BigDecimal(cursor.getDouble(1));
                 BigDecimal valueInEur = new BigDecimal(cursor.getDouble(7));
@@ -122,7 +120,6 @@ public class StatPage {
                 String catName = cursor.getString(5);
                 String catDet = cursor.getString(6);
                 Record record = new Record(id, value,valueInEur,currency,item,dateTime,new Category(0, catName,catDet));
-
 
                 if (record.getValue().compareTo(BigDecimal.ZERO) <0)
                 {
@@ -150,25 +147,19 @@ public class StatPage {
             expenses = String.valueOf(BigDecimal.ZERO);
         }
 
-        DateFormat dateFormat = new SimpleDateFormat("MMM d, yyyy");
+        DateFormat dateFormat = new SimpleDateFormat("MMM d, yyyy",Locale.getDefault()); //datepicker_date_format
         switch (tabNum) {
             case 0:
                 date = dateFormat.format(fromDate)+ " - " + dateFormat.format(toDate);
                 break;
             case 1:
-                dateFormat = new SimpleDateFormat("MMMM yyyy");
+                dateFormat = new SimpleDateFormat("MMMM yyyy",Locale.getDefault());
                 date = dateFormat.format(fromDate);
                 break;
             case 2:
-                dateFormat = new SimpleDateFormat("yyyy");
+                dateFormat = new SimpleDateFormat("yyyy",Locale.getDefault());
                 date = dateFormat.format(fromDate);
                 break;
         }
-        //DateFormat dateFormat = new SimpleDateFormat("MMM d, yyyy");
-        //date = dateFormat.format(fromDate)+ " - " + dateFormat.format(toDate);
-    }
-
-    private void getDataForSecond(MMDatabaseHelper db, Date fromDate, Date toDate) {
-
     }
 }

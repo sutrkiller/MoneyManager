@@ -2,21 +2,15 @@ package pv239.fi.muni.cz.moneymanager.TabFragments;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.provider.CalendarContract;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
-import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.jjoe64.graphview.series.LineGraphSeries;
 import com.lsjwzh.widget.recyclerviewpager.RecyclerViewPager;
-
-import org.joda.time.LocalDate;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -24,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import pv239.fi.muni.cz.moneymanager.R;
 import pv239.fi.muni.cz.moneymanager.adapter.RecycleAdapter;
@@ -33,7 +28,8 @@ import pv239.fi.muni.cz.moneymanager.model.AdapterParameterObject;
 /**
  * Page containing RecycleView in statistics
  *
- * Created by Klasovci on 6/8/2016.
+ * @author Tobias Kamenicky <tobias.kamenicky@gmail.com>
+ * @date 6/8/2016.
  */
 public class RecyclePage extends Fragment {
 
@@ -42,11 +38,8 @@ public class RecyclePage extends Fragment {
     public RecyclePage() {
     }
 
-    public static RecyclePage newInstance(/*int page, int days, int version*/) {
-        RecyclePage fragment = new RecyclePage();
-
-        return (fragment);
-
+    public static RecyclePage newInstance() {
+        return (new RecyclePage());
     }
 
     @Override
@@ -79,7 +72,6 @@ public class RecyclePage extends Fragment {
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         final int mScreenWidth = displaymetrics.widthPixels;
         final int[] lastPosition = {0};
-
         final int[] overallXScroll = {0};
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -91,7 +83,7 @@ public class RecyclePage extends Fragment {
                 if (scroll==0) lastPosition[0] = position;
                 int fromPos = lastPosition[0];
                 int toPos = scroll<0 ? lastPosition[0]+1 : ( scroll>0 ? lastPosition[0]-1 : lastPosition[0]);
-                int scrollTo = (int) (scroll +(-Math.signum(scroll))* mScreenWidth);
+                //int scrollTo = (int) (scroll +(-Math.signum(scroll))* mScreenWidth);
                 float minAlpha = 1F;
                 float aTrans = minAlpha/(float)mScreenWidth * Math.abs(scroll);
                 float bTrans = (1-minAlpha) + aTrans;
@@ -120,94 +112,56 @@ public class RecyclePage extends Fragment {
         });
     if (mObject==null) return layout;
 
-        // use a linear layout manager
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(layout.getContext(), LinearLayoutManager.HORIZONTAL, true);
         mRecyclerView.setLayoutManager(mLayoutManager);
         RecyclerView.Adapter mAdapter = new RecycleAdapter(preparePagesOther());
         mRecyclerView.setAdapter(mAdapter);
 
-
-
-        return (layout);
+        return layout;
     }
 
-private List<StatPage> preparePagesOther() {
-    List<StatPage> pages = new ArrayList<>();
-    MMDatabaseHelper db = MMDatabaseHelper.getInstance(getContext());
-    int version = mObject.getVersion();
-    //int daysBack = mObject.getDaysBack();
-    int tabNumber = mObject.getPageNumber();
-    String firstDate = db.getFirstRecordDate();
-    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    if (firstDate == null) firstDate = format.format(Calendar.getInstance().getTime());
-    Date date = format.parse(firstDate, new ParsePosition(0));
+    private List<StatPage> preparePagesOther() {
+        List<StatPage> pages = new ArrayList<>();
+        MMDatabaseHelper db = MMDatabaseHelper.getInstance(getContext());
+        int version = mObject.getVersion();
+        int tabNumber = mObject.getPageNumber();
+        String firstDate = db.getFirstRecordDate();
+        SimpleDateFormat format = new SimpleDateFormat(getActivity().getString(R.string.db_date_format), Locale.getDefault());
+        if (firstDate == null) firstDate = format.format(Calendar.getInstance().getTime());
+        Date date = format.parse(firstDate, new ParsePosition(0));
 
-    int length = Calendar.WEEK_OF_YEAR;
-    int coal = Calendar.DAY_OF_WEEK;
-    int coalSet = 2;
+        int length = Calendar.WEEK_OF_YEAR;
+        int coal = Calendar.DAY_OF_WEEK;
+        int coalSet = 2;
 
-    switch (tabNumber) {
-        case 0:    break;
-        case 1: length= Calendar.MONTH; coal=Calendar.DAY_OF_MONTH; coalSet=1; break;
-        case 2: length= Calendar.YEAR; coal=Calendar.DAY_OF_YEAR; coalSet=1; break;
+        switch (tabNumber) {
+            case 0:    break;
+            case 1: length= Calendar.MONTH; coal=Calendar.DAY_OF_MONTH; coalSet=1; break;
+            case 2: length= Calendar.YEAR; coal=Calendar.DAY_OF_YEAR; coalSet=1; break;
+        }
+
+        Calendar lastCal = Calendar.getInstance();
+        lastCal.setFirstDayOfWeek(Calendar.MONDAY);
+        lastCal.set(Calendar.HOUR_OF_DAY, 0);
+        lastCal.set(Calendar.MINUTE, 0);
+        lastCal.set(Calendar.SECOND, 0);
+        lastCal.set(Calendar.MILLISECOND, 0);
+        lastCal.set(coal, coalSet);
+        lastCal.add(length,1);
+        Calendar earlyCal = Calendar.getInstance();
+        earlyCal.setFirstDayOfWeek(Calendar.MONDAY);
+        earlyCal.setTime(lastCal.getTime());
+        earlyCal.add(length,-1);
+        lastCal.add(Calendar.MILLISECOND,-1);
+        Calendar firstCal = Calendar.getInstance();
+        firstCal.setTime(date);
+
+        while (firstCal.compareTo(lastCal) < 0) {
+            StatPage page = new StatPage(getContext(), earlyCal.getTime(), lastCal.getTime(),tabNumber,version);
+            pages.add(page);
+            earlyCal.add(length, -1);
+            lastCal.add(length, -1);
+        }
+        return pages;
     }
-
-    Calendar lastCal = Calendar.getInstance();
-    lastCal.setFirstDayOfWeek(Calendar.MONDAY);
-    lastCal.set(Calendar.HOUR_OF_DAY, 0);
-    lastCal.set(Calendar.MINUTE, 0);
-    lastCal.set(Calendar.SECOND, 0);
-    lastCal.set(Calendar.MILLISECOND, 0);
-    lastCal.set(coal, coalSet);
-    lastCal.add(length,1);
-    Calendar earlyCal = Calendar.getInstance();
-    earlyCal.setFirstDayOfWeek(Calendar.MONDAY);
-    earlyCal.setTime(lastCal.getTime());
-    earlyCal.add(length,-1);
-    lastCal.add(Calendar.MILLISECOND,-1);
-    Calendar firstCal = Calendar.getInstance();
-    firstCal.setTime(date);
-
-    while (firstCal.compareTo(lastCal) < 0) {
-        StatPage page = new StatPage(getContext(), earlyCal.getTime(), lastCal.getTime(),tabNumber,version);
-        pages.add(page);
-        earlyCal.add(length, -1);
-        lastCal.add(length, -1);
-    }
-    return pages;
-
-}
-
-
-//    private List<StatPage> preparePages() {
-//        MMDatabaseHelper db = MMDatabaseHelper.getInstance(getContext());
-//
-//
-//        // mRecyclerView.setBackgroundColor(getResources().getColor(R.color.colorAccent));
-//        int version = mObject.getVersion();
-//        int daysBack = mObject.getDaysBack();
-//        int tabNumber = mObject.getPageNumber();
-//        List<StatPage> pages = new ArrayList<>();
-//        String firstDate = db.getFirstRecordDate();
-//        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//        if (firstDate == null) firstDate = format.format(Calendar.getInstance().getTime());
-//        Date date = format.parse(firstDate, new ParsePosition(0));
-//
-//        Calendar lateCal = Calendar.getInstance();
-//        Calendar earlyCal = Calendar.getInstance();
-//        Calendar firstCal = Calendar.getInstance();
-//        earlyCal.add(Calendar.DAY_OF_YEAR, -daysBack);
-//        firstCal.setTime(date);
-//
-//        pages.clear();
-//        while (firstCal.compareTo(lateCal) < 0) {
-//            StatPage page = new StatPage(getContext(), earlyCal.getTime(), lateCal.getTime(),tabNumber,version);
-//            pages.add(page);
-//            earlyCal.add(Calendar.DAY_OF_YEAR, -daysBack);
-//            lateCal.add(Calendar.DAY_OF_YEAR, -daysBack);
-//        }
-//        return pages;
-//    }
-
-
 }

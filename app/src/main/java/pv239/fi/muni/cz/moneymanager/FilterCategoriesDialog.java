@@ -1,5 +1,6 @@
 package pv239.fi.muni.cz.moneymanager;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -26,6 +27,7 @@ public class FilterCategoriesDialog extends DialogFragment {
     public static final int DIRECTION_DESC = 1;
     private View v;
 
+    @SuppressLint("InflateParams")
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {

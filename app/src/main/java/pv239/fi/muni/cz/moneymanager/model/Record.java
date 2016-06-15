@@ -7,9 +7,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Currency;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import pv239.fi.muni.cz.moneymanager.MainActivity;
+import pv239.fi.muni.cz.moneymanager.R;
 import pv239.fi.muni.cz.moneymanager.helper.ExchangeRateCalculator;
 
 /**
@@ -99,8 +101,7 @@ public class Record {
 
         String finalDateTime = "";
 
-        SimpleDateFormat iso8601Format = new SimpleDateFormat(
-                "yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat iso8601Format = new SimpleDateFormat(context.getString(R.string.db_date_format), Locale.getDefault());
 
         Date date;
         if (timeToFormat != null) {
@@ -113,7 +114,6 @@ public class Record {
             if (date != null) {
                 long when = date.getTime();
                 int flags = 0;
-                //flags |= android.text.format.DateUtils.FORMAT_SHOW_TIME;
                 flags |= android.text.format.DateUtils.FORMAT_SHOW_DATE;
                 flags |= android.text.format.DateUtils.FORMAT_ABBREV_MONTH;
                 flags |= android.text.format.DateUtils.FORMAT_SHOW_YEAR;
@@ -126,7 +126,7 @@ public class Record {
     }
 
     public Date getDate() {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.getDefault()); //db_date_format
         try {
            return format.parse(dateTime);
         } catch (ParseException e) {
