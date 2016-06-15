@@ -80,9 +80,9 @@ public class StatsFragment extends Fragment  {
 
 
         TabLayout tabLayout = (TabLayout)layout.findViewById(R.id.tab_layout);
-        tabLayout.addTab(tabLayout.newTab().setText("7 days"));
-        tabLayout.addTab(tabLayout.newTab().setText("4 weeks"));
-        tabLayout.addTab(tabLayout.newTab().setText("1 year"));
+        tabLayout.addTab(tabLayout.newTab().setText("week"));
+        tabLayout.addTab(tabLayout.newTab().setText("month"));
+        tabLayout.addTab(tabLayout.newTab().setText("year"));
 
 
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);

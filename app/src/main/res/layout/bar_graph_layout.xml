@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimary">
+
+    <com.jjoe64.graphview.GraphView
+        android:id="@+id/graph_main"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+
+        />
+
+    <com.github.mikephil.charting.charts.BarChart
+        android:id="@+id/graph_new"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        ></com.github.mikephil.charting.charts.BarChart>
+
+    <ImageView
+        android:id="@+id/grap_divider_gr1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:layout_below="@id/graph_main"
+        android:layout_marginTop="16dp"
+        android:contentDescription="@string/divider"
+        android:src="@drawable/divider" />
+
+    <GridLayout
+        android:id="@+id/graph_grid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/grap_divider_gr1"
+        android:layout_gravity="center"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:columnCount="2"
+        android:orientation="vertical"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:rowCount="2">
+
+        <TextView
+            android:id="@+id/graph_lblStart"
+            android:layout_column="0"
+            android:layout_gravity="fill_horizontal"
+            android:layout_row="0"
+            android:text="@string/starting_balance"
+            style="@style/stats_textView_style"
+            />
+
+        <TextView
+            android:id="@+id/graph_start"
+            android:layout_column="1"
+            android:layout_gravity="end"
+            android:layout_row="0"
+            android:gravity="end"
+            android:text=""
+            style="@style/stats_textView_style" />
+
+        <TextView
+            android:id="@+id/graph_lblEnd"
+            android:layout_column="0"
+            android:layout_gravity="fill_horizontal"
+            android:layout_row="1"
+            android:text="@string/ending_balance"
+            style="@style/stats_textView_style" />
+
+        <TextView
+            android:id="@+id/graph_end"
+            android:layout_column="1"
+            android:layout_gravity="end"
+            android:layout_row="1"
+            android:gravity="end"
+            android:text=""
+            style="@style/stats_textView_style" />
+    </GridLayout>
+
+    <ImageView
+        android:id="@+id/grap_divider_gr2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:layout_below="@id/graph_grid"
+        android:layout_marginTop="8dp"
+        android:contentDescription="@string/divider"
+        android:src="@drawable/divider" />
+</RelativeLayout>

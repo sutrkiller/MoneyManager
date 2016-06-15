@@ -84,8 +84,9 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.CustomVi
         dataMap.put(headers.get(0),page.getIncomesList());
         dataMap.put(headers.get(1),page.getExpensesList());
         CustomExpandableListAdapter adapter_main = new CustomExpandableListAdapter(mContext,headers,dataMap,true,page);
+        //StatsExpandableListAdapter adapter_main = new StatsExpandableListAdapter(mContext,page,true);
         customViewHolder.expandableListView.setAdapter(adapter_main);
-    customViewHolder.expandableListView.expandGroup(0);
+        customViewHolder.expandableListView.expandGroup(0);
 
     }
 

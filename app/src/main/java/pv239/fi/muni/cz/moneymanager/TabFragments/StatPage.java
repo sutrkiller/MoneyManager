@@ -29,9 +29,7 @@ public class StatPage {
     private String date;
     private Date start;
     private Date end;
-//    private List<StatRecord> incomesList;
     private List<Record> incomesList;
-//    private List<StatRecord> expensesList
     private List<Record> expensesList;
     private int tabNum;
     private int version;
@@ -75,16 +73,10 @@ public class StatPage {
         return expenses;
     }
 
-//    public List<StatRecord> getIncomesList() {
-//        return incomesList;
-//    }
     public List<Record> getIncomesList() {
         return incomesList;
     }
 
-//    public List<StatRecord> getExpensesList() {
-//        return expensesList;
-//    }
     public List<Record> getExpensesList() {
         return expensesList;
     }
@@ -121,7 +113,6 @@ public class StatPage {
                 String stringDate = cursor.getString(3);
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 Date date = format.parse(stringDate,new ParsePosition(0));
-                //StatRecord record = new StatRecord(new BigDecimal(cursor.getDouble(7)), cursor.getString(4),cursor.getLong(0),date);
                 Long id = cursor.getLong(0);
                 BigDecimal value = new BigDecimal(cursor.getDouble(1));
                 BigDecimal valueInEur = new BigDecimal(cursor.getDouble(7));
@@ -158,8 +149,23 @@ public class StatPage {
             incomes = String.valueOf(BigDecimal.ZERO);
             expenses = String.valueOf(BigDecimal.ZERO);
         }
+
         DateFormat dateFormat = new SimpleDateFormat("MMM d, yyyy");
-        date = dateFormat.format(fromDate)+ " - " + dateFormat.format(toDate);
+        switch (tabNum) {
+            case 0:
+                date = dateFormat.format(fromDate)+ " - " + dateFormat.format(toDate);
+                break;
+            case 1:
+                dateFormat = new SimpleDateFormat("MMMM yyyy");
+                date = dateFormat.format(fromDate);
+                break;
+            case 2:
+                dateFormat = new SimpleDateFormat("yyyy");
+                date = dateFormat.format(fromDate);
+                break;
+        }
+        //DateFormat dateFormat = new SimpleDateFormat("MMM d, yyyy");
+        //date = dateFormat.format(fromDate)+ " - " + dateFormat.format(toDate);
     }
 
     private void getDataForSecond(MMDatabaseHelper db, Date fromDate, Date toDate) {

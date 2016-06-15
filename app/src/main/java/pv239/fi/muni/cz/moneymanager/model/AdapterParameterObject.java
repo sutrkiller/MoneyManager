@@ -5,18 +5,18 @@ package pv239.fi.muni.cz.moneymanager.model;
  */
 public class AdapterParameterObject {
     private int pageNumber;
-    private int daysBack;
+    //private int daysBack;
     private int version;
 
     public AdapterParameterObject(int pageNumber,int daysBack,int version) {
         this.pageNumber = pageNumber;
-        this.daysBack = daysBack;
+        //this.daysBack = daysBack;
         this.version = version;
     }
 
-    public int getDaysBack() {
-        return daysBack;
-    }
+//    public int getDaysBack() {
+//        return daysBack;
+//    }
 
     public int getPageNumber() {
         return pageNumber;
@@ -34,7 +34,7 @@ public class AdapterParameterObject {
         AdapterParameterObject that = (AdapterParameterObject) o;
 
         if (pageNumber != that.pageNumber) return false;
-        if (daysBack != that.daysBack) return false;
+        //if (daysBack != that.daysBack) return false;
         return version == that.version;
 
     }
@@ -42,7 +42,7 @@ public class AdapterParameterObject {
     @Override
     public int hashCode() {
         int result = pageNumber;
-        result = 31 * result + daysBack;
+        //result = 31 * result + daysBack;
         result = 31 * result + version;
         return result;
     }

@@ -125,4 +125,14 @@ public class Record {
         return finalDateTime;
     }
 
+    public Date getDate() {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+           return format.parse(dateTime);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }

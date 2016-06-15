@@ -8,4 +8,8 @@
     <color name="recordNegativeValue">#870101</color>
     <color name="recordPositiveValue">#047800</color>
     <color name="neutralColor">#4fc3f7</color>
+    <color name="graphFill">#eeb2ff</color>
+    <color name="graphLineColor">#b98df7</color>
+    <color name="graphCircleColor">#ffab40</color>
+    <color name="graphCircleHoleColor">#ffffff</color>
 </resources>
